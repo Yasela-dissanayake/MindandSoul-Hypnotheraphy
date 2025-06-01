@@ -18,8 +18,29 @@ import {
   School,
 } from "lucide-react"
 import Link from "next/link"
+import { ServiceImageSlider } from "@/components/service-image-slider"
 
 export default function ServicesPage() {
+  // Service images for the slider
+  const serviceImages = [
+    {
+      src: "service_3.jpeg",
+      alt: "Clinical Hypnotherapy session in a peaceful setting",
+    },
+    {
+      src: "service_reiki.jpeg",
+      alt: "Reiki energy healing session with crystals",
+    },
+    {
+      src: "service_meditation.jpeg",
+      alt: "Meditation and mindfulness practice in a serene environment",
+    },
+    {
+      src: "service_dog.jpeg",
+      alt: "Animal Reiki healing session with a calm dog",
+    },
+  ]
+
   const coreServices = [
     {
       id: "hypnotherapy",
@@ -212,6 +233,15 @@ export default function ServicesPage() {
                 </Button>
               </Link>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Service Image Slider - NEW SECTION */}
+      <section className="py-12 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-5xl mx-auto">
+            <ServiceImageSlider images={serviceImages} interval={6000} />
           </div>
         </div>
       </section>
@@ -484,7 +514,7 @@ export default function ServicesPage() {
                 {
                   question: "Can I combine different healing modalities?",
                   answer:
-                    "Absolutely! We often recommend combining therapies for a more comprehensive healing experience. For example, hypnotherapy with Reiki, or meditation with energy healing.",
+                    "We often recommend combining therapies for a more comprehensive healing experience. For example, hypnotherapy with Reiki, or meditation with energy healing.",
                 },
                 {
                   question: "What should I expect in my first session?",

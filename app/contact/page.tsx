@@ -37,7 +37,7 @@ export default function ContactPage() {
             </div>
             <div className="relative">
               <Image
-                src="/placeholder.svg?height=500&width=400"
+                src="contact.jpeg"
                 alt="Peaceful consultation room"
                 width={400}
                 height={500}
