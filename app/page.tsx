@@ -2,11 +2,70 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Phone, Mail, MapPin, Clock, Star, Leaf, Heart, Brain, Calendar, CheckCircle, Quote } from "lucide-react"
+import {
+  Phone,
+  Mail,
+  MapPin,
+  Clock,
+  Star,
+  Leaf,
+  Heart,
+  Brain,
+  Calendar,
+  CheckCircle,
+  Quote,
+  Users,
+  Zap,
+  Eye,
+  Waves,
+  GraduationCap,
+  Building,
+  School,
+  Sparkles,
+} from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 
 export default function HomePage() {
+  const testimonials = [
+    {
+      name: "Shabeena Packeerally",
+      service: "Meditation Session",
+      text: "Having attended a meditation session instructed by Rangi, I experienced an amazing sense of calm and relaxation that eased my inner worry. She has mastered the art of meditation and was able to deliver it beautifully. This platform is truly a sanctuary for healing and self-discovery, and I highly recommend it to anyone seeking inner peace.",
+      rating: 5,
+    },
+    {
+      name: "Joe",
+      service: "Healing Meditation",
+      text: "The healing meditation done with Rangika was mind-blowing. Seeking validation all the time, I wasn't sure what was expected from the session. I'm pleased with the result and totally owe the comfort I feel from eased up migraine to her, may you be blessed to carry on your valuable work to make this world a better place.",
+      rating: 5,
+    },
+    {
+      name: "Ruth Mascarenhas",
+      service: "Animal Reiki (Remote)",
+      text: "My pet and I have never been this happy! My dog Bella is much calmer, less aggressive, and responds to her trainer well whom she used to hate before. All thanks to the Reiki session performed remotely by Rangi and the crystal she wears recommended by Rangi. Your hands are indeed magical. Thank you so much.",
+      rating: 5,
+    },
+    {
+      name: "Rehan Stewart",
+      service: "Clinical Hypnotherapy - Anger Management",
+      text: "I recently had the privilege of working with Mrs. Rangika Mathew for hypnotherapy sessions focused on anger management. From the very first session, I felt a deep sense of trust and professionalism in her approach. Her techniques helped me uncover and address the root causes of my emotions, allowing me to develop a calmer, more balanced mindset. Through guided hypnosis, I gained valuable tools to handle stress and triggers more effectively, leading to noticeable improvements in my daily interactions and overall well-being. I highly recommend her services to anyone seeking emotional healing, self-awareness, or a deeper connection with their inner self.",
+      rating: 5,
+    },
+    {
+      name: "A.K.",
+      service: "Past Life Regression Therapy",
+      text: "I didn't know what to expect from Past Life Regression, but what I experienced was deeply healing and eye-opening. The session gently guided me into a past life that helped me understand patterns I've been struggling with for years—especially around fear and relationships. I came away with a sense of peace, clarity, and even forgiveness I didn't know I needed. The way the session was held—with such safety, warmth, and compassion—made all the difference. It was truly a turning point in my healing journey. I'm truly grateful to you.",
+      rating: 5,
+    },
+    {
+      name: "Emma R.",
+      service: "Reiki Energy Healing",
+      text: "I began Reiki sessions hoping to feel more relaxed, but I didn't expect how much it would help with my anger and emotional overwhelm. I used to react quickly and carry so much tension in my body, but after a few sessions, I noticed a real shift. The energy work helped me release built-up emotions I didn't even know I was holding. I feel calmer, more in control, and more connected to myself. Each session brings a sense of peace I hadn't felt in years. This has been a truly transformative part of my healing journey. Rangika's super intuitive guidance is nothing less than a path to total healing and understanding.",
+      rating: 5,
+    },
+  ]
+
   return (
     <div className="min-h-screen bg-stone-50">
       {/* Hero Section */}
@@ -16,34 +75,40 @@ export default function HomePage() {
             <div className="space-y-8">
               <div className="space-y-4">
                 <Badge className="bg-sage-100 text-sage-700 hover:bg-sage-100">
-                  Professional Hypnotherapy Services
+                  🌿 Welcome to Mind & Soul Works Australia
                 </Badge>
                 <h1 className="text-4xl lg:text-6xl font-serif text-stone-800 leading-tight">
-                  Transform Your Mind,
-                  <span className="text-sage-600"> Heal Your Soul</span>
+                  Where Healing
+                  <span className="text-sage-600"> Meets Wholeness</span>
                 </h1>
                 <p className="text-lg text-stone-600 leading-relaxed">
-                  Discover the power of your subconscious mind through gentle, effective hypnotherapy. Based in
-                  Australia, helping you overcome challenges and achieve lasting positive change.
+                  At Mind and Soul Works, we believe true wellness is more than the absence of illness—it's a deep
+                  alignment of mind, body, and soul. Our holistic healing platform brings together compassionate
+                  therapeutic techniques and ancient healing practices to support your journey toward balance and
+                  self-discovery.
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button size="lg" className="bg-sage-600 hover:bg-sage-700 text-white">
-                  <Calendar className="mr-2 h-5 w-5" />
-                  Book Free Consultation
-                </Button>
-                <Button size="lg" variant="outline" className="border-stone-300 text-stone-700 hover:bg-stone-50">
-                  Learn More
-                </Button>
+                <Link href="/booking">
+                  <Button size="lg" className="bg-sage-600 hover:bg-sage-700 text-white">
+                    <Calendar className="mr-2 h-5 w-5" />
+                    Book Free Consultation
+                  </Button>
+                </Link>
+                <Link href="/about">
+                  <Button size="lg" variant="outline" className="border-stone-300 text-stone-700 hover:bg-stone-50">
+                    Meet Rangika
+                  </Button>
+                </Link>
               </div>
               <div className="flex items-center gap-6 pt-4">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-sage-600" />
-                  <span className="text-sm text-stone-600">Certified Practitioner</span>
+                  <span className="text-sm text-stone-600">Certified Clinical Hypnotherapist</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-sage-600" />
-                  <span className="text-sm text-stone-600">100% Confidential</span>
+                  <span className="text-sm text-stone-600">Certified Energy Healer</span>
                 </div>
               </div>
             </div>
@@ -71,7 +136,7 @@ export default function HomePage() {
                         <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
                       ))}
                     </div>
-                    <p className="text-sm text-stone-600">50+ Happy Clients</p>
+                    <p className="text-sm text-stone-600">Global Clientele</p>
                   </div>
                 </div>
               </div>
@@ -80,41 +145,45 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* About Section */}
+      {/* About Rangika Section */}
       <section id="about" className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="space-y-8">
               <div className="space-y-4">
-                <Badge className="bg-stone-100 text-stone-700">About Mind and Soul</Badge>
-                <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">
-                  Your Journey to Inner Peace Starts Here
-                </h2>
+                <Badge className="bg-stone-100 text-stone-700">Meet Your Healing Partner</Badge>
+                <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">Rangika Mathew - Founder</h2>
                 <p className="text-stone-600 leading-relaxed">
-                  Welcome to Mind and Soul, where transformation meets tranquility. As a certified hypnotherapist based
-                  in Australia, I'm dedicated to helping you unlock your inner potential and overcome the barriers that
-                  hold you back.
+                  I'm a Certified Clinical Hypnotherapist, Certified Energy Healer, Meditation Coach, and Life Coach,
+                  with a passion for guiding individuals toward deep, lasting transformation—mentally, emotionally, and
+                  spiritually.
                 </p>
                 <p className="text-stone-600 leading-relaxed">
-                  With years of experience and a gentle, compassionate approach, I guide clients through personalized
-                  hypnotherapy sessions designed to create lasting positive change in their lives.
+                  Having gone through difficult and dark phases in my own life, I was guided to this path not just
+                  through study, but through experience. It was in those challenging seasons that I discovered the true
+                  power of healing, self-awareness, and the mind-body-spirit connection.
+                </p>
+                <p className="text-stone-600 leading-relaxed">
+                  As the Founder of Mind and Soul Works in Dubai, UAE, I have had the privilege of supporting a diverse,
+                  global clientele through holistic and evidence-based approaches to wellness and now spreading my
+                  healing wings in Australia to share my unique gifts.
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-6">
                 <div className="text-center p-4">
-                  <div className="text-3xl font-bold text-sage-600">5+</div>
-                  <div className="text-sm text-stone-600">Years Experience</div>
+                  <div className="text-3xl font-bold text-sage-600">17+</div>
+                  <div className="text-sm text-stone-600">Years Professional Experience</div>
                 </div>
                 <div className="text-center p-4">
-                  <div className="text-3xl font-bold text-sage-600">200+</div>
-                  <div className="text-sm text-stone-600">Sessions Completed</div>
+                  <div className="text-3xl font-bold text-sage-600">Global</div>
+                  <div className="text-sm text-stone-600">Clientele Served</div>
                 </div>
               </div>
             </div>
             <div className="relative">
               <Image
                 src="meditation group.jpeg"
-                alt="Professional hypnotherapist in peaceful setting"
+                alt="Rangika Mathew - Professional hypnotherapist and energy healer"
                 width={500}
                 height={500}
                 className="rounded-2xl object-cover w-full h-[500px] shadow-lg"
@@ -124,15 +193,72 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Services Section */}
-      <section id="services" className="py-20 bg-stone-50">
+      {/* Mission & Approach Section */}
+      <section className="py-20 bg-stone-50">
         <div className="container mx-auto px-4">
           <div className="text-center space-y-4 mb-16">
-            <Badge className="bg-sage-100 text-sage-700">Our Services</Badge>
-            <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">Personalized Hypnotherapy Solutions</h2>
+            <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">Our Healing Philosophy</h2>
             <p className="text-stone-600 max-w-2xl mx-auto">
-              Each session is tailored to your unique needs, helping you achieve your goals through the power of your
-              subconscious mind.
+              My mission is to hold space for healing that bridges science and spirit, empowering clients to reconnect
+              with their inner wisdom, release what no longer serves them, and live with intention and purpose.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card className="border-stone-200 text-center">
+              <CardContent className="p-8 space-y-4">
+                <div className="mx-auto w-16 h-16 bg-sage-100 rounded-full flex items-center justify-center">
+                  <Heart className="h-8 w-8 text-sage-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-stone-800">Holistic & Empowering</h3>
+                <p className="text-stone-600">
+                  Mind and Soul Work's mission is to guide individuals on a journey of self-discovery and healing by
+                  integrating therapy, mindfulness and energy healing—empowering mind, body, and soul to restore balance
+                  and live with greater clarity, peace, and purpose.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-stone-200 text-center">
+              <CardContent className="p-8 space-y-4">
+                <div className="mx-auto w-16 h-16 bg-sage-100 rounded-full flex items-center justify-center">
+                  <Brain className="h-8 w-8 text-sage-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-stone-800">Therapeutic & Transformational</h3>
+                <p className="text-stone-600">
+                  Committed to offering evidence-informed therapies that support emotional release, inner calm, and
+                  personal transformation—through a unique blend of hypnotherapy, mindfulness practices, expressive art,
+                  and energetic alignment.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-stone-200 text-center">
+              <CardContent className="p-8 space-y-4">
+                <div className="mx-auto w-16 h-16 bg-sage-100 rounded-full flex items-center justify-center">
+                  <Sparkles className="h-8 w-8 text-sage-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-stone-800">Creative & Nurturing</h3>
+                <p className="text-stone-600">
+                  Our purpose is to create a safe, compassionate space where healing unfolds naturally—through creative
+                  expression, subconscious exploration, and energetic balance—helping individuals reconnect with their
+                  inner strength and wisdom.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Core Services Section */}
+      <section id="services" className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center space-y-4 mb-16">
+            <Badge className="bg-sage-100 text-sage-700">Our Core Services</Badge>
+            <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">Holistic Healing for Mind, Body & Soul</h2>
+            <p className="text-stone-600 max-w-2xl mx-auto">
+              Each service is tailored to your unique needs, helping you achieve your goals through the transformative
+              power of holistic healing.
             </p>
           </div>
 
@@ -140,51 +266,70 @@ export default function HomePage() {
             {[
               {
                 icon: Brain,
-                title: "Anxiety & Stress Relief",
+                title: "Clinical Hypnotherapy",
                 description:
-                  "Find calm and peace through targeted hypnotherapy techniques designed to reduce anxiety and manage stress effectively.",
-                duration: "60-90 minutes",
+                  "Empowering you through subconscious healing and transformation. Safe, effective therapeutic technique for lasting change.",
+                duration: "45-75 minutes",
                 price: "From $120",
+                benefits: [
+                  "Anxiety & stress relief",
+                  "Confidence building",
+                  "Habit change",
+                  "Emotional trauma healing",
+                ],
               },
               {
                 icon: Heart,
-                title: "Confidence Building",
+                title: "Reiki Healing",
                 description:
-                  "Unlock your inner confidence and self-esteem with personalized sessions that reprogram limiting beliefs.",
-                duration: "60-90 minutes",
-                price: "From $120",
+                  "Restore balance, renew energy, reconnect with your inner peace through gentle energy healing.",
+                duration: "60 minutes",
+                price: "From $75",
+                benefits: [
+                  "Release tension & stress",
+                  "Mental clarity",
+                  "Physical healing support",
+                  "Chakra balancing",
+                ],
               },
               {
                 icon: Leaf,
-                title: "Habit Change",
-                description:
-                  "Break free from unwanted habits and create positive new patterns that support your wellbeing.",
-                duration: "60-90 minutes",
-                price: "From $120",
+                title: "Animal Reiki & Communication",
+                description: "Healing, understanding, and connection for your beloved companions through energy work.",
+                duration: "45-60 minutes",
+                price: "From $90",
+                benefits: ["Pet anxiety relief", "Behavioral understanding", "Emotional balance", "Stronger bonds"],
               },
               {
-                icon: CheckCircle,
-                title: "Weight Management",
+                icon: Zap,
+                title: "Lama Fera Healing",
                 description:
-                  "Develop a healthy relationship with food and your body through subconscious mind programming.",
-                duration: "60-90 minutes",
-                price: "From $120",
+                  "Ancient Tibetan healing for deep spiritual & energetic transformation from Buddhist monasteries.",
+                duration: "30-45 minutes",
+                price: "From $90",
+                benefits: ["Remove negative energy", "Clear karmic blocks", "Spiritual growth", "Aura protection"],
               },
               {
-                icon: Star,
-                title: "Sleep Improvement",
-                description:
-                  "Overcome insomnia and sleep issues with relaxation techniques and subconscious reprogramming.",
-                duration: "60-90 minutes",
-                price: "From $120",
+                icon: Eye,
+                title: "Past Life Regression",
+                description: "Explore your soul's journey and heal through wisdom of the past via guided hypnosis.",
+                duration: "90-120 minutes",
+                price: "$195",
+                benefits: [
+                  "Break repeating patterns",
+                  "Understand fears",
+                  "Heal emotional wounds",
+                  "Soul purpose clarity",
+                ],
               },
               {
-                icon: Calendar,
-                title: "Pain Management",
+                icon: Waves,
+                title: "Meditation Programs",
                 description:
-                  "Learn to manage chronic pain through the mind-body connection and hypnotic pain relief techniques.",
-                duration: "60-90 minutes",
-                price: "From $120",
+                  "Quiet the mind, open the heart, return to stillness through guided practices and coaching.",
+                duration: "30-60 minutes",
+                price: "From $75",
+                benefits: ["Stress reduction", "Mental clarity", "Emotional awareness", "Spiritual connection"],
               },
             ].map((service, index) => (
               <Card key={index} className="border-stone-200 hover:shadow-lg transition-shadow">
@@ -196,12 +341,22 @@ export default function HomePage() {
                     <h3 className="font-semibold text-stone-800">{service.title}</h3>
                   </div>
                   <p className="text-stone-600 text-sm leading-relaxed">{service.description}</p>
-                  <div className="flex justify-between items-center pt-2">
-                    <div className="text-xs text-stone-500">
-                      <Clock className="inline h-3 w-3 mr-1" />
-                      {service.duration}
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-stone-500">
+                        <Clock className="inline h-3 w-3 mr-1" />
+                        {service.duration}
+                      </span>
+                      <span className="font-semibold text-sage-600">{service.price}</span>
                     </div>
-                    <div className="font-semibold text-sage-600">{service.price}</div>
+                    <div className="space-y-1">
+                      {service.benefits.map((benefit, idx) => (
+                        <div key={idx} className="flex items-center gap-2 text-xs text-stone-600">
+                          <CheckCircle className="h-3 w-3 text-sage-600" />
+                          {benefit}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -209,54 +364,116 @@ export default function HomePage() {
           </div>
 
           <div className="text-center mt-12">
-            <Button size="lg" className="bg-sage-600 hover:bg-sage-700 text-white">
-              View All Services
-            </Button>
+            <Link href="/services">
+              <Button size="lg" className="bg-sage-600 hover:bg-sage-700 text-white">
+                View All Services
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
 
       {/* Testimonials Section */}
-      <section id="testimonials" className="py-20 bg-white">
+      <section id="testimonials" className="py-20 bg-stone-50">
         <div className="container mx-auto px-4">
           <div className="text-center space-y-4 mb-16">
             <Badge className="bg-stone-100 text-stone-700">Client Stories</Badge>
-            <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">Transformations That Inspire</h2>
+            <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">Real Transformations, Real Healing</h2>
+            <p className="text-stone-600 max-w-2xl mx-auto">
+              Discover how Rangika's holistic healing approach has helped clients from around the world achieve lasting
+              transformation.
+            </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              {
-                name: "Sarah M.",
-                location: "Sydney, NSW",
-                text: "After struggling with anxiety for years, the sessions at Mind and Soul have been life-changing. I feel more confident and at peace than I have in years.",
-                rating: 5,
-              },
-              {
-                name: "James T.",
-                location: "Melbourne, VIC",
-                text: "The weight management program helped me develop a completely new relationship with food. I've lost 15kg and kept it off for over a year now.",
-                rating: 5,
-              },
-              {
-                name: "Emma L.",
-                location: "Brisbane, QLD",
-                text: "I was skeptical about hypnotherapy, but the professional and caring approach made all the difference. My sleep has improved dramatically.",
-                rating: 5,
-              },
-            ].map((testimonial, index) => (
+            {testimonials.map((testimonial, index) => (
               <Card key={index} className="border-stone-200">
                 <CardContent className="p-6 space-y-4">
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 mb-2">
                     {[...Array(testimonial.rating)].map((_, i) => (
                       <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
                     ))}
                   </div>
-                  <Quote className="h-8 w-8 text-stone-300" />
-                  <p className="text-stone-600 italic leading-relaxed">"{testimonial.text}"</p>
+                  <Quote className="h-6 w-6 text-stone-300" />
+                  <p className="text-stone-600 italic leading-relaxed text-sm">"{testimonial.text}"</p>
                   <div className="pt-4 border-t border-stone-100">
                     <div className="font-semibold text-stone-800">{testimonial.name}</div>
-                    <div className="text-sm text-stone-500">{testimonial.location}</div>
+                    <div className="text-sm text-sage-600">{testimonial.service}</div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="text-center mt-12">
+            <Link href="/testimonials">
+              <Button size="lg" variant="outline" className="border-stone-300 text-stone-700 hover:bg-stone-50">
+                Read More Stories
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Specialized Programs Section */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center space-y-4 mb-16">
+            <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">Specialized Programs</h2>
+            <p className="text-stone-600 max-w-2xl mx-auto">
+              Comprehensive wellness programs designed for organizations, schools, and those seeking to become healers
+              themselves.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              {
+                icon: Building,
+                title: "Corporate Wellness",
+                description: "Empowering teams with mindful tools for a healthier, happier workplace",
+                features: ["Guided Meditation", "Group Hypnosis", "Art Therapy", "Therapeutic Baking"],
+              },
+              {
+                icon: School,
+                title: "School Programs",
+                description: "Holistic wellbeing programs for students and educators",
+                features: ["Student Wellbeing", "Educator Support", "Mindfulness Training", "Creative Expression"],
+              },
+              {
+                icon: GraduationCap,
+                title: "Reiki Training",
+                description: "Learn Reiki with confidence and care - Levels 1, 2 & 3 (Master)",
+                features: [
+                  "Level 1: Self-Healing",
+                  "Level 2: Practitioner",
+                  "Level 3: Master/Teacher",
+                  "Certification",
+                ],
+              },
+              {
+                icon: Users,
+                title: "Group Programs",
+                description: "Community-based healing circles and meditation groups",
+                features: ["Meditation Circles", "8-Week Programs", "Morning Sessions", "Community Support"],
+              },
+            ].map((program, index) => (
+              <Card key={index} className="border-stone-200 hover:shadow-lg transition-shadow">
+                <CardContent className="p-6 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-sage-100 rounded-lg">
+                      <program.icon className="h-6 w-6 text-sage-600" />
+                    </div>
+                    <h3 className="font-semibold text-stone-800">{program.title}</h3>
+                  </div>
+                  <p className="text-stone-600 text-sm">{program.description}</p>
+                  <div className="space-y-1">
+                    {program.features.map((feature, idx) => (
+                      <div key={idx} className="flex items-center gap-2 text-xs text-stone-600">
+                        <CheckCircle className="h-3 w-3 text-sage-600" />
+                        {feature}
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
@@ -265,8 +482,51 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Why Choose Us Section */}
+      <section className="py-20 bg-sage-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center space-y-4 mb-16">
+            <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">Why Choose Mind & Soul Works?</h2>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              {
+                icon: CheckCircle,
+                title: "Online & In-Person Options",
+                description: "Flexible delivery to meet your needs, whether you prefer face-to-face or remote sessions",
+              },
+              {
+                icon: Heart,
+                title: "Certified & Trauma-Informed",
+                description: "All practitioners are certified in their modalities and trained in trauma-informed care",
+              },
+              {
+                icon: Users,
+                title: "Personalized Care",
+                description: "Tailored healing journeys designed specifically for your unique needs and goals",
+              },
+              {
+                icon: Leaf,
+                title: "Safe & Inclusive Space",
+                description:
+                  "Judgment-free environment where healing unfolds naturally with compassion and understanding",
+              },
+            ].map((feature, index) => (
+              <div key={index} className="text-center space-y-4">
+                <div className="mx-auto w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg">
+                  <feature.icon className="h-8 w-8 text-sage-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-stone-800">{feature.title}</h3>
+                <p className="text-stone-600">{feature.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Contact Section */}
-      <section id="contact" className="py-20 bg-stone-50">
+      <section id="contact" className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-16">
             <div className="space-y-8">
@@ -275,7 +535,8 @@ export default function HomePage() {
                 <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">Ready to Begin Your Journey?</h2>
                 <p className="text-stone-600 leading-relaxed">
                   Take the first step towards positive change. Book your free consultation today and discover how
-                  hypnotherapy can help you achieve your goals.
+                  holistic healing can help you achieve your goals. You are your own healer—we're here to guide and
+                  support you.
                 </p>
               </div>
 
@@ -306,7 +567,7 @@ export default function HomePage() {
                   </div>
                   <div>
                     <div className="font-semibold text-stone-800">Location</div>
-                    <div className="text-stone-600">Sydney & Online Sessions Available</div>
+                    <div className="text-stone-600">Australia & Online Sessions Available</div>
                   </div>
                 </div>
 
@@ -316,7 +577,7 @@ export default function HomePage() {
                   </div>
                   <div>
                     <div className="font-semibold text-stone-800">Hours</div>
-                    <div className="text-stone-600">Mon-Fri: 9AM-6PM | Sat: 9AM-2PM</div>
+                    <div className="text-stone-600">Flexible scheduling to suit your needs</div>
                   </div>
                 </div>
               </div>
@@ -325,6 +586,9 @@ export default function HomePage() {
             <Card className="border-stone-200">
               <CardContent className="p-8 space-y-6">
                 <h3 className="text-xl font-semibold text-stone-800">Book Your Free Consultation</h3>
+                <p className="text-stone-600 text-sm">
+                  30-minute online consultation to discuss your goals and find the right healing approach for you.
+                </p>
                 <form className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -383,11 +647,11 @@ export default function HomePage() {
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <Leaf className="h-6 w-6 text-sage-400" />
-                <h3 className="text-xl font-serif">Mind and Soul</h3>
+                <h3 className="text-xl font-serif">Mind and Soul Works</h3>
               </div>
               <p className="text-stone-300 text-sm leading-relaxed">
-                Professional hypnotherapy services helping Australians achieve positive change and inner peace through
-                the power of the subconscious mind.
+                Your partner in healing, growth, and inner transformation. Bridging science and spirit to empower you to
+                reconnect with your inner wisdom and live with intention and purpose.
               </p>
             </div>
 
@@ -395,7 +659,7 @@ export default function HomePage() {
               <h4 className="font-semibold">Quick Links</h4>
               <div className="space-y-2 text-sm">
                 <Link href="/about" className="block text-stone-300 hover:text-white transition-colors">
-                  About
+                  About Rangika
                 </Link>
                 <Link href="/services" className="block text-stone-300 hover:text-white transition-colors">
                   Services
@@ -414,15 +678,27 @@ export default function HomePage() {
               <div className="space-y-2 text-sm text-stone-300">
                 <div>+61 2 1234 5678</div>
                 <div>hello@mindandsoul.com.au</div>
-                <div>Sydney, Australia</div>
+                <div>Australia & Online Worldwide</div>
               </div>
             </div>
           </div>
 
           <Separator className="my-8 bg-stone-700" />
 
+          {/* <div className="flex flex-col md:flex-row justify-between items-center text-sm text-stone-400">
+            <div>© 2024 Mind and Soul Works Australia. All rights reserved.</div>
+            <div className="flex gap-6 mt-4 md:mt-0">
+              <Link href="#" className="hover:text-white transition-colors">
+                Privacy Policy
+              </Link>
+              <Link href="#" className="hover:text-white transition-colors">
+                Terms of Service
+              </Link>
+            </div>
+          </div> */}
+
           <div className="flex flex-col md:flex-row justify-between items-center text-sm text-stone-400">
-            <div>© 2024 Mind and Soul Hypnotherapy. All rights reserved.</div>
+            <div>© {new Date().getFullYear()} Mind and Soul Hypnotherapy. All rights reserved.</div>
             <div className="flex gap-6 mt-4 md:mt-0">
               <Link href="#" className="hover:text-white transition-colors">
                 Privacy Policy

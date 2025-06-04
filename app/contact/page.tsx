@@ -372,7 +372,7 @@ export default function ContactPage() {
                         <div>
                           <label className="block text-sm font-medium text-stone-700 mb-2">Session Type</label>
                           <select className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500">
-                            <option>In-Person (Sydney)</option>
+                            <option>In-Person (Perth)</option>
                             <option>Online Session</option>
                           </select>
                         </div>
@@ -407,7 +407,7 @@ export default function ContactPage() {
               <div className="space-y-4">
                 <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">Visit Our Practice</h2>
                 <p className="text-stone-600 leading-relaxed">
-                  Located in the heart of Sydney, our practice offers a peaceful, private environment designed for your
+                  Located in the heart of Perth, our practice offers a peaceful, private environment designed for your
                   comfort and relaxation.
                 </p>
               </div>
@@ -423,7 +423,7 @@ export default function ContactPage() {
                       Suite 12, Level 3<br />
                       123 Wellness Street
                       <br />
-                      Sydney NSW 2000
+                      Perth NSW 2000
                     </div>
                   </div>
                 </div>

@@ -258,8 +258,8 @@ export default function BookingPage() {
                               <MapPin className="h-5 w-5 text-sage-600" />
                               <h4 className="font-semibold text-stone-800">In-Person Session</h4>
                             </div>
-                            <p className="text-sm text-stone-600">Visit our peaceful practice in Sydney</p>
-                            <p className="text-xs text-stone-500">Suite 12, Level 3, 123 Wellness Street, Sydney NSW</p>
+                            <p className="text-sm text-stone-600">Visit our peaceful practice in Perth</p>
+                            <p className="text-xs text-stone-500">Suite 12, Level 3, 123 Wellness Street, Perth NSW</p>
                           </CardContent>
                         </Card>
 
