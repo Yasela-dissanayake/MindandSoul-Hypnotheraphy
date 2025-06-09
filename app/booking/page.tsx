@@ -281,7 +281,7 @@ export default function BookingPage() {
                           </CardContent>
                         </Card>
                       </div>
-                    </div>
+                    </div>  
 
                     {/* Date & Time Selection */}
                     <div className="grid lg:grid-cols-2 gap-8">
@@ -298,7 +298,7 @@ export default function BookingPage() {
                               return date < today || date.getDay() === 0 // Disable past dates and Sundays
                             }}
                             className="w-full"
-                            initialFocus
+                            autoFocus
                           />
                         </div>
                         {selectedDate && (
