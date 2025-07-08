@@ -177,7 +177,7 @@ export default function ManageBookingPage() {
                               </p>
                               <p className="text-sm text-stone-600">
                                 {booking.type === "in-person"
-                                  ? "Suite 12, Level 3, 123 Wellness Street, Sydney"
+                                  ? "Suite 12, Level 3, 123 Wellness Street, Perth"
                                   : "Video call link will be sent 24 hours before"}
                               </p>
                             </div>

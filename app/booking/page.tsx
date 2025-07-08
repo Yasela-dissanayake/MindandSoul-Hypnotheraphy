@@ -1,10 +1,11 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Calendar } from "@/components/ui/calendar"
 import {
   Brain,
@@ -22,15 +23,219 @@ import {
   Shield,
   ArrowRight,
   ArrowLeft,
+  Loader2,
 } from "lucide-react"
-import { format } from "date-fns"
+import { format, addDays, isBefore, startOfDay, isAfter, isSunday } from "date-fns"
+import { loadStripe } from "@stripe/stripe-js"
+import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js"
+
+// Initialize Stripe
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "pk_test_your_key_here")
+
+// Stripe Card Element styling
+const cardElementOptions = {
+  style: {
+    base: {
+      fontSize: "16px",
+      color: "#424770",
+      "::placeholder": {
+        color: "#aab7c4",
+      },
+      padding: "12px",
+    },
+    invalid: {
+      color: "#9e2146",
+    },
+  },
+  hidePostalCode: false,
+}
+
+// Payment Form Component
+function PaymentForm({
+  bookingData,
+  selectedServiceData,
+  selectedDate,
+  selectedTime,
+  sessionType,
+  onPaymentSuccess,
+  onPaymentError,
+}: {
+  bookingData: any
+  selectedServiceData: any
+  selectedDate: Date | undefined
+  selectedTime: string
+  sessionType: string
+  onPaymentSuccess: (paymentIntent: any) => void
+  onPaymentError: (error: string) => void
+}) {
+  const stripe = useStripe()
+  const elements = useElements()
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [paymentError, setPaymentError] = useState<string | null>(null)
+  const [termsAccepted, setTermsAccepted] = useState(false)
+  const [cancellationAccepted, setCancellationAccepted] = useState(false)
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault()
+
+    if (!stripe || !elements) {
+      return
+    }
+
+    if (!termsAccepted || !cancellationAccepted) {
+      setPaymentError("Please accept the terms and conditions to proceed.")
+      return
+    }
+
+    setIsProcessing(true)
+    setPaymentError(null)
+
+    const cardElement = elements.getElement(CardElement)
+
+    if (!cardElement) {
+      setPaymentError("Card element not found")
+      setIsProcessing(false)
+      return
+    }
+
+    try {
+      // Create payment intent on the server
+      const response = await fetch("/api/create-payment-intent", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount: selectedServiceData.price * 100, // Convert to cents
+          currency: "aud",
+          booking_data: {
+            ...bookingData,
+            service: selectedServiceData.title,
+            date: selectedDate ? format(selectedDate, "yyyy-MM-dd") : "",
+            time: selectedTime,
+            session_type: sessionType,
+          },
+        }),
+      })
+
+      const { client_secret, error } = await response.json()
+
+      if (error) {
+        setPaymentError(error)
+        setIsProcessing(false)
+        return
+      }
+
+      // Confirm payment with Stripe
+      const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(client_secret, {
+        payment_method: {
+          card: cardElement,
+          billing_details: {
+            name: `${bookingData.firstName} ${bookingData.lastName}`,
+            email: bookingData.email,
+            phone: bookingData.phone,
+          },
+        },
+      })
+
+      if (stripeError) {
+        setPaymentError(stripeError.message || "Payment failed")
+        onPaymentError(stripeError.message || "Payment failed")
+      } else if (paymentIntent && paymentIntent.status === "succeeded") {
+        onPaymentSuccess(paymentIntent)
+      }
+    } catch (error) {
+      setPaymentError("An unexpected error occurred")
+      onPaymentError("An unexpected error occurred")
+    }
+
+    setIsProcessing(false)
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Stripe Card Element */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-stone-700">Card Details</label>
+        <div className="border border-stone-300 rounded-lg p-4 bg-white">
+          <CardElement options={cardElementOptions} />
+        </div>
+      </div>
+
+      {/* Terms and Conditions */}
+      <div className="space-y-4">
+        <div className="flex items-start gap-3">
+          <input
+            type="checkbox"
+            id="terms"
+            checked={termsAccepted}
+            onChange={(e) => setTermsAccepted(e.target.checked)}
+            className="mt-1"
+          />
+          <label htmlFor="terms" className="text-sm text-stone-600">
+            I agree to the{" "}
+            <a href="#" className="text-sage-600 hover:underline">
+              Terms and Conditions
+            </a>{" "}
+            and{" "}
+            <a href="#" className="text-sage-600 hover:underline">
+              Privacy Policy
+            </a>
+          </label>
+        </div>
+
+        <div className="flex items-start gap-3">
+          <input
+            type="checkbox"
+            id="cancellation"
+            checked={cancellationAccepted}
+            onChange={(e) => setCancellationAccepted(e.target.checked)}
+            className="mt-1"
+          />
+          <label htmlFor="cancellation" className="text-sm text-stone-600">
+            I understand the{" "}
+            <a href="#" className="text-sage-600 hover:underline">
+              cancellation policy
+            </a>{" "}
+            (24-hour notice required for cancellations)
+          </label>
+        </div>
+      </div>
+
+      {/* Error Display */}
+      {paymentError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-sm text-red-700">{paymentError}</p>
+        </div>
+      )}
+
+      {/* Submit Button */}
+      <Button
+        type="submit"
+        disabled={!stripe || isProcessing || !termsAccepted || !cancellationAccepted}
+        className="w-full bg-sage-600 hover:bg-sage-700 text-white py-3"
+      >
+        {isProcessing ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Processing Payment...
+          </>
+        ) : (
+          `Complete Booking - $${selectedServiceData?.price} AUD`
+        )}
+      </Button>
+    </form>
+  )
+}
 
 export default function BookingPage() {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>()
   const [selectedTime, setSelectedTime] = useState<string>("")
   const [selectedService, setSelectedService] = useState<string>("")
   const [sessionType, setSessionType] = useState<string>("in-person")
   const [currentStep, setCurrentStep] = useState(1)
+  const [paymentSuccess, setPaymentSuccess] = useState(false)
+  const [bookingConfirmation, setBookingConfirmation] = useState<any>(null)
   const [bookingData, setBookingData] = useState({
     firstName: "",
     lastName: "",
@@ -112,7 +317,7 @@ export default function BookingPage() {
   }
 
   // Mock unavailable slots (would come from backend)
-  const unavailableSlots = ["10:30", "14:00", "15:30"]
+  const unavailableSlots = ["10:00", "14:00", "15:00"]
 
   const timeSlots = selectedDate ? generateTimeSlots(selectedDate) : []
   const availableSlots = timeSlots.filter((slot) => !unavailableSlots.includes(slot))
@@ -136,9 +341,98 @@ export default function BookingPage() {
     if (currentStep > 1) setCurrentStep(currentStep - 1)
   }
 
+  const handlePaymentSuccess = (paymentIntent: any) => {
+    setPaymentSuccess(true)
+    setBookingConfirmation({
+      paymentIntentId: paymentIntent.id,
+      amount: paymentIntent.amount / 100,
+      currency: paymentIntent.currency.toUpperCase(),
+    })
+    // Here you would typically save the booking to your database
+  }
+
+  const handlePaymentError = (error: string) => {
+    console.error("Payment error:", error)
+    // Handle payment error (show notification, etc.)
+  }
+
   const canProceedToStep2 = selectedService && selectedDate && selectedTime && sessionType
   const canProceedToStep3 = bookingData.firstName && bookingData.lastName && bookingData.email && bookingData.phone
   const canProceedToStep4 = true // All fields in step 3 are optional
+
+  // Success page
+  if (paymentSuccess && bookingConfirmation) {
+    return (
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
+        <div className="max-w-2xl mx-auto p-8">
+          <Card className="border-green-200">
+            <CardContent className="p-8 text-center space-y-6">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                <CheckCircle className="h-8 w-8 text-green-600" />
+              </div>
+              <h1 className="text-2xl font-serif text-stone-800">Booking Confirmed!</h1>
+              <p className="text-stone-600">
+                Thank you for booking your hypnotherapy session. You will receive a confirmation email shortly with all
+                the details.
+              </p>
+
+              <div className="bg-stone-50 p-6 rounded-lg space-y-3 text-left">
+                <h3 className="font-semibold text-stone-800">Booking Details</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p>
+                      <strong>Service:</strong> {selectedServiceData?.title}
+                    </p>
+                    <p>
+                      <strong>Date:</strong> {selectedDate && format(selectedDate, "EEEE, MMMM d, yyyy")}
+                    </p>
+                    <p>
+                      <strong>Time:</strong> {selectedTime}
+                    </p>
+                  </div>
+                  <div>
+                    <p>
+                      <strong>Type:</strong> {sessionType === "in-person" ? "In-Person" : "Online"}
+                    </p>
+                    <p>
+                      <strong>Amount Paid:</strong> ${bookingConfirmation.amount} {bookingConfirmation.currency}
+                    </p>
+                    <p>
+                      <strong>Payment ID:</strong> {bookingConfirmation.paymentIntentId}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="font-semibold text-stone-800">What's Next?</h3>
+                <ul className="text-sm text-stone-600 space-y-2 text-left">
+                  <li>• You'll receive a confirmation email within 5 minutes</li>
+                  <li>
+                    •{" "}
+                    {sessionType === "online"
+                      ? "Video call link will be sent 24 hours before your session"
+                      : "Address and parking details are in your confirmation email"}
+                  </li>
+                  <li>• If you need to reschedule, please contact us at least 24 hours in advance</li>
+                  <li>• Prepare any questions you'd like to discuss during your session</li>
+                </ul>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button onClick={() => (window.location.href = "/")} className="bg-sage-600 hover:bg-sage-700">
+                  Return to Home
+                </Button>
+                <Button variant="outline" onClick={() => (window.location.href = "/booking/manage")}>
+                  Manage Booking
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -287,25 +581,33 @@ export default function BookingPage() {
                     <div className="grid lg:grid-cols-2 gap-8">
                       <div className="space-y-4">
                         <h3 className="text-lg font-semibold text-stone-800">Select Date</h3>
-                        <div className="border border-stone-200 rounded-lg p-4 bg-white">
-                          <Calendar
-                            mode="single"
-                            selected={selectedDate}
-                            onSelect={handleDateSelect}
-                            disabled={(date) => {
-                              const today = new Date()
-                              today.setHours(0, 0, 0, 0)
-                              return date < today || date.getDay() === 0 // Disable past dates and Sundays
-                            }}
-                            className="w-full"
-                            initialFocus
-                          />
+                        <div className="border border-stone-200 rounded-lg bg-white p-4">
+                          <div className="calendar-wrapper">
+                            <Calendar
+                              mode="single"
+                              selected={selectedDate}
+                              onSelect={handleDateSelect}
+                              disabled={(date) => {
+                                const today = startOfDay(new Date())
+                                const maxDate = addDays(new Date(), 90)
+                                return isBefore(date, today) || isAfter(date, maxDate) || isSunday(date)
+                              }}
+                              className="w-full"
+                              initialFocus
+                              fromDate={new Date()}
+                              toDate={addDays(new Date(), 90)}
+                              showOutsideDays={false}
+                            />
+                          </div>
                         </div>
                         {selectedDate && (
                           <div className="text-sm text-stone-600 bg-sage-50 p-3 rounded-lg">
                             <strong>Selected:</strong> {format(selectedDate, "EEEE, MMMM d, yyyy")}
                           </div>
                         )}
+                        <div className="text-xs text-stone-500 bg-blue-50 p-2 rounded">
+                          <strong>Note:</strong> Sundays are closed. Saturday hours: 9:00 AM - 2:00 PM
+                        </div>
                       </div>
 
                       <div className="space-y-4">
@@ -319,37 +621,45 @@ export default function BookingPage() {
                         </h3>
                         {selectedDate ? (
                           <div className="space-y-3">
-                            <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto p-2 border border-stone-200 rounded-lg bg-white">
+                            <div className="grid grid-cols-2 gap-3 max-h-80 overflow-y-auto p-4 border border-stone-200 rounded-lg bg-white">
                               {availableSlots.length > 0 ? (
                                 availableSlots.map((time) => (
                                   <Button
                                     key={time}
                                     variant={selectedTime === time ? "default" : "outline"}
                                     size="sm"
-                                    className={`text-sm ${
+                                    className={`text-sm h-12 ${
                                       selectedTime === time
                                         ? "bg-sage-600 hover:bg-sage-700 text-white"
                                         : "border-stone-300 hover:border-sage-300 hover:bg-sage-50"
                                     }`}
                                     onClick={() => setSelectedTime(time)}
                                   >
-                                    {time}
+                                    <div className="text-center">
+                                      <div className="font-medium">{time}</div>
+                                      <div className="text-xs opacity-75">90 min</div>
+                                    </div>
                                   </Button>
                                 ))
                               ) : (
-                                <div className="col-span-2 text-center py-4 text-stone-500">
-                                  No available slots for this date
+                                <div className="col-span-2 text-center py-8 text-stone-500">
+                                  <Clock className="h-8 w-8 mx-auto mb-2 text-stone-400" />
+                                  <p>No available slots for this date</p>
+                                  <p className="text-xs mt-1">Please select another date</p>
                                 </div>
                               )}
                             </div>
                             {selectedDate.getDay() === 6 && (
-                              <p className="text-xs text-stone-500">Saturday hours: 9:00 AM - 2:00 PM</p>
+                              <p className="text-xs text-stone-500 bg-blue-50 p-2 rounded">
+                                <strong>Saturday hours:</strong> 9:00 AM - 2:00 PM
+                              </p>
                             )}
                           </div>
                         ) : (
                           <div className="p-8 text-center text-stone-500 border border-stone-200 rounded-lg bg-stone-50">
-                            <Calendar className="h-8 w-8 mx-auto mb-2 text-stone-400" />
+                            <CalendarIcon className="h-8 w-8 mx-auto mb-2 text-stone-400" />
                             <p>Please select a date first</p>
+                            <p className="text-xs mt-1">Choose from available dates in the calendar</p>
                           </div>
                         )}
                       </div>
@@ -357,27 +667,34 @@ export default function BookingPage() {
 
                     {/* Summary */}
                     {selectedServiceData && selectedDate && selectedTime && (
-                      <div className="bg-sage-50 p-4 rounded-lg space-y-2">
-                        <h4 className="font-semibold text-stone-800">Booking Summary</h4>
-                        <div className="text-sm text-stone-600 space-y-1">
-                          <p>
-                            <strong>Service:</strong> {selectedServiceData.title}
-                          </p>
-                          <p>
-                            <strong>Date:</strong> {format(selectedDate, "EEEE, MMMM d, yyyy")}
-                          </p>
-                          <p>
-                            <strong>Time:</strong> {selectedTime}
-                          </p>
-                          <p>
-                            <strong>Duration:</strong> {selectedServiceData.duration}
-                          </p>
-                          <p>
-                            <strong>Type:</strong> {sessionType === "in-person" ? "In-Person" : "Online"}
-                          </p>
-                          <p>
-                            <strong>Investment:</strong> ${selectedServiceData.price}
-                          </p>
+                      <div className="bg-sage-50 p-6 rounded-lg space-y-3 border border-sage-200">
+                        <h4 className="font-semibold text-stone-800 flex items-center gap-2">
+                          <CheckCircle className="h-5 w-5 text-sage-600" />
+                          Booking Summary
+                        </h4>
+                        <div className="grid md:grid-cols-2 gap-4 text-sm text-stone-600">
+                          <div className="space-y-1">
+                            <p>
+                              <strong>Service:</strong> {selectedServiceData.title}
+                            </p>
+                            <p>
+                              <strong>Duration:</strong> {selectedServiceData.duration}
+                            </p>
+                            <p>
+                              <strong>Investment:</strong> ${selectedServiceData.price}
+                            </p>
+                          </div>
+                          <div className="space-y-1">
+                            <p>
+                              <strong>Date:</strong> {format(selectedDate, "EEEE, MMMM d, yyyy")}
+                            </p>
+                            <p>
+                              <strong>Time:</strong> {selectedTime}
+                            </p>
+                            <p>
+                              <strong>Type:</strong> {sessionType === "in-person" ? "In-Person" : "Online"}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     )}
@@ -559,7 +876,7 @@ export default function BookingPage() {
               </div>
             )}
 
-            {/* Step 4: Payment */}
+            {/* Step 4: Payment with Stripe */}
             {currentStep === 4 && (
               <div className="space-y-8">
                 <Card>
@@ -603,106 +920,26 @@ export default function BookingPage() {
                       <div className="border-t border-stone-200 pt-4">
                         <div className="flex justify-between items-center">
                           <span className="text-lg font-semibold">Total:</span>
-                          <span className="text-2xl font-bold text-sage-600">${selectedServiceData?.price}</span>
+                          <span className="text-2xl font-bold text-sage-600">${selectedServiceData?.price} AUD</span>
                         </div>
                       </div>
                     </div>
 
-                    {/* Payment Options */}
+                    {/* Stripe Payment Form */}
                     <div className="space-y-4">
-                      <h4 className="font-semibold text-stone-800">Payment Options</h4>
+                      <h4 className="font-semibold text-stone-800">Payment Details</h4>
 
-                      <Tabs defaultValue="card" className="w-full">
-                        <TabsList className="grid w-full grid-cols-3">
-                          <TabsTrigger value="card">Credit Card</TabsTrigger>
-                          <TabsTrigger value="paypal">PayPal</TabsTrigger>
-                          <TabsTrigger value="afterpay">Afterpay</TabsTrigger>
-                        </TabsList>
-
-                        <TabsContent value="card" className="space-y-4">
-                          <div className="grid md:grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-sm font-medium text-stone-700 mb-2">Card Number</label>
-                              <input
-                                type="text"
-                                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
-                                placeholder="1234 5678 9012 3456"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-stone-700 mb-2">Cardholder Name</label>
-                              <input
-                                type="text"
-                                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
-                                placeholder="John Smith"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-stone-700 mb-2">Expiry Date</label>
-                              <input
-                                type="text"
-                                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
-                                placeholder="MM/YY"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-stone-700 mb-2">CVV</label>
-                              <input
-                                type="text"
-                                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
-                                placeholder="123"
-                              />
-                            </div>
-                          </div>
-                        </TabsContent>
-
-                        <TabsContent value="paypal" className="space-y-4">
-                          <div className="text-center py-8">
-                            <p className="text-stone-600 mb-4">
-                              You will be redirected to PayPal to complete your payment
-                            </p>
-                            <Button className="bg-blue-600 hover:bg-blue-700 text-white">Continue with PayPal</Button>
-                          </div>
-                        </TabsContent>
-
-                        <TabsContent value="afterpay" className="space-y-4">
-                          <div className="text-center py-8">
-                            <p className="text-stone-600 mb-4">
-                              Pay in 4 interest-free installments of $
-                              {selectedServiceData ? selectedServiceData.price / 4 : 0}
-                            </p>
-                            <Button className="bg-mint-600 hover:bg-mint-700 text-white">Continue with Afterpay</Button>
-                          </div>
-                        </TabsContent>
-                      </Tabs>
-                    </div>
-
-                    {/* Terms and Conditions */}
-                    <div className="space-y-4">
-                      <div className="flex items-start gap-3">
-                        <input type="checkbox" id="terms" className="mt-1" />
-                        <label htmlFor="terms" className="text-sm text-stone-600">
-                          I agree to the{" "}
-                          <a href="#" className="text-sage-600 hover:underline">
-                            Terms and Conditions
-                          </a>{" "}
-                          and{" "}
-                          <a href="#" className="text-sage-600 hover:underline">
-                            Privacy Policy
-                          </a>
-                        </label>
-                      </div>
-
-                      <div className="flex items-start gap-3">
-                        <input type="checkbox" id="cancellation" className="mt-1" />
-                        <label htmlFor="cancellation" className="text-sm text-stone-600">
-                          I understand the{" "}
-                          <a href="#" className="text-sage-600 hover:underline">
-                            cancellation policy
-                          </a>{" "}
-                          (24-hour notice required for cancellations)
-                        </label>
-                      </div>
+                      <Elements stripe={stripePromise}>
+                        <PaymentForm
+                          bookingData={bookingData}
+                          selectedServiceData={selectedServiceData}
+                          selectedDate={selectedDate}
+                          selectedTime={selectedTime}
+                          sessionType={sessionType}
+                          onPaymentSuccess={handlePaymentSuccess}
+                          onPaymentError={handlePaymentError}
+                        />
+                      </Elements>
                     </div>
 
                     {/* Security Notice */}
@@ -712,19 +949,16 @@ export default function BookingPage() {
                         <h4 className="font-semibold text-green-800">Secure Payment</h4>
                       </div>
                       <p className="text-sm text-green-700">
-                        Your payment information is encrypted and secure. We never store your credit card details.
+                        Your payment is processed securely by Stripe. We never store your credit card details.
                       </p>
                     </div>
                   </CardContent>
                 </Card>
 
-                <div className="flex justify-between">
+                <div className="flex justify-start">
                   <Button variant="outline" onClick={prevStep}>
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Back
-                  </Button>
-                  <Button className="bg-sage-600 hover:bg-sage-700 text-white px-8">
-                    Complete Booking - ${selectedServiceData?.price}
                   </Button>
                 </div>
               </div>

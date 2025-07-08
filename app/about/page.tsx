@@ -37,7 +37,7 @@ export default function AboutPage() {
             </div>
             <div className="relative">
               <Image
-                src="/placeholder.svg?height=600&width=500"
+                src="prof_2.jpeg"
                 alt="Professional hypnotherapist in peaceful setting"
                 width={500}
                 height={600}
@@ -76,7 +76,7 @@ export default function AboutPage() {
               </div>
               <div className="relative">
                 <Image
-                  src="/placeholder.svg?height=400&width=400"
+                  src="rangika_profile.jpeg"
                   alt="Peaceful meditation space"
                   width={400}
                   height={400}

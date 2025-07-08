@@ -1,118 +1,124 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Star, Quote, MapPin, Calendar, Heart, CheckCircle } from "lucide-react"
+import { Star, Quote, MapPin, Calendar, Heart, CheckCircle, Brain, Sparkles, Leaf, Eye } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 
 export default function TestimonialsPage() {
   const testimonials = [
     {
-      name: "Sarah Mitchell",
-      location: "Sydney, NSW",
-      service: "Anxiety & Stress Relief",
+      name: "Shabeena Packeerally",
+      location: "Dubai, UAE",
+      service: "Meditation Coaching",
       rating: 5,
-      date: "3 months ago",
+      date: "Recent client",
       image: "/placeholder.svg?height=80&width=80",
       testimonial:
-        "After struggling with anxiety for years, the sessions at Mind and Soul have been absolutely life-changing. I feel more confident and at peace than I have in years. The gentle approach made me feel safe and supported throughout the entire process.",
-      result: "Reduced anxiety by 80% and improved sleep quality",
+        "Having attended a meditation session instructed by Rangi, I experienced an amazing sense of calm and relaxation that eased my inner worry. She has mastered the art of meditation and was able to deliver it beautifully. This platform is truly a sanctuary for healing and self-discovery, and I highly recommend it to anyone seeking inner peace.",
+      result: "Amazing sense of calm and relaxation, eased inner worry",
+      icon: Heart,
     },
     {
-      name: "James Thompson",
-      location: "Melbourne, VIC",
-      service: "Weight Management",
+      name: "Joe",
+      location: "International Client",
+      service: "Healing Meditation",
       rating: 5,
-      date: "6 months ago",
+      date: "Recent client",
       image: "/placeholder.svg?height=80&width=80",
       testimonial:
-        "The weight management program helped me develop a completely new relationship with food. I've lost 15kg and kept it off for over a year now. More importantly, I've learned to love and respect my body again.",
-      result: "Lost 15kg and maintained healthy weight for 12+ months",
+        "The healing meditation done with Rangika was mind-blowing. Seeking validation all the time, I wasn't sure what was expected from the session. I'm pleased with the result and totally owe the comfort I feel from eased up migraine to her, may you be blessed to carry on your valuable work to make this world a better place.",
+      result: "Mind-blowing healing experience, migraine relief",
+      icon: Brain,
     },
     {
-      name: "Emma Louise",
-      location: "Brisbane, QLD",
-      service: "Sleep Improvement",
+      name: "Ruth Mascarenhas",
+      location: "Pet Parent",
+      service: "Animal Reiki (Remote)",
       rating: 5,
-      date: "4 months ago",
+      date: "Recent client",
       image: "/placeholder.svg?height=80&width=80",
       testimonial:
-        "I was skeptical about hypnotherapy, but the professional and caring approach made all the difference. My sleep has improved dramatically - I now fall asleep within minutes instead of lying awake for hours.",
-      result: "Sleep onset time reduced from 2+ hours to under 10 minutes",
+        "My pet and I have never been this happy! My dog Bella is much calmer, less aggressive, and responds to her trainer well whom she used to hate before. All thanks to the Reiki session performed remotely by Rangi and the crystal she wears recommended by Rangi. Your hands are indeed magical. Thank you so much.",
+      result: "Dog became calmer, less aggressive, better training response",
+      icon: Leaf,
     },
     {
-      name: "Michael Chen",
-      location: "Perth, WA",
-      service: "Confidence Building",
+      name: "Rehan Stewart",
+      location: "Professional Client",
+      service: "Clinical Hypnotherapy - Anger Management",
       rating: 5,
-      date: "5 months ago",
+      date: "Recent client",
       image: "/placeholder.svg?height=80&width=80",
       testimonial:
-        "Public speaking used to terrify me, but after working with Mind and Soul, I recently gave a presentation to 200 people and felt completely confident. The transformation has been incredible.",
-      result: "Successfully presented to large audiences without anxiety",
+        "I recently had the privilege of working with Mrs. Rangika Mathew for hypnotherapy sessions focused on anger management. From the very first session, I felt a deep sense of trust and professionalism in her approach. Her techniques helped me uncover and address the root causes of my emotions, allowing me to develop a calmer, more balanced mindset. Through guided hypnosis, I gained valuable tools to handle stress and triggers more effectively, leading to noticeable improvements in my daily interactions and overall well-being. I highly recommend her services to anyone seeking emotional healing, self-awareness, or a deeper connection with their inner self.",
+      result: "Calmer mindset, better stress management, improved daily interactions",
+      icon: Brain,
     },
     {
-      name: "Lisa Rodriguez",
-      location: "Adelaide, SA",
-      service: "Habit Change",
+      name: "A.K.",
+      location: "Confidential Client",
+      service: "Past Life Regression Therapy",
       rating: 5,
-      date: "8 months ago",
+      date: "Recent client",
       image: "/placeholder.svg?height=80&width=80",
       testimonial:
-        "I quit smoking after 15 years thanks to the hypnotherapy sessions. What amazed me most was how natural it felt - no cravings, no withdrawal symptoms. I haven't touched a cigarette since my third session.",
-      result: "Smoke-free for 8+ months after 15 years of smoking",
+        "I didn't know what to expect from Past Life Regression, but what I experienced was deeply healing and eye-opening. The session gently guided me into a past life that helped me understand patterns I've been struggling with for years—especially around fear and relationships. I came away with a sense of peace, clarity, and even forgiveness I didn't know I needed. The way the session was held—with such safety, warmth, and compassion—made all the difference. It was truly a turning point in my healing journey. I'm truly grateful to you.",
+      result: "Understanding of life patterns, peace, clarity, and forgiveness",
+      icon: Eye,
     },
     {
-      name: "David Wilson",
-      location: "Gold Coast, QLD",
-      service: "Pain Management",
+      name: "Emma R.",
+      location: "Australia",
+      service: "Reiki Energy Healing",
       rating: 5,
-      date: "7 months ago",
+      date: "Recent client",
       image: "/placeholder.svg?height=80&width=80",
       testimonial:
-        "Chronic back pain had controlled my life for years. Through hypnotherapy, I've learned to manage my pain naturally and have reduced my medication by 70%. I can enjoy activities with my family again.",
-      result: "70% reduction in pain medication and improved mobility",
-    },
-    {
-      name: "Rachel Green",
-      location: "Canberra, ACT",
-      service: "Anxiety & Stress Relief",
-      rating: 5,
-      date: "2 months ago",
-      image: "/placeholder.svg?height=80&width=80",
-      testimonial:
-        "The panic attacks that plagued me for months have completely stopped. I feel like I have my life back. The sessions were so relaxing and the results have been lasting.",
-      result: "Zero panic attacks for 2+ months",
-    },
-    {
-      name: "Tom Anderson",
-      location: "Newcastle, NSW",
-      service: "Confidence Building",
-      rating: 5,
-      date: "9 months ago",
-      image: "/placeholder.svg?height=80&width=80",
-      testimonial:
-        "I was promoted to a management position after gaining the confidence to apply for roles I never thought I deserved. The sessions helped me recognize my worth and capabilities.",
-      result: "Achieved career promotion and increased salary",
-    },
-    {
-      name: "Sophie Martin",
-      location: "Hobart, TAS",
-      service: "Sleep Improvement",
-      rating: 5,
-      date: "6 months ago",
-      image: "/placeholder.svg?height=80&width=80",
-      testimonial:
-        "After years of insomnia, I now sleep 7-8 hours every night. My energy levels have improved dramatically, and I feel like a completely different person during the day.",
-      result: "Consistent 7-8 hours of quality sleep nightly",
+        "I began Reiki sessions hoping to feel more relaxed, but I didn't expect how much it would help with my anger and emotional overwhelm. I used to react quickly and carry so much tension in my body, but after a few sessions, I noticed a real shift. The energy work helped me release built-up emotions I didn't even know I was holding. I feel calmer, more in control, and more connected to myself. Each session brings a sense of peace I hadn't felt in years. This has been a truly transformative part of my healing journey. Rangika's super intuitive guidance is nothing less than a path to total healing and understanding.",
+      result: "Released emotional tension, calmer reactions, deeper self-connection",
+      icon: Sparkles,
     },
   ]
 
-  const stats = [
-    { number: "95%", label: "Client Satisfaction Rate" },
-    { number: "200+", label: "Successful Sessions" },
-    { number: "4.9/5", label: "Average Rating" },
-    { number: "85%", label: "Achieve Goals in 6 Sessions" },
+  const serviceStats = [
+    { number: "100%", label: "Client Satisfaction Rate" },
+    { number: "Global", label: "Clientele Reach" },
+    { number: "5/5", label: "Average Rating" },
+    { number: "Multiple", label: "Healing Modalities" },
+  ]
+
+  const serviceCategories = [
+    {
+      category: "Clinical Hypnotherapy",
+      icon: Brain,
+      color: "bg-blue-50 border-blue-200 text-blue-700",
+      testimonials: testimonials.filter((t) => t.service.includes("Hypnotherapy")),
+    },
+    {
+      category: "Energy Healing",
+      icon: Sparkles,
+      color: "bg-purple-50 border-purple-200 text-purple-700",
+      testimonials: testimonials.filter((t) => t.service.includes("Reiki")),
+    },
+    {
+      category: "Meditation & Mindfulness",
+      icon: Heart,
+      color: "bg-green-50 border-green-200 text-green-700",
+      testimonials: testimonials.filter((t) => t.service.includes("Meditation")),
+    },
+    {
+      category: "Past Life Regression",
+      icon: Eye,
+      color: "bg-amber-50 border-amber-200 text-amber-700",
+      testimonials: testimonials.filter((t) => t.service.includes("Past Life")),
+    },
+    {
+      category: "Animal Healing",
+      icon: Leaf,
+      color: "bg-emerald-50 border-emerald-200 text-emerald-700",
+      testimonials: testimonials.filter((t) => t.service.includes("Animal")),
+    },
   ]
 
   return (
@@ -123,12 +129,12 @@ export default function TestimonialsPage() {
           <div className="max-w-4xl mx-auto space-y-8">
             <Badge className="bg-sage-100 text-sage-700">Client Stories</Badge>
             <h1 className="text-4xl lg:text-6xl font-serif text-stone-800 leading-tight">
-              Real Stories,
+              Real Healing,
               <span className="text-sage-600"> Real Transformations</span>
             </h1>
             <p className="text-lg text-stone-600 leading-relaxed">
-              Discover how hypnotherapy has helped Australians just like you overcome challenges and achieve lasting
-              positive change in their lives.
+              Discover how Rangika's holistic healing approach has helped clients from around the world achieve lasting
+              transformation through mind, body, and soul integration.
             </p>
             <div className="flex items-center justify-center gap-2">
               <div className="flex">
@@ -136,7 +142,7 @@ export default function TestimonialsPage() {
                   <Star key={star} className="h-6 w-6 fill-amber-400 text-amber-400" />
                 ))}
               </div>
-              <span className="text-stone-600 ml-2">4.9/5 from 50+ reviews</span>
+              <span className="text-stone-600 ml-2">5/5 from authentic client reviews</span>
             </div>
           </div>
         </div>
@@ -146,7 +152,7 @@ export default function TestimonialsPage() {
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-8 text-center">
-            {stats.map((stat, index) => (
+            {serviceStats.map((stat, index) => (
               <div key={index} className="space-y-2">
                 <div className="text-4xl font-bold text-sage-600">{stat.number}</div>
                 <div className="text-stone-600">{stat.label}</div>
@@ -156,13 +162,14 @@ export default function TestimonialsPage() {
         </div>
       </section>
 
-      {/* Testimonials Grid */}
+      {/* Featured Testimonials */}
       <section className="py-20 bg-stone-50">
         <div className="container mx-auto px-4">
           <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">What Our Clients Say</h2>
+            <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">Transformational Stories</h2>
             <p className="text-stone-600 max-w-2xl mx-auto">
-              Read authentic stories from clients who have experienced transformation through hypnotherapy.
+              Read authentic stories from clients who have experienced profound healing through Rangika's diverse range
+              of therapeutic modalities.
             </p>
           </div>
 
@@ -196,9 +203,12 @@ export default function TestimonialsPage() {
                   </div>
 
                   {/* Service Badge */}
-                  <Badge variant="outline" className="text-sage-600 border-sage-200">
-                    {testimonial.service}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <testimonial.icon className="h-4 w-4 text-sage-600" />
+                    <Badge variant="outline" className="text-sage-600 border-sage-200">
+                      {testimonial.service}
+                    </Badge>
+                  </div>
 
                   {/* Quote */}
                   <div className="relative">
@@ -227,50 +237,97 @@ export default function TestimonialsPage() {
         </div>
       </section>
 
-      {/* Video Testimonials Section */}
+      {/* Testimonials by Service */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">Video Testimonials</h2>
+            <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">Stories by Healing Modality</h2>
             <p className="text-stone-600 max-w-2xl mx-auto">
-              Hear directly from our clients about their transformation journey.
+              Explore how different healing approaches have created transformation across various aspects of life.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="space-y-12">
+            {serviceCategories.map((category, index) => (
+              <div key={index} className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-sage-100 rounded-lg">
+                    <category.icon className="h-6 w-6 text-sage-600" />
+                  </div>
+                  <h3 className="text-2xl font-serif text-stone-800">{category.category}</h3>
+                  <Badge className={category.color}>{category.testimonials.length} Stories</Badge>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  {category.testimonials.map((testimonial, idx) => (
+                    <Card key={idx} className="border-stone-200">
+                      <CardContent className="p-6 space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="font-semibold text-stone-800">{testimonial.name}</h4>
+                            <p className="text-sm text-stone-500">{testimonial.location}</p>
+                          </div>
+                          <div className="flex">
+                            {[...Array(testimonial.rating)].map((_, i) => (
+                              <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-stone-600 italic text-sm leading-relaxed">"{testimonial.testimonial}"</p>
+                        <div className="bg-stone-50 p-3 rounded-lg">
+                          <p className="text-sm text-stone-600">
+                            <strong>Outcome:</strong> {testimonial.result}
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Global Reach Section */}
+      <section className="py-20 bg-stone-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center space-y-4 mb-16">
+            <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">Global Healing Community</h2>
+            <p className="text-stone-600 max-w-2xl mx-auto">
+              From Dubai to Australia and beyond, Rangika's healing work has touched lives across continents through
+              both in-person and remote sessions.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
             {[
               {
-                name: "Sarah's Anxiety Recovery",
-                description: "Watch Sarah share her journey from daily panic attacks to complete peace of mind.",
-                thumbnail: "/placeholder.svg?height=300&width=400",
+                region: "Middle East",
+                description: "Established practice in Dubai, UAE serving diverse international community",
+                highlight: "Meditation mastery and professional approach",
               },
               {
-                name: "James's Weight Loss Success",
-                description: "James explains how hypnotherapy helped him lose 15kg and keep it off permanently.",
-                thumbnail: "/placeholder.svg?height=300&width=400",
+                region: "Australia",
+                description: "Now bringing holistic healing practices to Australian clients",
+                highlight: "Energy healing and emotional transformation",
               },
-            ].map((video, index) => (
-              <Card
-                key={index}
-                className="border-stone-200 overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-              >
-                <div className="relative">
-                  <Image
-                    src={video.thumbnail || "/placeholder.svg"}
-                    alt={video.name}
-                    width={400}
-                    height={300}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                    <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center">
-                      <div className="w-0 h-0 border-l-[12px] border-l-sage-600 border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent ml-1"></div>
-                    </div>
+              {
+                region: "Remote Healing",
+                description: "Distance healing sessions reaching clients worldwide",
+                highlight: "Animal Reiki and energy work across borders",
+              },
+            ].map((region, index) => (
+              <Card key={index} className="border-stone-200 text-center">
+                <CardContent className="p-6 space-y-4">
+                  <div className="w-12 h-12 bg-sage-100 rounded-full flex items-center justify-center mx-auto">
+                    <MapPin className="h-6 w-6 text-sage-600" />
                   </div>
-                </div>
-                <CardContent className="p-4">
-                  <h3 className="font-semibold text-stone-800 mb-2">{video.name}</h3>
-                  <p className="text-stone-600 text-sm">{video.description}</p>
+                  <h3 className="text-xl font-semibold text-stone-800">{region.region}</h3>
+                  <p className="text-stone-600 text-sm">{region.description}</p>
+                  <div className="bg-sage-50 p-3 rounded-lg">
+                    <p className="text-sm text-sage-700 font-medium">{region.highlight}</p>
+                  </div>
                 </CardContent>
               </Card>
             ))}
@@ -278,56 +335,43 @@ export default function TestimonialsPage() {
         </div>
       </section>
 
-      {/* Before & After Section */}
-      <section className="py-20 bg-stone-50">
+      {/* What Clients Say About Rangika */}
+      <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">Transformation Results</h2>
-            <p className="text-stone-600 max-w-2xl mx-auto">
-              See the measurable improvements our clients have achieved through hypnotherapy.
-            </p>
+            <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">What Clients Say About Rangika</h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
               {
-                category: "Anxiety Relief",
-                before: "Daily panic attacks",
-                after: "Calm and confident",
-                improvement: "90% reduction in anxiety",
+                quality: "Professional Approach",
+                description: "Deep sense of trust and professionalism from the very first session",
+                icon: CheckCircle,
               },
               {
-                category: "Sleep Quality",
-                before: "2+ hours to fall asleep",
-                after: "Asleep within 10 minutes",
-                improvement: "8 hours quality sleep nightly",
+                quality: "Intuitive Guidance",
+                description: "Super intuitive guidance that leads to total healing and understanding",
+                icon: Heart,
               },
               {
-                category: "Weight Management",
-                before: "Emotional eating patterns",
-                after: "Healthy relationship with food",
-                improvement: "15kg sustainable weight loss",
+                quality: "Magical Hands",
+                description: "Clients describe her healing touch as truly magical and transformative",
+                icon: Sparkles,
               },
-            ].map((result, index) => (
+              {
+                quality: "Safe Space",
+                description: "Creates sessions with safety, warmth, and compassion that make all the difference",
+                icon: Leaf,
+              },
+            ].map((quality, index) => (
               <Card key={index} className="border-stone-200 text-center">
                 <CardContent className="p-6 space-y-4">
-                  <h3 className="text-xl font-semibold text-stone-800">{result.category}</h3>
-                  <div className="space-y-3">
-                    <div className="p-3 bg-red-50 rounded-lg">
-                      <div className="text-sm font-medium text-red-700">Before</div>
-                      <div className="text-red-600">{result.before}</div>
-                    </div>
-                    <div className="flex justify-center">
-                      <div className="w-8 h-8 bg-sage-100 rounded-full flex items-center justify-center">
-                        <Heart className="h-4 w-4 text-sage-600" />
-                      </div>
-                    </div>
-                    <div className="p-3 bg-green-50 rounded-lg">
-                      <div className="text-sm font-medium text-green-700">After</div>
-                      <div className="text-green-600">{result.after}</div>
-                    </div>
+                  <div className="w-12 h-12 bg-sage-100 rounded-full flex items-center justify-center mx-auto">
+                    <quality.icon className="h-6 w-6 text-sage-600" />
                   </div>
-                  <Badge className="bg-sage-100 text-sage-700">{result.improvement}</Badge>
+                  <h3 className="font-semibold text-stone-800">{quality.quality}</h3>
+                  <p className="text-stone-600 text-sm">{quality.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -338,10 +382,10 @@ export default function TestimonialsPage() {
       {/* CTA Section */}
       <section className="py-20 bg-sage-600 text-white">
         <div className="container mx-auto px-4 text-center space-y-8">
-          <h2 className="text-3xl lg:text-4xl font-serif">Ready to Write Your Success Story?</h2>
+          <h2 className="text-3xl lg:text-4xl font-serif">Ready to Write Your Transformation Story?</h2>
           <p className="text-sage-100 max-w-2xl mx-auto">
-            Join the hundreds of Australians who have transformed their lives through hypnotherapy. Your journey to
-            positive change starts with a single step.
+            Join the global community of clients who have experienced profound healing through Rangika's holistic
+            approach. Your journey to transformation starts with a single step.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/booking">
