@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import Stripe from "stripe"
+import { sendConfirmationEmail, sendPractitionerNotification } from "@/lib/email"
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2023-10-16",
@@ -26,12 +27,6 @@ export async function POST(request: NextRequest) {
       const paymentIntent = event.data.object as Stripe.PaymentIntent
       console.log("Payment succeeded:", paymentIntent.id)
 
-      // Here you would typically:
-      // 1. Save the booking to your database
-      // 2. Send confirmation email to the client
-      // 3. Send notification to the practitioner
-      // 4. Update your calendar/booking system
-
       await handleSuccessfulPayment(paymentIntent)
       break
 
@@ -39,7 +34,6 @@ export async function POST(request: NextRequest) {
       const failedPayment = event.data.object as Stripe.PaymentIntent
       console.log("Payment failed:", failedPayment.id)
 
-      // Handle failed payment
       await handleFailedPayment(failedPayment)
       break
 
@@ -68,17 +62,37 @@ async function handleSuccessfulPayment(paymentIntent: Stripe.PaymentIntent) {
       createdAt: new Date(),
     }
 
+    console.log("Processing successful payment for:", bookingData.clientEmail)
+
+    // Send confirmation email to client
+    const clientEmailResult = await sendConfirmationEmail(bookingData)
+    if (clientEmailResult.success) {
+      console.log("✅ Confirmation email sent to client:", clientEmailResult.messageId)
+    } else {
+      console.error("❌ Failed to send confirmation email:", clientEmailResult.error)
+    }
+
+    // Send notification to practitioner
+    const practitionerEmailResult = await sendPractitionerNotification(bookingData)
+    if (practitionerEmailResult.success) {
+      console.log("✅ Notification sent to practitioner:", practitionerEmailResult.messageId)
+    } else {
+      console.error("❌ Failed to send practitioner notification:", practitionerEmailResult.error)
+    }
+
     // TODO: Save to your database
-    console.log("Saving booking to database:", bookingData)
-
-    // TODO: Send confirmation email
-    console.log("Sending confirmation email to:", bookingData.clientEmail)
-
-    // TODO: Send notification to practitioner
-    console.log("Notifying practitioner of new booking")
+    console.log("📝 Saving booking to database:", {
+      id: bookingData.paymentIntentId,
+      client: bookingData.clientName,
+      service: bookingData.service,
+      date: bookingData.date,
+      time: bookingData.time,
+      amount: bookingData.amount,
+      status: bookingData.status,
+    })
 
     // TODO: Update calendar system
-    console.log("Updating calendar with new booking")
+    console.log("📅 Updating calendar with new booking")
   } catch (error) {
     console.error("Error handling successful payment:", error)
   }
@@ -86,10 +100,11 @@ async function handleSuccessfulPayment(paymentIntent: Stripe.PaymentIntent) {
 
 async function handleFailedPayment(paymentIntent: Stripe.PaymentIntent) {
   try {
-    // TODO: Log failed payment
-    console.log("Payment failed for:", paymentIntent.metadata.client_email)
+    console.log("❌ Payment failed for:", paymentIntent.metadata.client_email)
 
+    // TODO: Log failed payment attempt
     // TODO: Send failure notification if needed
+    // TODO: Clean up any temporary booking data
   } catch (error) {
     console.error("Error handling failed payment:", error)
   }
