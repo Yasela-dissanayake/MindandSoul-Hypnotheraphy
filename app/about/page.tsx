@@ -14,7 +14,7 @@ export default function AboutPage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
               <div className="space-y-4">
-                <Badge className="bg-sage-100 text-sage-700">About Mind and Soul</Badge>
+                <Badge className="bg-sage-100 text-sage-700">About Heal With Rangika</Badge>
                 <h1 className="text-4xl lg:text-6xl font-serif text-stone-800 leading-tight">
                   Meet Your
                   <span className="text-sage-600"> Hypnotherapist</span>

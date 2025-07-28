@@ -1,76 +1,98 @@
 import { type NextRequest, NextResponse } from "next/server";
 import {
-  sendConfirmationEmail,
-  sendPractitionerNotification,
+  sendClientBookingConfirmation,
+  sendPractitionerBookingNotification,
 } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   try {
-    console.log(
-      "POST /api/send-booking-emails - Sending booking confirmation emails..."
-    );
+    const body = await request.json();
 
-    const bookingData = await request.json();
-    console.log("Booking data received:", {
-      clientEmail: bookingData.clientEmail,
-      service: bookingData.service,
-      date: bookingData.date,
-      time: bookingData.time,
+    const {
+      paymentIntentId,
+      amount,
+      currency,
+      service,
+      date,
+      time,
+      sessionType,
+      clientName,
+      clientEmail,
+      clientPhone,
+      concerns,
+      previousTherapy,
+      emergencyContact,
+      medicalConditions,
+    } = body;
+
+    console.log("📧 Sending booking emails for payment:", paymentIntentId);
+
+    // Send client confirmation email
+    const clientEmailResult = await sendClientBookingConfirmation({
+      clientName,
+      clientEmail,
+      service,
+      date,
+      time,
+      sessionType,
+      amount,
+      currency,
+      paymentIntentId,
+      concerns,
     });
 
-    // Validate required fields
-    if (
-      !bookingData.clientEmail ||
-      !bookingData.clientName ||
-      !bookingData.service
-    ) {
+    // Send practitioner notification email
+    const practitionerEmailResult = await sendPractitionerBookingNotification({
+      clientName,
+      clientEmail,
+      clientPhone,
+      service,
+      date,
+      time,
+      sessionType,
+      amount,
+      currency,
+      paymentIntentId,
+      concerns,
+      previousTherapy,
+      emergencyContact,
+      medicalConditions,
+    });
+
+    if (clientEmailResult.success && practitionerEmailResult.success) {
+      return NextResponse.json({
+        success: true,
+        message: "Booking emails sent successfully",
+        details: {
+          clientEmail: clientEmailResult,
+          practitionerEmail: practitionerEmailResult,
+        },
+      });
+    } else {
+      console.error("❌ Email sending failed:", {
+        clientEmail: clientEmailResult,
+        practitionerEmail: practitionerEmailResult,
+      });
+
       return NextResponse.json(
         {
           success: false,
-          error: "Missing required booking data",
+          error: "Failed to send one or more emails",
+          details: {
+            clientEmail: clientEmailResult,
+            practitionerEmail: practitionerEmailResult,
+          },
         },
-        { status: 400 }
+        { status: 500 }
       );
     }
-
-    // Send confirmation email to client
-    console.log(
-      "Sending confirmation email to client:",
-      bookingData.clientEmail
-    );
-    const clientResult = await sendConfirmationEmail(bookingData);
-
-    // Send notification to practitioner
-    console.log("Sending notification to practitioner");
-    const practitionerResult = await sendPractitionerNotification(bookingData);
-
-    // Return results
-    const response = {
-      success: true,
-      message: "Booking emails processed",
-      results: {
-        clientEmail: {
-          success: clientResult.success,
-          messageId: clientResult.messageId,
-          error: clientResult.error,
-        },
-        practitionerEmail: {
-          success: practitionerResult.success,
-          messageId: practitionerResult.messageId,
-          error: practitionerResult.error,
-        },
-      },
-    };
-
-    console.log("Email sending results:", response);
-    return NextResponse.json(response);
-  } catch (error: any) {
-    console.error("Error in send-booking-emails:", error);
+  } catch (error) {
+    console.error("❌ Error in send-booking-emails API:", error);
     return NextResponse.json(
       {
         success: false,
-        error: error.message,
-        stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
+        error: "Internal server error",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );

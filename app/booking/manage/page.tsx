@@ -305,7 +305,7 @@ export default function ManageBookingPage() {
                 <CardContent className="p-6 space-y-3">
                   <Phone className="h-8 w-8 text-sage-600 mx-auto" />
                   <h3 className="font-semibold text-stone-800">Phone Support</h3>
-                  <p className="text-sm text-stone-600">+61 2 1234 5678</p>
+                  <p className="text-sm text-stone-600">+61 429 940 130</p>
                   <p className="text-xs text-stone-500">Mon-Fri: 9AM-6PM</p>
                 </CardContent>
               </Card>
@@ -314,7 +314,7 @@ export default function ManageBookingPage() {
                 <CardContent className="p-6 space-y-3">
                   <Mail className="h-8 w-8 text-sage-600 mx-auto" />
                   <h3 className="font-semibold text-stone-800">Email Support</h3>
-                  <p className="text-sm text-stone-600">hello@mindandsoul.com.au</p>
+                  <p className="text-sm text-stone-600">healwithrangika@gmail.com</p>
                   <p className="text-xs text-stone-500">Response within 24 hours</p>
                 </CardContent>
               </Card>
