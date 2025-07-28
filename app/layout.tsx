@@ -5,11 +5,16 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "@/components/mobile-nav";
 import { Leaf } from "lucide-react";
+import Image from "next/image";
 
 export const metadata: Metadata = {
   title: "Heal With Rangika Hypnotherapy",
   description: "Professional hypnotherapy services in Australia",
   generator: "v0.dev",
+  icons: {
+    icon: "/logo.jpeg",
+    apple: "/logo.jpeg",
+  },
 };
 
 export default function RootLayout({
@@ -26,9 +31,10 @@ export default function RootLayout({
             <div className="flex items-center justify-between">
               {/* Logo */}
               <Link href="/" className="flex items-center gap-2">
-                <Leaf className="h-8 w-8 text-sage-600" />
+                {/* <Leaf className="h-8 w-8 text-sage-600" /> */}
+                <Image width={64} height={64} src="logo.jpeg" alt="logo" />
                 <h1 className="text-2xl font-serif text-stone-800">
-                  Mind and Soul
+                  Heal With Rangika
                 </h1>
               </Link>
 

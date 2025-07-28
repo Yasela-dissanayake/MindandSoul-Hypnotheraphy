@@ -36,7 +36,7 @@ export function MobileNav() {
             >
               <Leaf className="h-6 w-6 text-sage-600" />
               <span className="text-lg font-serif text-stone-800">
-                Mind and Soul
+                Heal With Rangika
               </span>
             </Link>
           </div>

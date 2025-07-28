@@ -1,549 +1,487 @@
-import nodemailer from "nodemailer";
-import { format } from "date-fns";
+import nodemailer from "nodemailer"
+import { format } from "date-fns"
 
-// Email configuration
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.gmail.com",
-  port: Number.parseInt(process.env.SMTP_PORT || "587"),
-  secure: false, // true for 465, false for other ports
+// Create transporter
+const transporter = nodemailer.createTransporter({
+  host: process.env.EMAIL_HOST,
+  port: Number.parseInt(process.env.EMAIL_PORT || "587"),
+  secure: process.env.EMAIL_SECURE === "true",
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
   },
-});
+})
 
-// Email templates
-export const generateConfirmationEmailHTML = (bookingData: any) => {
-  const {
-    clientName,
-    service,
-    date,
-    time,
-    sessionType,
-    amount,
-    currency,
-    paymentIntentId,
-    clientEmail,
-    clientPhone,
-    concerns,
-    previousTherapy,
-    emergencyContact,
-    medicalConditions,
-  } = bookingData;
-
-  return `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Booking Confirmation - Mind and Soul Works</title>
-      <style>
-        body {
-          font-family: Georgia, serif;
-          line-height: 1.6;
-          color: #292524;
-          max-width: 600px;
-          margin: 0 auto;
-          padding: 20px;
-          background-color: #fafaf9;
-        }
-        .header {
-          background: linear-gradient(135deg, #f5f5f4 0%, #e3e7e3 100%);
-          padding: 30px;
-          text-align: center;
-          border-radius: 12px;
-          margin-bottom: 30px;
-        }
-        .logo {
-          color: #5c735c;
-          font-size: 28px;
-          font-weight: bold;
-          margin-bottom: 10px;
-        }
-        .confirmation-badge {
-          background-color: #dcfce7;
-          color: #166534;
-          padding: 8px 16px;
-          border-radius: 20px;
-          font-size: 14px;
-          font-weight: 600;
-          display: inline-block;
-          margin-bottom: 20px;
-        }
-        .booking-details {
-          background: white;
-          padding: 30px;
-          border-radius: 12px;
-          margin-bottom: 30px;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-        .detail-row {
-          display: flex;
-          justify-content: space-between;
-          padding: 12px 0;
-          border-bottom: 1px solid #e7e5e4;
-        }
-        .detail-row:last-child {
-          border-bottom: none;
-          font-weight: bold;
-          font-size: 18px;
-          color: #5c735c;
-        }
-        .detail-label {
-          font-weight: 600;
-          color: #57534e;
-        }
-        .detail-value {
-          color: #292524;
-        }
-        .next-steps {
-          background: #f6f7f6;
-          padding: 25px;
-          border-radius: 12px;
-          margin-bottom: 30px;
-        }
-        .next-steps h3 {
-          color: #292524;
-          margin-bottom: 15px;
-          font-size: 20px;
-        }
-        .next-steps ul {
-          margin: 0;
-          padding-left: 20px;
-        }
-        .next-steps li {
-          margin-bottom: 10px;
-          color: #57534e;
-        }
-        .location-info {
-          background: #e3e7e3;
-          padding: 20px;
-          border-radius: 12px;
-          margin-bottom: 30px;
-        }
-        .contact-info {
-          background: white;
-          padding: 25px;
-          border-radius: 12px;
-          text-align: center;
-        }
-        .contact-info h3 {
-          color: #5c735c;
-          margin-bottom: 15px;
-        }
-        .contact-details {
-          color: #57534e;
-          margin-bottom: 10px;
-        }
-        .footer {
-          text-align: center;
-          margin-top: 30px;
-          padding-top: 20px;
-          border-top: 1px solid #e7e5e4;
-          color: #78716c;
-          font-size: 14px;
-        }
-        .button {
-          display: inline-block;
-          background-color: #5c735c;
-          color: white;
-          padding: 12px 24px;
-          text-decoration: none;
-          border-radius: 8px;
-          font-weight: 600;
-          margin: 10px 5px;
-        }
-        .preparation-section {
-          background: #fef3c7;
-          border: 1px solid #f59e0b;
-          padding: 20px;
-          border-radius: 12px;
-          margin-bottom: 30px;
-        }
-        @media (max-width: 600px) {
-          body {
-            padding: 10px;
-          }
-          .header, .booking-details, .next-steps, .location-info, .contact-info {
-            padding: 20px;
-          }
-          .detail-row {
-            flex-direction: column;
-            gap: 5px;
-          }
-        }
-      </style>
-    </head>
-    <body>
-      <div class="header">
-        <div class="logo">🌿 Mind and Soul Works</div>
-        <div class="confirmation-badge">✓ Booking Confirmed</div>
-        <h1 style="margin: 0; color: #292524;">Your Session is Booked!</h1>
-        <p style="margin: 10px 0 0 0; color: #57534e;">Thank you for choosing Mind and Soul Works for your healing journey.</p>
-      </div>
-
-      <div class="booking-details">
-        <h2 style="color: #5c735c; margin-bottom: 20px;">Booking Details</h2>
-        <div class="detail-row">
-          <span class="detail-label">Client Name:</span>
-          <span class="detail-value">${clientName}</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Service:</span>
-          <span class="detail-value">${service}</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Date:</span>
-          <span class="detail-value">${format(
-            new Date(date),
-            "EEEE, MMMM d, yyyy"
-          )}</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Time:</span>
-          <span class="detail-value">${time} (90 minutes)</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Session Type:</span>
-          <span class="detail-value">${
-            sessionType === "in-person" ? "In-Person" : "Online Session"
-          }</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Amount Paid:</span>
-          <span class="detail-value">$${amount} ${currency.toUpperCase()}</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Payment ID:</span>
-          <span class="detail-value">${paymentIntentId}</span>
-        </div>
-      </div>
-
-      <div class="preparation-section">
-        <h3 style="color: #92400e; margin-bottom: 15px;">🎯 Preparing for Your Session</h3>
-        <p style="color: #92400e; margin-bottom: 10px;"><strong>What to expect:</strong></p>
-        <ul style="color: #92400e; margin: 0; padding-left: 20px;">
-          <li>We'll discuss your goals and concerns</li>
-          <li>I'll explain the hypnotherapy process</li>
-          <li>You'll experience a gentle, relaxing session</li>
-          <li>You'll leave feeling calm and optimistic</li>
-        </ul>
-        <p style="color: #92400e; margin-top: 15px;"><strong>Tips:</strong> Wear comfortable clothes, avoid caffeine beforehand, and come with an open mind.</p>
-      </div>
-
-      ${
-        sessionType === "in-person"
-          ? `
-        <div class="location-info">
-          <h3 style="color: #5c735c; margin-bottom: 15px;">📍 Location Details</h3>
-          <p><strong>Address:</strong><br>
-          Suite 12, Level 3<br>
-          123 Wellness Street<br>
-          Sydney NSW 2000</p>
-          
-          <p><strong>Parking:</strong> Secure parking available in building ($5/hour)</p>
-          <p><strong>Public Transport:</strong> 2-minute walk from Town Hall Station</p>
-          <p><strong>Accessibility:</strong> Wheelchair accessible with lift access</p>
-          
-          <p style="margin-top: 15px; padding: 10px; background: rgba(92, 115, 92, 0.1); border-radius: 8px;">
-            <strong>Please arrive 10 minutes early</strong> to complete any remaining paperwork and settle in.
-          </p>
-        </div>
-      `
-          : `
-        <div class="location-info">
-          <h3 style="color: #5c735c; margin-bottom: 15px;">💻 Online Session Details</h3>
-          <p><strong>Video Call Link:</strong> Will be sent 24 hours before your session</p>
-          <p><strong>Platform:</strong> Secure, encrypted video call</p>
-          <p><strong>Technical Requirements:</strong></p>
-          <ul>
-            <li>Stable internet connection</li>
-            <li>Quiet, private space</li>
-            <li>Computer, tablet, or smartphone with camera and microphone</li>
-            <li>Comfortable seating</li>
-          </ul>
-          
-          <p style="margin-top: 15px; padding: 10px; background: rgba(92, 115, 92, 0.1); border-radius: 8px;">
-            <strong>Test your setup</strong> 30 minutes before the session. We'll send a test link with your session details.
-          </p>
-        </div>
-      `
-      }
-
-      <div class="next-steps">
-        <h3>What's Next?</h3>
-        <ul>
-          <li><strong>Confirmation received:</strong> Keep this email for your records</li>
-          <li><strong>${
-            sessionType === "online" ? "Video call link" : "Final reminders"
-          }:</strong> Will be sent 24 hours before your session</li>
-          <li><strong>Rescheduling:</strong> Contact us at least 24 hours in advance if needed</li>
-          <li><strong>Preparation:</strong> Come with an open mind and any questions you'd like to discuss</li>
-          <li><strong>Cancellation policy:</strong> 24+ hours notice for full refund, less than 24 hours incurs 50% fee</li>
-        </ul>
-      </div>
-
-      <div class="contact-info">
-        <h3>Need to Contact Us?</h3>
-        <div class="contact-details">
-          <strong>Phone:</strong> +61 2 1234 5678<br>
-          <strong>Email:</strong> hello@mindandsoul.com.au<br>
-          <strong>Hours:</strong> Mon-Fri 9AM-6PM, Sat 9AM-2PM
-        </div>
-        
-        <div style="margin-top: 20px;">
-          <a href="mailto:hello@mindandsoul.com.au" class="button">Contact Us</a>
-          <a href="${
-            process.env.NEXT_PUBLIC_SITE_URL
-          }/booking/manage" class="button">Manage Booking</a>
-        </div>
-      </div>
-
-      <div class="footer">
-        <p>This email was sent to ${clientEmail}</p>
-        <p>Mind and Soul Works Australia | Holistic Healing for Mind, Body & Soul</p>
-        <p style="margin-top: 15px;">
-          <a href="${
-            process.env.NEXT_PUBLIC_SITE_URL
-          }" style="color: #5c735c;">Visit our website</a> | 
-          <a href="${
-            process.env.NEXT_PUBLIC_SITE_URL
-          }/contact" style="color: #5c735c;">Contact us</a>
-        </p>
-      </div>
-    </body>
-    </html>
-  `;
-};
-
-// Send confirmation email to client
-export async function sendConfirmationEmail(bookingData: any) {
+// Verify transporter configuration
+export async function verifyEmailConfig() {
   try {
-    const mailOptions = {
-      from: {
-        name: "Mind and Soul Works",
-        address:
-          process.env.SMTP_FROM ||
-          process.env.SMTP_USER ||
-          "noreply@mindandsoul.com.au",
-      },
-      to: bookingData.clientEmail,
-      subject: `Booking Confirmed - ${bookingData.service} on ${format(
-        new Date(bookingData.date),
-        "MMM d, yyyy"
-      )}`,
-      html: generateConfirmationEmailHTML(bookingData),
-      text: `
-        Booking Confirmation - Mind and Soul Works
-        
-        Dear ${bookingData.clientName},
-        
-        Your hypnotherapy session has been confirmed!
-        
-        Booking Details:
-        - Service: ${bookingData.service}
-        - Date: ${format(new Date(bookingData.date), "EEEE, MMMM d, yyyy")}
-        - Time: ${bookingData.time}
-        - Type: ${
-          bookingData.sessionType === "in-person"
-            ? "In-Person"
-            : "Online Session"
-        }
-        - Amount: $${bookingData.amount} ${bookingData.currency.toUpperCase()}
-        - Payment ID: ${bookingData.paymentIntentId}
-        
-        ${
-          bookingData.sessionType === "in-person"
-            ? "Location: Suite 12, Level 3, 123 Wellness Street, Sydney NSW 2000"
-            : "Video call link will be sent 24 hours before your session"
-        }
-        
-        What's Next:
-        - Keep this email for your records
-        - You'll receive session details 24 hours before your appointment
-        - Contact us at least 24 hours in advance if you need to reschedule
-        - Prepare any questions you'd like to discuss
-        
-        Contact us: +61 2 1234 5678 | hello@mindandsoul.com.au
-        
-        Thank you for choosing Mind and Soul Works!
-        
-        Best regards,
-        Rangika Mathew
-        Mind and Soul Works Australia
-      `,
-    };
-
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Confirmation email sent:", info.messageId);
-    return { success: true, messageId: info.messageId };
-  } catch (error: any) {
-    console.error("Error sending confirmation email:", error);
-    return { success: false, error: error.message };
+    await transporter.verify()
+    return { success: true, message: "Email configuration is valid" }
+  } catch (error) {
+    console.error("Email configuration error:", error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    }
   }
 }
 
-// Send notification email to practitioner
-export async function sendPractitionerNotification(bookingData: any) {
+// Test email function
+export async function sendTestEmail(to?: string, customData?: any) {
   try {
+    const recipient = to || process.env.EMAIL_FROM || "test@example.com"
+
     const mailOptions = {
-      from: {
-        name: "Mind and Soul Works Booking System",
-        address:
-          process.env.SMTP_FROM ||
-          process.env.SMTP_USER ||
-          "bookings@mindandsoul.com.au",
-      },
-      to: process.env.PRACTITIONER_EMAIL || "rangika@mindandsoul.com.au",
-      subject: `New Booking: ${bookingData.service} - ${bookingData.clientName}`,
+      from: process.env.EMAIL_FROM,
+      to: recipient,
+      subject: "Test Email from Mind & Soul Hypnotherapy",
       html: `
-        <div style="font-family: Georgia, serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #5c735c;">🎉 New Booking Received</h2>
-          
-          <div style="background: #f6f7f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3>👤 Client Information</h3>
-            <p><strong>Name:</strong> ${bookingData.clientName}</p>
-            <p><strong>Email:</strong> ${bookingData.clientEmail}</p>
-            <p><strong>Phone:</strong> ${bookingData.clientPhone}</p>
-            ${
-              bookingData.emergencyContact
-                ? `<p><strong>Emergency Contact:</strong> ${bookingData.emergencyContact}</p>`
-                : ""
-            }
-          </div>
-          
-          <div style="background: #e3e7e3; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3>📅 Session Details</h3>
-            <p><strong>Service:</strong> ${bookingData.service}</p>
-            <p><strong>Date:</strong> ${format(
-              new Date(bookingData.date),
-              "EEEE, MMMM d, yyyy"
-            )}</p>
-            <p><strong>Time:</strong> ${bookingData.time}</p>
-            <p><strong>Type:</strong> ${
-              bookingData.sessionType === "in-person"
-                ? "In-Person"
-                : "Online Session"
-            }</p>
-            <p><strong>Amount:</strong> $${
-              bookingData.amount
-            } ${bookingData.currency.toUpperCase()}</p>
-          </div>
-
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #6B7280;">Test Email</h2>
+          <p>This is a test email from your Mind & Soul Hypnotherapy booking system.</p>
+          <p><strong>Sent at:</strong> ${new Date().toLocaleString()}</p>
           ${
-            bookingData.concerns
+            customData
               ? `
-          <div style="background: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3>🎯 Client's Goals & Concerns</h3>
-            <p>${bookingData.concerns}</p>
-          </div>
+            <div style="background-color: #F3F4F6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+              <h3>Custom Data:</h3>
+              <pre style="white-space: pre-wrap;">${JSON.stringify(customData, null, 2)}</pre>
+            </div>
           `
               : ""
           }
-
-          ${
-            bookingData.previousTherapy
-              ? `
-          <div style="background: #e0f2fe; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3>📋 Previous Therapy Experience</h3>
-            <p>${bookingData.previousTherapy}</p>
-          </div>
-          `
-              : ""
-          }
-
-          ${
-            bookingData.medicalConditions
-              ? `
-          <div style="background: #fce7f3; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3>🏥 Medical Information</h3>
-            <p>${bookingData.medicalConditions}</p>
-          </div>
-          `
-              : ""
-          }
-          
-          <div style="background: #dcfce7; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3>💳 Payment Information</h3>
-            <p><strong>Status:</strong> ✅ Paid</p>
-            <p><strong>Payment ID:</strong> ${bookingData.paymentIntentId}</p>
-            <p><strong>Processed:</strong> ${new Date().toLocaleString()}</p>
-          </div>
-          
-          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e7e5e4;">
-            <p><strong>📝 Next Steps:</strong></p>
-            <ul>
-              <li>Add to calendar</li>
-              <li>Prepare session materials</li>
-              <li>Send session reminder 24 hours before</li>
-              ${
-                bookingData.sessionType === "online"
-                  ? "<li>Send video call link</li>"
-                  : "<li>Prepare in-person session room</li>"
-              }
-              <li>Review client's goals and medical information</li>
-            </ul>
-          </div>
+          <p style="color: #6B7280; font-size: 14px;">
+            If you received this email, your email configuration is working correctly!
+          </p>
         </div>
       `,
-      text: `
-        New Booking Received - Mind and Soul Works
-        
-        Client: ${bookingData.clientName}
-        Email: ${bookingData.clientEmail}
-        Phone: ${bookingData.clientPhone}
-        ${
-          bookingData.emergencyContact
-            ? `Emergency Contact: ${bookingData.emergencyContact}`
-            : ""
-        }
-        
-        Service: ${bookingData.service}
-        Date: ${format(new Date(bookingData.date), "EEEE, MMMM d, yyyy")}
-        Time: ${bookingData.time}
-        Type: ${
-          bookingData.sessionType === "in-person"
-            ? "In-Person"
-            : "Online Session"
-        }
-        
-        ${bookingData.concerns ? `Goals/Concerns: ${bookingData.concerns}` : ""}
-        ${
-          bookingData.previousTherapy
-            ? `Previous Therapy: ${bookingData.previousTherapy}`
-            : ""
-        }
-        ${
-          bookingData.medicalConditions
-            ? `Medical Info: ${bookingData.medicalConditions}`
-            : ""
-        }
-        
-        Payment: $${
-          bookingData.amount
-        } ${bookingData.currency.toUpperCase()} (Paid)
-        Payment ID: ${bookingData.paymentIntentId}
-      `,
-    };
+    }
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Practitioner notification sent:", info.messageId);
-    return { success: true, messageId: info.messageId };
-  } catch (error: any) {
-    console.error("Error sending practitioner notification:", error);
-    return { success: false, error: error.message };
+    const result = await transporter.sendMail(mailOptions)
+    return {
+      success: true,
+      messageId: result.messageId,
+      recipient: recipient,
+    }
+  } catch (error) {
+    console.error("Error sending test email:", error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    }
   }
 }
 
-// Test email configuration
-export async function testEmailConfiguration() {
+// Client booking confirmation email
+export async function sendClientBookingConfirmation({
+  clientName,
+  clientEmail,
+  service,
+  date,
+  time,
+  sessionType,
+  amount,
+  currency,
+  paymentIntentId,
+  concerns,
+}: {
+  clientName: string
+  clientEmail: string
+  service: string
+  date: string
+  time: string
+  sessionType: string
+  amount: number
+  currency: string
+  paymentIntentId: string
+  concerns: string
+}) {
   try {
-    await transporter.verify();
-    console.log("Email configuration is valid");
-    return { success: true };
-  } catch (error: any) {
-    console.error("Email configuration error:", error);
-    return { success: false, error: error.message };
+    const formattedDate = format(new Date(date), "EEEE, MMMM d, yyyy")
+    const isInPerson = sessionType === "in-person"
+
+    const mailOptions = {
+      from: process.env.EMAIL_FROM,
+      to: clientEmail,
+      subject: `Booking Confirmed - ${service} Session`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Booking Confirmation</title>
+        </head>
+        <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f8f9fa;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: white;">
+            
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #8B9A8B 0%, #A4B4A4 100%); padding: 40px 30px; text-align: center;">
+              <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 300;">Mind & Soul Hypnotherapy</h1>
+              <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">Booking Confirmation</p>
+            </div>
+
+            <!-- Main Content -->
+            <div style="padding: 40px 30px;">
+              
+              <!-- Greeting -->
+              <div style="margin-bottom: 30px;">
+                <h2 style="color: #2d3748; margin: 0 0 15px 0; font-size: 24px;">Hello ${clientName}!</h2>
+                <p style="color: #4a5568; line-height: 1.6; margin: 0; font-size: 16px;">
+                  Thank you for booking your hypnotherapy session. Your booking has been confirmed and payment processed successfully.
+                </p>
+              </div>
+
+              <!-- Booking Details Card -->
+              <div style="background-color: #f7fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 25px; margin-bottom: 30px;">
+                <h3 style="color: #2d3748; margin: 0 0 20px 0; font-size: 18px; border-bottom: 2px solid #8B9A8B; padding-bottom: 10px;">
+                  📅 Your Session Details
+                </h3>
+                
+                <div style="display: grid; gap: 12px;">
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
+                    <span style="color: #4a5568; font-weight: 600;">Service:</span>
+                    <span style="color: #2d3748;">${service}</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
+                    <span style="color: #4a5568; font-weight: 600;">Date:</span>
+                    <span style="color: #2d3748;">${formattedDate}</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
+                    <span style="color: #4a5568; font-weight: 600;">Time:</span>
+                    <span style="color: #2d3748;">${time} (90 minutes)</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
+                    <span style="color: #4a5568; font-weight: 600;">Session Type:</span>
+                    <span style="color: #2d3748;">${isInPerson ? "In-Person" : "Online Video Call"}</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
+                    <span style="color: #4a5568; font-weight: 600;">Investment:</span>
+                    <span style="color: #2d3748; font-weight: 600;">$${amount} ${currency.toUpperCase()}</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                    <span style="color: #4a5568; font-weight: 600;">Payment ID:</span>
+                    <span style="color: #718096; font-size: 14px;">${paymentIntentId}</span>
+                  </div>
+                </div>
+              </div>
+
+              ${
+                isInPerson
+                  ? `
+                <!-- Location Details -->
+                <div style="background-color: #edf2f7; border-left: 4px solid #8B9A8B; padding: 20px; margin-bottom: 30px; border-radius: 0 8px 8px 0;">
+                  <h3 style="color: #2d3748; margin: 0 0 15px 0; font-size: 16px;">📍 Location & Directions</h3>
+                  <p style="color: #4a5568; margin: 0 0 10px 0; line-height: 1.5;">
+                    <strong>Mind & Soul Hypnotherapy</strong><br>
+                    Suite 12, Level 3<br>
+                    123 Wellness Street<br>
+                    Sydney NSW 2000
+                  </p>
+                  <p style="color: #4a5568; margin: 0; font-size: 14px; line-height: 1.5;">
+                    <strong>Parking:</strong> Street parking available or Wilson Parking (2 blocks away)<br>
+                    <strong>Public Transport:</strong> 5-minute walk from Central Station<br>
+                    <strong>Building Access:</strong> Enter through main lobby, take elevator to Level 3
+                  </p>
+                </div>
+              `
+                  : `
+                <!-- Online Session Details -->
+                <div style="background-color: #e6fffa; border-left: 4px solid #38b2ac; padding: 20px; margin-bottom: 30px; border-radius: 0 8px 8px 0;">
+                  <h3 style="color: #2d3748; margin: 0 0 15px 0; font-size: 16px;">💻 Online Session Details</h3>
+                  <p style="color: #4a5568; margin: 0; line-height: 1.5;">
+                    Your secure video call link will be sent to you <strong>24 hours before your session</strong>. 
+                    Please ensure you have a quiet, private space and a stable internet connection.
+                  </p>
+                </div>
+              `
+              }
+
+              <!-- Preparation Tips -->
+              <div style="background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 20px; margin-bottom: 30px; border-radius: 0 8px 8px 0;">
+                <h3 style="color: #2d3748; margin: 0 0 15px 0; font-size: 16px;">💡 Preparing for Your Session</h3>
+                <ul style="color: #4a5568; margin: 0; padding-left: 20px; line-height: 1.6;">
+                  <li>Arrive 5-10 minutes early ${isInPerson ? "to find parking and get settled" : "to test your video connection"}</li>
+                  <li>Wear comfortable clothing</li>
+                  <li>Avoid caffeine 2 hours before your session</li>
+                  <li>Bring any questions or concerns you'd like to discuss</li>
+                  <li>Come with an open mind and positive expectations</li>
+                </ul>
+              </div>
+
+              <!-- Important Information -->
+              <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 20px; margin-bottom: 30px; border-radius: 0 8px 8px 0;">
+                <h3 style="color: #2d3748; margin: 0 0 15px 0; font-size: 16px;">⚠️ Important Information</h3>
+                <ul style="color: #4a5568; margin: 0; padding-left: 20px; line-height: 1.6;">
+                  <li><strong>Cancellation Policy:</strong> 24-hour notice required for cancellations or rescheduling</li>
+                  <li><strong>Late Arrivals:</strong> Sessions may be shortened if you arrive late</li>
+                  <li><strong>Health:</strong> Please inform us of any changes to your health status before the session</li>
+                </ul>
+              </div>
+
+              <!-- Contact Information -->
+              <div style="text-align: center; padding: 20px; background-color: #f7fafc; border-radius: 8px; margin-bottom: 30px;">
+                <h3 style="color: #2d3748; margin: 0 0 15px 0; font-size: 16px;">Need to Contact Us?</h3>
+                <p style="color: #4a5568; margin: 0 0 10px 0;">
+                  📞 <strong>Phone:</strong> +61 2 1234 5678<br>
+                  📧 <strong>Email:</strong> hello@mindandsoul.com.au
+                </p>
+                <p style="color: #718096; margin: 0; font-size: 14px;">
+                  Office Hours: Monday-Friday 9:00 AM - 6:00 PM
+                </p>
+              </div>
+
+              <!-- Closing -->
+              <div style="text-align: center; margin-top: 30px;">
+                <p style="color: #4a5568; line-height: 1.6; margin: 0 0 20px 0;">
+                  We're looking forward to supporting you on your journey to positive change. 
+                  If you have any questions before your session, please don't hesitate to reach out.
+                </p>
+                <p style="color: #2d3748; font-weight: 600; margin: 0;">
+                  Warm regards,<br>
+                  The Mind & Soul Hypnotherapy Team
+                </p>
+              </div>
+
+            </div>
+
+            <!-- Footer -->
+            <div style="background-color: #2d3748; padding: 20px 30px; text-align: center;">
+              <p style="color: #a0aec0; margin: 0; font-size: 14px;">
+                Mind & Soul Hypnotherapy | Suite 12, Level 3, 123 Wellness Street, Sydney NSW 2000
+              </p>
+              <p style="color: #718096; margin: 10px 0 0 0; font-size: 12px;">
+                This email was sent regarding your booking confirmation. Please keep this email for your records.
+              </p>
+            </div>
+
+          </div>
+        </body>
+        </html>
+      `,
+    }
+
+    const result = await transporter.sendMail(mailOptions)
+    console.log("✅ Client confirmation email sent:", result.messageId)
+
+    return {
+      success: true,
+      messageId: result.messageId,
+      recipient: clientEmail,
+    }
+  } catch (error) {
+    console.error("❌ Error sending client confirmation email:", error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    }
+  }
+}
+
+// Practitioner booking notification email
+export async function sendPractitionerBookingNotification({
+  clientName,
+  clientEmail,
+  clientPhone,
+  service,
+  date,
+  time,
+  sessionType,
+  amount,
+  currency,
+  paymentIntentId,
+  concerns,
+  previousTherapy,
+  emergencyContact,
+  medicalConditions,
+}: {
+  clientName: string
+  clientEmail: string
+  clientPhone: string
+  service: string
+  date: string
+  time: string
+  sessionType: string
+  amount: number
+  currency: string
+  paymentIntentId: string
+  concerns: string
+  previousTherapy?: string
+  emergencyContact?: string
+  medicalConditions?: string
+}) {
+  try {
+    const formattedDate = format(new Date(date), "EEEE, MMMM d, yyyy")
+    const practitionerEmail = process.env.PRACTITIONER_EMAIL || process.env.EMAIL_FROM
+
+    const mailOptions = {
+      from: process.env.EMAIL_FROM,
+      to: practitionerEmail,
+      subject: `New Booking: ${clientName} - ${service}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>New Booking Notification</title>
+        </head>
+        <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f8f9fa;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: white;">
+            
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%); padding: 30px; text-align: center;">
+              <h1 style="color: white; margin: 0; font-size: 24px;">New Booking Notification</h1>
+              <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0;">Mind & Soul Hypnotherapy</p>
+            </div>
+
+            <!-- Main Content -->
+            <div style="padding: 30px;">
+              
+              <!-- Alert -->
+              <div style="background-color: #dbeafe; border-left: 4px solid #3b82f6; padding: 15px; margin-bottom: 25px; border-radius: 0 8px 8px 0;">
+                <p style="color: #1e40af; margin: 0; font-weight: 600;">
+                  🎉 New booking received and payment confirmed!
+                </p>
+              </div>
+
+              <!-- Client Information -->
+              <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 25px;">
+                <h3 style="color: #2d3748; margin: 0 0 15px 0; font-size: 18px; border-bottom: 2px solid #4a5568; padding-bottom: 8px;">
+                  👤 Client Information
+                </h3>
+                <div style="display: grid; gap: 8px;">
+                  <p style="margin: 0; color: #4a5568;"><strong>Name:</strong> ${clientName}</p>
+                  <p style="margin: 0; color: #4a5568;"><strong>Email:</strong> <a href="mailto:${clientEmail}" style="color: #3b82f6;">${clientEmail}</a></p>
+                  <p style="margin: 0; color: #4a5568;"><strong>Phone:</strong> <a href="tel:${clientPhone}" style="color: #3b82f6;">${clientPhone}</a></p>
+                  ${emergencyContact ? `<p style="margin: 0; color: #4a5568;"><strong>Emergency Contact:</strong> ${emergencyContact}</p>` : ""}
+                </div>
+              </div>
+
+              <!-- Session Details -->
+              <div style="background-color: #f0fff4; border: 1px solid #d1fae5; border-radius: 8px; padding: 20px; margin-bottom: 25px;">
+                <h3 style="color: #2d3748; margin: 0 0 15px 0; font-size: 18px; border-bottom: 2px solid #10b981; padding-bottom: 8px;">
+                  📅 Session Details
+                </h3>
+                <div style="display: grid; gap: 8px;">
+                  <p style="margin: 0; color: #4a5568;"><strong>Service:</strong> ${service}</p>
+                  <p style="margin: 0; color: #4a5568;"><strong>Date:</strong> ${formattedDate}</p>
+                  <p style="margin: 0; color: #4a5568;"><strong>Time:</strong> ${time} (90 minutes)</p>
+                  <p style="margin: 0; color: #4a5568;"><strong>Type:</strong> ${sessionType === "in-person" ? "In-Person" : "Online Video Call"}</p>
+                  <p style="margin: 0; color: #4a5568;"><strong>Amount:</strong> $${amount} ${currency.toUpperCase()}</p>
+                  <p style="margin: 0; color: #718096; font-size: 14px;"><strong>Payment ID:</strong> ${paymentIntentId}</p>
+                </div>
+              </div>
+
+              <!-- Client Goals & Concerns -->
+              <div style="background-color: #fffbeb; border: 1px solid #fed7aa; border-radius: 8px; padding: 20px; margin-bottom: 25px;">
+                <h3 style="color: #2d3748; margin: 0 0 15px 0; font-size: 18px; border-bottom: 2px solid #f59e0b; padding-bottom: 8px;">
+                  🎯 Client Goals & Concerns
+                </h3>
+                <div style="background-color: white; padding: 15px; border-radius: 6px; border-left: 3px solid #f59e0b;">
+                  <p style="margin: 0; color: #4a5568; line-height: 1.6; white-space: pre-wrap;">${concerns}</p>
+                </div>
+              </div>
+
+              <!-- Health & Background Information -->
+              ${
+                previousTherapy || medicalConditions
+                  ? `
+                <div style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 20px; margin-bottom: 25px;">
+                  <h3 style="color: #2d3748; margin: 0 0 15px 0; font-size: 18px; border-bottom: 2px solid #ef4444; padding-bottom: 8px;">
+                    🏥 Health & Background Information
+                  </h3>
+                  
+                  ${
+                    previousTherapy
+                      ? `
+                    <div style="margin-bottom: 15px;">
+                      <h4 style="color: #4a5568; margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">Previous Therapy Experience:</h4>
+                      <div style="background-color: white; padding: 12px; border-radius: 6px; border-left: 3px solid #ef4444;">
+                        <p style="margin: 0; color: #4a5568; line-height: 1.5; white-space: pre-wrap;">${previousTherapy}</p>
+                      </div>
+                    </div>
+                  `
+                      : ""
+                  }
+                  
+                  ${
+                    medicalConditions
+                      ? `
+                    <div>
+                      <h4 style="color: #4a5568; margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">Medical Conditions & Medications:</h4>
+                      <div style="background-color: white; padding: 12px; border-radius: 6px; border-left: 3px solid #ef4444;">
+                        <p style="margin: 0; color: #4a5568; line-height: 1.5; white-space: pre-wrap;">${medicalConditions}</p>
+                      </div>
+                    </div>
+                  `
+                      : ""
+                  }
+                </div>
+              `
+                  : ""
+              }
+
+              <!-- Action Items -->
+              <div style="background-color: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 20px; margin-bottom: 25px;">
+                <h3 style="color: #2d3748; margin: 0 0 15px 0; font-size: 18px; border-bottom: 2px solid #0ea5e9; padding-bottom: 8px;">
+                  ✅ Next Steps
+                </h3>
+                <ul style="color: #4a5568; margin: 0; padding-left: 20px; line-height: 1.6;">
+                  <li>Add appointment to your calendar</li>
+                  <li>Review client information and prepare session plan</li>
+                  <li>Send reminder email 24 hours before session</li>
+                  ${sessionType === "online" ? "<li>Send video call link 24 hours before session</li>" : "<li>Prepare in-person session room</li>"}
+                  <li>Follow up after session for feedback</li>
+                </ul>
+              </div>
+
+              <!-- Quick Actions -->
+              <div style="text-align: center; margin-top: 30px;">
+                <p style="color: #4a5568; margin: 0 0 15px 0;">Quick Actions:</p>
+                <div style="display: inline-block; margin: 0 10px;">
+                  <a href="mailto:${clientEmail}" style="background-color: #3b82f6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: 600;">
+                    Email Client
+                  </a>
+                </div>
+                <div style="display: inline-block; margin: 0 10px;">
+                  <a href="tel:${clientPhone}" style="background-color: #10b981; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: 600;">
+                    Call Client
+                  </a>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Footer -->
+            <div style="background-color: #2d3748; padding: 20px; text-align: center;">
+              <p style="color: #a0aec0; margin: 0; font-size: 14px;">
+                Mind & Soul Hypnotherapy Booking System
+              </p>
+              <p style="color: #718096; margin: 5px 0 0 0; font-size: 12px;">
+                Booking received at ${new Date().toLocaleString()}
+              </p>
+            </div>
+
+          </div>
+        </body>
+        </html>
+      `,
+    }
+
+    const result = await transporter.sendMail(mailOptions)
+    console.log("✅ Practitioner notification email sent:", result.messageId)
+
+    return {
+      success: true,
+      messageId: result.messageId,
+      recipient: practitionerEmail,
+    }
+  } catch (error) {
+    console.error("❌ Error sending practitioner notification email:", error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    }
   }
 }
