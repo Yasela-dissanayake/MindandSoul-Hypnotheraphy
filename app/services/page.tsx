@@ -273,7 +273,7 @@ export default function ServicesPage() {
       <section className="py-20 lg:py-32 bg-gradient-to-br from-stone-100 to-sage-50">
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-4xl mx-auto space-y-8">
-            <Badge className="bg-sage-100 text-sage-700">Mind & Soul Works</Badge>
+            <Badge className="bg-sage-100 text-sage-700">Heal With Rangika</Badge>
             <h1 className="text-4xl lg:text-6xl font-serif text-stone-800 leading-tight">
               Holistic Healing
               <span className="text-sage-600"> for Mind, Body & Soul</span>

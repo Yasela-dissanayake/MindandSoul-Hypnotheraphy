@@ -73,14 +73,14 @@ export default function HomePage() {
             <div className="space-y-8">
               <div className="space-y-4">
                 <Badge className="bg-sage-100 text-sage-700 hover:bg-sage-100">
-                  🌿 Welcome to Mind & Soul Works Australia
+                  🌿 Welcome to Heal With Rangika Australia
                 </Badge>
                 <h1 className="text-4xl lg:text-6xl font-serif text-stone-800 leading-tight">
                   Where Healing
                   <span className="text-sage-600"> Meets Wholeness</span>
                 </h1>
                 <p className="text-lg text-stone-600 leading-relaxed">
-                  At Mind and Soul Works, we believe true wellness is more than
+                  At Heal With Rangika, we believe true wellness is more than
                   the absence of illness—it's a deep alignment of mind, body,
                   and soul. Our holistic healing platform brings together
                   compassionate therapeutic techniques and ancient healing
@@ -1135,7 +1135,7 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="text-center space-y-4 mb-16">
             <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">
-              Why Choose Mind & Soul Works?
+              Why Choose Heal With Rangika?
             </h2>
           </div>
 
@@ -1328,7 +1328,7 @@ export default function HomePage() {
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <Leaf className="h-6 w-6 text-sage-400" />
-                <h3 className="text-xl font-serif">Mind and Soul Works</h3>
+                <h3 className="text-xl font-serif">Heal With Rangika</h3>
               </div>
               <p className="text-stone-300 text-sm leading-relaxed">
                 Your partner in healing, growth, and inner transformation.
@@ -1380,9 +1380,7 @@ export default function HomePage() {
           <Separator className="my-8 bg-stone-700" />
 
           <div className="flex flex-col md:flex-row justify-between items-center text-sm text-stone-400">
-            <div>
-              © 2024 Mind and Soul Works Australia. All rights reserved.
-            </div>
+            <div>© 2025 Heal With Rangika. All rights reserved.</div>
             <div className="flex gap-6 mt-4 md:mt-0">
               <Link
                 href="/privacy"

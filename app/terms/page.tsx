@@ -22,8 +22,8 @@ export default function TermsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-700">
-                By accessing and using the Mind and Soul Hypnotherapy website
-                and services, you accept and agree to be bound by the terms and
+                By accessing and using the Heal With Rangika website and
+                services, you accept and agree to be bound by the terms and
                 provision of this agreement. If you do not agree to abide by the
                 above, please do not use this service.
               </p>

@@ -22,7 +22,7 @@ export default function PrivacyPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-700">
-                Mind and Soul Hypnotherapy ("we," "our," or "us") is committed
+                Heal With Rangika ("we," "our," or "us") is committed
                 to protecting your privacy. This Privacy Policy explains how we
                 collect, use, disclose, and safeguard your information when you
                 visit our website and use our services.
