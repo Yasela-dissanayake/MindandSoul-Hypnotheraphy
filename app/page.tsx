@@ -126,7 +126,7 @@ export default function HomePage() {
             <div className="relative">
               <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                 <Image
-                  src="https://images.pexels.com/photos/6932123/pexels-photo-6932123.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+                  src="rangika1.jpeg"
                   alt="Peaceful meditation and hypnotherapy session"
                   width={500}
                   height={600}
@@ -210,7 +210,7 @@ export default function HomePage() {
             </div>
             <div className="relative">
               <Image
-                src="https://mindandsoulworks.ae/wp-content/uploads/2024/06/meditation-2-new.jpg"
+                src="meditation group.jpeg"
                 alt="Rangika Mathew - Professional hypnotherapist and energy healer"
                 width={500}
                 height={500}
