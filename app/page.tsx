@@ -1207,7 +1207,7 @@ export default function HomePage() {
                   </div>
                   <div>
                     <div className="font-semibold text-stone-800">Phone</div>
-                    <div className="text-stone-600">+61 2 1234 5678</div>
+                    <div className="text-stone-600">+61 429 940 130</div>
                   </div>
                 </div>
 
@@ -1218,7 +1218,7 @@ export default function HomePage() {
                   <div>
                     <div className="font-semibold text-stone-800">Email</div>
                     <div className="text-stone-600">
-                      hello@mindandsoul.com.au
+                      healwithrangika@gmail.com
                     </div>
                   </div>
                 </div>
@@ -1370,8 +1370,8 @@ export default function HomePage() {
             <div className="space-y-4">
               <h4 className="font-semibold">Contact Info</h4>
               <div className="space-y-2 text-sm text-stone-300">
-                <div>+61 2 1234 5678</div>
-                <div>hello@mindandsoul.com.au</div>
+                <div>+61 429 940 130</div>
+                <div>healwithrangika@gmail.com</div>
                 <div>Australia & Online Worldwide</div>
               </div>
             </div>

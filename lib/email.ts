@@ -1,35 +1,35 @@
-import nodemailer from "nodemailer"
-import { format } from "date-fns"
+import nodemailer from "nodemailer";
+import { format } from "date-fns";
 
 // Create transporter
-const transporter = nodemailer.createTransporter({
-  host: process.env.EMAIL_HOST,
-  port: Number.parseInt(process.env.EMAIL_PORT || "587"),
-  secure: process.env.EMAIL_SECURE === "true",
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: Number.parseInt(process.env.SMTP_PORT || "587"),
+  secure: false,
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
   },
-})
+});
 
 // Verify transporter configuration
 export async function verifyEmailConfig() {
   try {
-    await transporter.verify()
-    return { success: true, message: "Email configuration is valid" }
+    await transporter.verify();
+    return { success: true, message: "Email configuration is valid" };
   } catch (error) {
-    console.error("Email configuration error:", error)
+    console.error("Email configuration error:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
-    }
+    };
   }
 }
 
 // Test email function
 export async function sendTestEmail(to?: string, customData?: any) {
   try {
-    const recipient = to || process.env.EMAIL_FROM || "test@example.com"
+    const recipient = to || process.env.EMAIL_FROM || "test@example.com";
 
     const mailOptions = {
       from: process.env.EMAIL_FROM,
@@ -45,7 +45,11 @@ export async function sendTestEmail(to?: string, customData?: any) {
               ? `
             <div style="background-color: #F3F4F6; padding: 15px; border-radius: 8px; margin: 20px 0;">
               <h3>Custom Data:</h3>
-              <pre style="white-space: pre-wrap;">${JSON.stringify(customData, null, 2)}</pre>
+              <pre style="white-space: pre-wrap;">${JSON.stringify(
+                customData,
+                null,
+                2
+              )}</pre>
             </div>
           `
               : ""
@@ -55,20 +59,20 @@ export async function sendTestEmail(to?: string, customData?: any) {
           </p>
         </div>
       `,
-    }
+    };
 
-    const result = await transporter.sendMail(mailOptions)
+    const result = await transporter.sendMail(mailOptions);
     return {
       success: true,
       messageId: result.messageId,
       recipient: recipient,
-    }
+    };
   } catch (error) {
-    console.error("Error sending test email:", error)
+    console.error("Error sending test email:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
-    }
+    };
   }
 }
 
@@ -85,20 +89,20 @@ export async function sendClientBookingConfirmation({
   paymentIntentId,
   concerns,
 }: {
-  clientName: string
-  clientEmail: string
-  service: string
-  date: string
-  time: string
-  sessionType: string
-  amount: number
-  currency: string
-  paymentIntentId: string
-  concerns: string
+  clientName: string;
+  clientEmail: string;
+  service: string;
+  date: string;
+  time: string;
+  sessionType: string;
+  amount: number;
+  currency: string;
+  paymentIntentId: string;
+  concerns: string;
 }) {
   try {
-    const formattedDate = format(new Date(date), "EEEE, MMMM d, yyyy")
-    const isInPerson = sessionType === "in-person"
+    const formattedDate = format(new Date(date), "EEEE, MMMM d, yyyy");
+    const isInPerson = sessionType === "in-person";
 
     const mailOptions = {
       from: process.env.EMAIL_FROM,
@@ -153,7 +157,9 @@ export async function sendClientBookingConfirmation({
                   </div>
                   <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
                     <span style="color: #4a5568; font-weight: 600;">Session Type:</span>
-                    <span style="color: #2d3748;">${isInPerson ? "In-Person" : "Online Video Call"}</span>
+                    <span style="color: #2d3748;">${
+                      isInPerson ? "In-Person" : "Online Video Call"
+                    }</span>
                   </div>
                   <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
                     <span style="color: #4a5568; font-weight: 600;">Investment:</span>
@@ -201,7 +207,11 @@ export async function sendClientBookingConfirmation({
               <div style="background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 20px; margin-bottom: 30px; border-radius: 0 8px 8px 0;">
                 <h3 style="color: #2d3748; margin: 0 0 15px 0; font-size: 16px;">💡 Preparing for Your Session</h3>
                 <ul style="color: #4a5568; margin: 0; padding-left: 20px; line-height: 1.6;">
-                  <li>Arrive 5-10 minutes early ${isInPerson ? "to find parking and get settled" : "to test your video connection"}</li>
+                  <li>Arrive 5-10 minutes early ${
+                    isInPerson
+                      ? "to find parking and get settled"
+                      : "to test your video connection"
+                  }</li>
                   <li>Wear comfortable clothing</li>
                   <li>Avoid caffeine 2 hours before your session</li>
                   <li>Bring any questions or concerns you'd like to discuss</li>
@@ -223,8 +233,8 @@ export async function sendClientBookingConfirmation({
               <div style="text-align: center; padding: 20px; background-color: #f7fafc; border-radius: 8px; margin-bottom: 30px;">
                 <h3 style="color: #2d3748; margin: 0 0 15px 0; font-size: 16px;">Need to Contact Us?</h3>
                 <p style="color: #4a5568; margin: 0 0 10px 0;">
-                  📞 <strong>Phone:</strong> +61 2 1234 5678<br>
-                  📧 <strong>Email:</strong> hello@mindandsoul.com.au
+                  📞 <strong>Phone:</strong> +61 429 940 130<br>
+                  📧 <strong>Email:</strong> healwithrangika@gmail.com
                 </p>
                 <p style="color: #718096; margin: 0; font-size: 14px;">
                   Office Hours: Monday-Friday 9:00 AM - 6:00 PM
@@ -259,22 +269,22 @@ export async function sendClientBookingConfirmation({
         </body>
         </html>
       `,
-    }
+    };
 
-    const result = await transporter.sendMail(mailOptions)
-    console.log("✅ Client confirmation email sent:", result.messageId)
+    const result = await transporter.sendMail(mailOptions);
+    console.log("✅ Client confirmation email sent:", result.messageId);
 
     return {
       success: true,
       messageId: result.messageId,
       recipient: clientEmail,
-    }
+    };
   } catch (error) {
-    console.error("❌ Error sending client confirmation email:", error)
+    console.error("❌ Error sending client confirmation email:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
-    }
+    };
   }
 }
 
@@ -295,24 +305,25 @@ export async function sendPractitionerBookingNotification({
   emergencyContact,
   medicalConditions,
 }: {
-  clientName: string
-  clientEmail: string
-  clientPhone: string
-  service: string
-  date: string
-  time: string
-  sessionType: string
-  amount: number
-  currency: string
-  paymentIntentId: string
-  concerns: string
-  previousTherapy?: string
-  emergencyContact?: string
-  medicalConditions?: string
+  clientName: string;
+  clientEmail: string;
+  clientPhone: string;
+  service: string;
+  date: string;
+  time: string;
+  sessionType: string;
+  amount: number;
+  currency: string;
+  paymentIntentId: string;
+  concerns: string;
+  previousTherapy?: string;
+  emergencyContact?: string;
+  medicalConditions?: string;
 }) {
   try {
-    const formattedDate = format(new Date(date), "EEEE, MMMM d, yyyy")
-    const practitionerEmail = process.env.PRACTITIONER_EMAIL || process.env.EMAIL_FROM
+    const formattedDate = format(new Date(date), "EEEE, MMMM d, yyyy");
+    const practitionerEmail =
+      process.env.PRACTITIONER_EMAIL || process.env.EMAIL_FROM;
 
     const mailOptions = {
       from: process.env.EMAIL_FROM,
@@ -354,7 +365,11 @@ export async function sendPractitionerBookingNotification({
                   <p style="margin: 0; color: #4a5568;"><strong>Name:</strong> ${clientName}</p>
                   <p style="margin: 0; color: #4a5568;"><strong>Email:</strong> <a href="mailto:${clientEmail}" style="color: #3b82f6;">${clientEmail}</a></p>
                   <p style="margin: 0; color: #4a5568;"><strong>Phone:</strong> <a href="tel:${clientPhone}" style="color: #3b82f6;">${clientPhone}</a></p>
-                  ${emergencyContact ? `<p style="margin: 0; color: #4a5568;"><strong>Emergency Contact:</strong> ${emergencyContact}</p>` : ""}
+                  ${
+                    emergencyContact
+                      ? `<p style="margin: 0; color: #4a5568;"><strong>Emergency Contact:</strong> ${emergencyContact}</p>`
+                      : ""
+                  }
                 </div>
               </div>
 
@@ -367,7 +382,11 @@ export async function sendPractitionerBookingNotification({
                   <p style="margin: 0; color: #4a5568;"><strong>Service:</strong> ${service}</p>
                   <p style="margin: 0; color: #4a5568;"><strong>Date:</strong> ${formattedDate}</p>
                   <p style="margin: 0; color: #4a5568;"><strong>Time:</strong> ${time} (90 minutes)</p>
-                  <p style="margin: 0; color: #4a5568;"><strong>Type:</strong> ${sessionType === "in-person" ? "In-Person" : "Online Video Call"}</p>
+                  <p style="margin: 0; color: #4a5568;"><strong>Type:</strong> ${
+                    sessionType === "in-person"
+                      ? "In-Person"
+                      : "Online Video Call"
+                  }</p>
                   <p style="margin: 0; color: #4a5568;"><strong>Amount:</strong> $${amount} ${currency.toUpperCase()}</p>
                   <p style="margin: 0; color: #718096; font-size: 14px;"><strong>Payment ID:</strong> ${paymentIntentId}</p>
                 </div>
@@ -431,7 +450,11 @@ export async function sendPractitionerBookingNotification({
                   <li>Add appointment to your calendar</li>
                   <li>Review client information and prepare session plan</li>
                   <li>Send reminder email 24 hours before session</li>
-                  ${sessionType === "online" ? "<li>Send video call link 24 hours before session</li>" : "<li>Prepare in-person session room</li>"}
+                  ${
+                    sessionType === "online"
+                      ? "<li>Send video call link 24 hours before session</li>"
+                      : "<li>Prepare in-person session room</li>"
+                  }
                   <li>Follow up after session for feedback</li>
                 </ul>
               </div>
@@ -467,21 +490,21 @@ export async function sendPractitionerBookingNotification({
         </body>
         </html>
       `,
-    }
+    };
 
-    const result = await transporter.sendMail(mailOptions)
-    console.log("✅ Practitioner notification email sent:", result.messageId)
+    const result = await transporter.sendMail(mailOptions);
+    console.log("✅ Practitioner notification email sent:", result.messageId);
 
     return {
       success: true,
       messageId: result.messageId,
       recipient: practitionerEmail,
-    }
+    };
   } catch (error) {
-    console.error("❌ Error sending practitioner notification email:", error)
+    console.error("❌ Error sending practitioner notification email:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
-    }
+    };
   }
 }

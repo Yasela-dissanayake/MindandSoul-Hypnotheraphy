@@ -68,8 +68,8 @@ export function MobileNav() {
           <div className="mt-auto pt-8 space-y-3 text-sm text-stone-600">
             <div>
               <p className="font-medium text-stone-800">Contact</p>
-              <p>+61 2 1234 5678</p>
-              <p>hello@mindandsoul.com.au</p>
+              <p>+61 429 940 130</p>
+              <p>healwithrangika@gmail.com</p>
             </div>
             <div>
               <p className="font-medium text-stone-800">Hours</p>
