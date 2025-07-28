@@ -42,7 +42,7 @@ export default function TermsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-700">
-                Mind and Soul Hypnotherapy provides professional hypnotherapy
+                Heal With Rangika provides professional hypnotherapy
                 services including but not limited to:
               </p>
               <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
@@ -214,7 +214,7 @@ export default function TermsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-700">
-                Mind and Soul Hypnotherapy shall not be liable for any indirect,
+                Heal With Rangika shall not be liable for any indirect,
                 incidental, special, consequential, or punitive damages,
                 including without limitation, loss of profits, data, use,
                 goodwill, or other intangible losses, resulting from your use of

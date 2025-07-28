@@ -246,7 +246,7 @@ export default function HomePage() {
                   Holistic & Empowering
                 </h3>
                 <p className="text-stone-600">
-                  Mind and Soul Work's mission is to guide individuals on a
+                  Heal With Rangika's mission is to guide individuals on a
                   journey of self-discovery and healing by integrating therapy,
                   mindfulness and energy healing—empowering mind, body, and soul
                   to restore balance and live with greater clarity, peace, and
