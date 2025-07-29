@@ -566,22 +566,23 @@ export default function BookingPage() {
   const generateTimeSlots = (date: Date) => {
     const slots = [];
     const isWeekend = date.getDay() === 6; // Only Saturday (Sunday disabled)
-    const startHour = 9;
-    const endHour = isWeekend ? 14 : 18; // Weekend ends at 2 PM, weekdays at 6 PM
+    const startHour = 8;
+    // const endHour = isWeekend ? 14 : 18; // Weekend ends at 2 PM, weekdays at 6 PM
+    const endHour = 19;
 
-    for (let hour = startHour; hour < endHour; hour++) {
-      // Create 90-minute slots starting every hour
-      if (hour + 1.5 <= endHour) {
-        // Ensure 90-minute slot fits
-        const time = `${hour.toString().padStart(2, "0")}:00`;
-        slots.push(time);
-      }
+    let hour = startHour;
+    while (hour + 1.5 <= endHour) {
+      // Create slot
+      const time = `${hour.toString().padStart(2, "0")}:00`;
+      slots.push(time);
+      // Move to next slot after 90min slot + 90min break = 3 hours
+      hour += 3;
     }
     return slots;
   };
-
   // Mock unavailable slots (would come from backend)
-  const unavailableSlots = ["10:00", "14:00", "15:00"];
+  // const unavailableSlots = ["10:00", "14:00", "15:00"];
+  const unavailableSlots = [""];
 
   const timeSlots = selectedDate ? generateTimeSlots(selectedDate) : [];
   const availableSlots = timeSlots.filter(
@@ -1389,10 +1390,11 @@ export default function BookingPage() {
                                 )}
                               </div>
                               {selectedDate.getDay() === 6 && (
-                                <p className="text-xs text-stone-500 bg-blue-50 p-2 rounded">
-                                  <strong>Saturday hours:</strong> 9:00 AM -
-                                  2:00 PM
-                                </p>
+                                // <p className="text-xs text-stone-500 bg-blue-50 p-2 rounded">
+                                //   <strong>Saturday hours:</strong> 9:00 AM -
+                                //   2:00 PM
+                                // </p>
+                                <></>
                               )}
                             </div>
                           ) : (
@@ -1802,7 +1804,7 @@ export default function BookingPage() {
               <div className="space-y-2">
                 <Clock className="h-8 w-8 text-sage-600 mx-auto" />
                 <h3 className="font-semibold text-stone-800">Booking Hours</h3>
-                <p className="text-sm text-stone-600">Mon-Fri: 9AM-6PM</p>
+                <p className="text-sm text-stone-600">Mon-Fri: 8AM-6PM</p>
               </div>
             </div>
           </div>

@@ -471,7 +471,7 @@ export default function TestimonialsPage() {
             transformation starts with a single step.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/booking">
+            <Link href="/contact">
               <Button
                 size="lg"
                 className="bg-white text-sage-600 hover:bg-stone-50"
@@ -483,7 +483,7 @@ export default function TestimonialsPage() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-white text-white hover:bg-white/10"
+                className="border-white text-black hover:bg-white/10"
               >
                 Ask Questions
               </Button>

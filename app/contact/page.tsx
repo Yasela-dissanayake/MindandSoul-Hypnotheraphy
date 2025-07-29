@@ -54,9 +54,9 @@ export default function ContactPage() {
               <Image
                 src="contact.jpeg"
                 alt="Peaceful consultation room"
-                width={400}
+                width={500}
                 height={500}
-                className="rounded-2xl object-cover w-full shadow-2xl"
+                className="rounded-2xl shadow-2xl"
               />
               <div className="absolute -bottom-6 -left-6 bg-white rounded-xl p-4 shadow-lg border border-stone-200">
                 <div className="flex items-center gap-3">

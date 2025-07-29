@@ -3,12 +3,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   CheckCircle,
-  Award,
   Users,
   Heart,
   Brain,
   Leaf,
   Star,
+  Sparkles,
+  Zap,
+  Clock,
+  Cake,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -83,17 +86,20 @@ export default function AboutPage() {
                   From Struggle to Strength
                 </h3>
                 <p className="text-stone-600 leading-relaxed">
-                  Like many of my clients, I once struggled with anxiety and
-                  self-doubt. Traditional approaches helped to some extent, but
-                  it wasn't until I discovered hypnotherapy that I experienced
-                  the profound transformation I had been seeking.
+                  My path into healing work was born not only through study but
+                  through lived experience. Like many, I’ve navigated dark and
+                  difficult chapters. Those personal struggles awakened me to
+                  the profound power of self-awareness, inner healing, and the
+                  deep connection between the mind, body, and spirit. They’ve
+                  shaped my mission: to support others through their own moments
+                  of pain, transformation, and awakening.
                 </p>
                 <p className="text-stone-600 leading-relaxed">
-                  The power of the subconscious mind fascinated me so much that
-                  I decided to dedicate my life to helping others experience the
-                  same breakthrough. I completed my certification through the
-                  Australian Hypnotherapists Association and have been
-                  practicing for over 5 years.
+                  I’m here to hold sacred space for your healing—a space where
+                  science meets spirit, and where transformation is possible on
+                  every level. My goal is to help you reconnect with your inner
+                  wisdom, release what no longer serves you, and step forward
+                  with clarity, intention,
                 </p>
               </div>
               <div className="relative">
@@ -121,50 +127,122 @@ export default function AboutPage() {
               Professional Excellence
             </h2>
           </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               {
-                icon: Award,
-                title: "Certified Clinical Hypnotherapist",
-                description: "Australian Hypnotherapists Association",
-                year: "2019",
+                icon: Brain,
+                title: "Clinical Hypnotherapy & Applied Psychotherapy",
+                description:
+                  "Diploma holder from Hypnotherapy Training College - Australia",
+                category: "Clinical Training",
               },
               {
-                icon: Brain,
-                title: "Advanced NLP Practitioner",
-                description: "Neuro-Linguistic Programming Certification",
-                year: "2020",
+                icon: Sparkles,
+                title:
+                  "Advanced Clinical Hypnotherapy & Integrative Psychotherapy",
+                description:
+                  "Masters Study from Hypnotherapy Training College Australia",
+                category: "Advanced Studies",
               },
               {
                 icon: Heart,
-                title: "Trauma-Informed Care",
-                description: "Specialized training in trauma recovery",
-                year: "2021",
+                title: "Kundalini Reiki Master/Teacher",
+                description:
+                  "Certified practitioner and teacher of Kundalini Reiki healing",
+                category: "Energy Healing",
+              },
+              {
+                icon: Leaf,
+                title: "Usui Reiki Master",
+                description:
+                  "Level I, II & Master Level certification in traditional Usui Reiki",
+                category: "Energy Healing",
               },
               {
                 icon: Users,
-                title: "Ongoing Education",
-                description: "Regular workshops and continued learning",
-                year: "Ongoing",
+                title: "Animal Reiki Healing & Communication",
+                description:
+                  "Diploma in healing and communicating with animals",
+                category: "Animal Healing",
+              },
+              {
+                icon: Star,
+                title: "Therapeutic Arts Practitioner",
+                description:
+                  "Certified in using creative arts for healing and therapy",
+                category: "Creative Therapy",
+              },
+              {
+                icon: Clock,
+                title: "Meditation Teaching",
+                description:
+                  "Diploma in guiding others through meditation practices",
+                category: "Mindfulness",
+              },
+              {
+                icon: Zap,
+                title: "Life Coach",
+                description:
+                  "Certified to support personal development and goal achievement",
+                category: "Life Coaching",
+              },
+              {
+                icon: Brain,
+                title: "Past Life Regression Therapist",
+                description:
+                  "Certified in accessing and healing past life experiences",
+                category: "Regression Therapy",
+              },
+              {
+                icon: CheckCircle,
+                title: "Professional Memberships",
+                description:
+                  "Member of International Institute of Complimentary Therapists & Reiki Professionals",
+                category: "Professional Bodies",
+              },
+              {
+                icon: Heart,
+                title: "First Aid Provider",
+                description:
+                  "Certified to provide emergency first aid assistance",
+                category: "Safety & Care",
               },
             ].map((qual, index) => (
-              <Card key={index} className="border-stone-200 text-center">
+              <Card
+                key={index}
+                className="border-stone-200 text-left hover:shadow-lg transition-shadow"
+              >
                 <CardContent className="p-6 space-y-4">
-                  <div className="mx-auto w-12 h-12 bg-sage-100 rounded-lg flex items-center justify-center">
-                    <qual.icon className="h-6 w-6 text-sage-600" />
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-sage-100 rounded-lg flex-shrink-0 mt-1">
+                      <qual.icon className="h-5 w-5 text-sage-600" />
+                    </div>
+                    <div className="space-y-2">
+                      <Badge
+                        variant="outline"
+                        className="text-xs text-sage-600 border-sage-200"
+                      >
+                        {qual.category}
+                      </Badge>
+                      <h3 className="font-semibold text-stone-800 text-sm leading-tight">
+                        {qual.title}
+                      </h3>
+                      <p className="text-stone-600 text-xs leading-relaxed">
+                        {qual.description}
+                      </p>
+                    </div>
                   </div>
-                  <h3 className="font-semibold text-stone-800">{qual.title}</h3>
-                  <p className="text-stone-600 text-sm">{qual.description}</p>
-                  <Badge
-                    variant="outline"
-                    className="text-sage-600 border-sage-200"
-                  >
-                    {qual.year}
-                  </Badge>
                 </CardContent>
               </Card>
             ))}
+          </div>
+          <div className="mt-16 flex col-span-2 gap-10">
+            <div className="w-full flex items-center justify-center ">
+              <Image src="badge1.jpg" width={200} height={200} alt="badge1" />
+            </div>
+            <div className="w-full flex items-center justify-center">
+              <Image src="badge2.jpeg" width={200} height={100} alt="badge1" />
+            </div>
           </div>
         </div>
       </section>
@@ -254,7 +332,7 @@ export default function AboutPage() {
             goals.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/booking">
+            <Link href="/contact">
               <Button size="lg" className="bg-sage-600 hover:bg-sage-700">
                 Book Free Consultation
               </Button>
@@ -263,7 +341,7 @@ export default function AboutPage() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-stone-600 text-stone-300 hover:bg-stone-700"
+                className="border-stone-600 text-black hover:bg-stone-700"
               >
                 Contact Me
               </Button>

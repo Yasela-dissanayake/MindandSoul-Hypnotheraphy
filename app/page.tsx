@@ -80,12 +80,11 @@ export default function HomePage() {
                   <span className="text-sage-600"> Meets Wholeness</span>
                 </h1>
                 <p className="text-lg text-stone-600 leading-relaxed">
-                  At Heal With Rangika, we believe true wellness is more than
-                  the absence of illness—it's a deep alignment of mind, body,
-                  and soul. Our holistic healing platform brings together
-                  compassionate therapeutic techniques and ancient healing
-                  practices to support your journey toward balance and
-                  self-discovery.
+                  I believe true wellness is more than the absence of
+                  illness—it's a deep alignment of mind, body, and soul. Our
+                  holistic healing platform brings together compassionate
+                  therapeutic techniques and ancient healing practices to
+                  support your journey toward balance and self-discovery.
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
@@ -126,7 +125,7 @@ export default function HomePage() {
             <div className="relative">
               <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                 <Image
-                  src="rangika1.jpeg"
+                  src="rangika3.jpeg"
                   alt="Peaceful meditation and hypnotherapy session"
                   width={500}
                   height={600}
@@ -1230,7 +1229,7 @@ export default function HomePage() {
                   <div>
                     <div className="font-semibold text-stone-800">Location</div>
                     <div className="text-stone-600">
-                      Australia & Online Sessions Available
+                      Perth & Online Sessions Available
                     </div>
                   </div>
                 </div>
@@ -1327,7 +1326,8 @@ export default function HomePage() {
           <div className="grid md:grid-cols-3 gap-8">
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <Leaf className="h-6 w-6 text-sage-400" />
+                {/* <Leaf className="h-6 w-6 text-sage-400" /> */}
+                <Image width={32} height={32} src="logo.jpeg" alt="logo" />
                 <h3 className="text-xl font-serif">Heal With Rangika</h3>
               </div>
               <p className="text-stone-300 text-sm leading-relaxed">
