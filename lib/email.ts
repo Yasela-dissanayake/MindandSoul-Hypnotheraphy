@@ -180,15 +180,12 @@ export async function sendClientBookingConfirmation({
                   <h3 style="color: #2d3748; margin: 0 0 15px 0; font-size: 16px;">📍 Location & Directions</h3>
                   <p style="color: #4a5568; margin: 0 0 10px 0; line-height: 1.5;">
                     <strong>Heal With Rangika</strong><br>
-                    Suite 12, Level 3<br>
-                    123 Wellness Street<br>
-                    Sydney NSW 2000
+                    Perth Health Care<br>
+                    East Perth<br>
+                    125 Royal Street<br>
+                    WA 6004
                   </p>
-                  <p style="color: #4a5568; margin: 0; font-size: 14px; line-height: 1.5;">
-                    <strong>Parking:</strong> Street parking available or Wilson Parking (2 blocks away)<br>
-                    <strong>Public Transport:</strong> 5-minute walk from Central Station<br>
-                    <strong>Building Access:</strong> Enter through main lobby, take elevator to Level 3
-                  </p>
+    
                 </div>
               `
                   : `
@@ -237,7 +234,7 @@ export async function sendClientBookingConfirmation({
                   📧 <strong>Email:</strong> healwithrangika@gmail.com
                 </p>
                 <p style="color: #718096; margin: 0; font-size: 14px;">
-                  Office Hours: Monday-Friday 9:00 AM - 6:00 PM
+                  Office Hours: Monday-Friday 8:00 AM - 6:00 PM
                 </p>
               </div>
 
@@ -258,7 +255,7 @@ export async function sendClientBookingConfirmation({
             <!-- Footer -->
             <div style="background-color: #2d3748; padding: 20px 30px; text-align: center;">
               <p style="color: #a0aec0; margin: 0; font-size: 14px;">
-                Heal With Rangika | Suite 12, Level 3, 123 Wellness Street, Sydney NSW 2000
+                Heal With Rangika | Perth Health Care, East Perth, 125 Royal Street, WA 6004
               </p>
               <p style="color: #718096; margin: 10px 0 0 0; font-size: 12px;">
                 This email was sent regarding your booking confirmation. Please keep this email for your records.

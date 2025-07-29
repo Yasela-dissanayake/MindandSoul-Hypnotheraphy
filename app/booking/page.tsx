@@ -182,7 +182,7 @@ function PaymentForm({
               clientPhone: bookingData.phone,
               concerns: bookingData.concerns,
               previousTherapy: bookingData.previousTherapy,
-              emergencyContact: bookingData.emergencyContact,
+              // emergencyContact: bookingData.emergencyContact,
               medicalConditions: bookingData.medicalConditions,
             }),
           });
@@ -326,7 +326,7 @@ export default function BookingPage() {
     phone: "",
     concerns: "",
     previousTherapy: "",
-    emergencyContact: "",
+    // emergencyContact: "",
     medicalConditions: "",
   });
 
@@ -1106,11 +1106,11 @@ export default function BookingPage() {
                                     </h4>
                                   </div>
                                   <p className="text-sm text-stone-600">
-                                    Visit our peaceful practice in Sydney
+                                    Visit our peaceful practice in Perth
                                   </p>
                                   <p className="text-xs text-stone-500">
-                                    Suite 12, Level 3, 123 Wellness Street,
-                                    Sydney NSW
+                                    Perth Health Care, East Perth, 125 Royal
+                                    Street, WA 6004
                                   </p>
                                   <p className="text-sm font-semibold text-sage-600">
                                     $
@@ -1558,7 +1558,7 @@ export default function BookingPage() {
                         placeholder="Please describe your goals and what you'd like to achieve through your healing session..."
                       />
                     </div>
-
+                    {/* 
                     <div>
                       <label className="block text-sm font-medium text-stone-700 mb-2">
                         Emergency Contact Name & Phone
@@ -1572,7 +1572,7 @@ export default function BookingPage() {
                         className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                         placeholder="Name and phone number"
                       />
-                    </div>
+                    </div> */}
                   </CardContent>
                 </Card>
 
