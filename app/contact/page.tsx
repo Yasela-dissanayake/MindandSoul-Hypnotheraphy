@@ -1,9 +1,19 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Phone, Mail, MapPin, Clock, MessageCircle, Calendar, CheckCircle, Star, Users } from "lucide-react"
-import Image from "next/image"
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Phone,
+  Mail,
+  MapPin,
+  Clock,
+  MessageCircle,
+  Calendar,
+  CheckCircle,
+  Star,
+  Users,
+} from "lucide-react";
+import Image from "next/image";
 
 export default function ContactPage() {
   return (
@@ -14,20 +24,25 @@ export default function ContactPage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
               <div className="space-y-4">
-                <Badge className="bg-sage-100 text-sage-700">Get In Touch</Badge>
+                <Badge className="bg-sage-100 text-sage-700">
+                  Get In Touch
+                </Badge>
                 <h1 className="text-4xl lg:text-6xl font-serif text-stone-800 leading-tight">
                   Ready to Begin Your
                   <span className="text-sage-600"> Transformation?</span>
                 </h1>
                 <p className="text-lg text-stone-600 leading-relaxed">
-                  Take the first step towards positive change. Book your free consultation today and discover how
-                  hypnotherapy can help you achieve your goals.
+                  Take the first step towards positive change. Book your free
+                  consultation today and discover how hypnotherapy can help you
+                  achieve your goals.
                 </p>
               </div>
               <div className="flex items-center gap-6">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-sage-600" />
-                  <span className="text-sm text-stone-600">Free 15-minute consultation</span>
+                  <span className="text-sm text-stone-600">
+                    Free 30-minute consultation
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-sage-600" />
@@ -47,13 +62,19 @@ export default function ContactPage() {
                 <div className="flex items-center gap-3">
                   <div className="flex -space-x-2">
                     {[1, 2, 3].map((i) => (
-                      <div key={i} className="w-8 h-8 rounded-full bg-sage-200 border-2 border-white" />
+                      <div
+                        key={i}
+                        className="w-8 h-8 rounded-full bg-sage-200 border-2 border-white"
+                      />
                     ))}
                   </div>
                   <div>
                     <div className="flex items-center gap-1">
                       {[1, 2, 3, 4, 5].map((i) => (
-                        <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                        <Star
+                          key={i}
+                          className="w-4 h-4 fill-amber-400 text-amber-400"
+                        />
                       ))}
                     </div>
                     <p className="text-sm text-stone-600">50+ Happy Clients</p>
@@ -69,10 +90,12 @@ export default function ContactPage() {
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">Multiple Ways to Connect</h2>
+            <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">
+              Multiple Ways to Connect
+            </h2>
             <p className="text-stone-600 max-w-2xl mx-auto">
-              Choose the method that feels most comfortable for you. I'm here to answer your questions and help you get
-              started.
+              Choose the method that feels most comfortable for you. I'm here to
+              answer your questions and help you get started.
             </p>
           </div>
 
@@ -111,16 +134,27 @@ export default function ContactPage() {
                 available: "Available 24/7",
               },
             ].map((method, index) => (
-              <Card key={index} className="border-stone-200 hover:shadow-lg transition-shadow text-center">
+              <Card
+                key={index}
+                className="border-stone-200 hover:shadow-lg transition-shadow text-center"
+              >
                 <CardContent className="p-6 space-y-4">
                   <div className="mx-auto w-12 h-12 bg-sage-100 rounded-lg flex items-center justify-center">
                     <method.icon className="h-6 w-6 text-sage-600" />
                   </div>
-                  <h3 className="font-semibold text-stone-800">{method.title}</h3>
+                  <h3 className="font-semibold text-stone-800">
+                    {method.title}
+                  </h3>
                   <p className="text-stone-600 text-sm">{method.description}</p>
-                  <div className="text-sage-600 font-medium text-sm">{method.contact}</div>
-                  <div className="text-xs text-stone-500">{method.available}</div>
-                  <Button className="w-full bg-sage-600 hover:bg-sage-700 text-white">{method.action}</Button>
+                  <div className="text-sage-600 font-medium text-sm">
+                    {method.contact}
+                  </div>
+                  <div className="text-xs text-stone-500">
+                    {method.available}
+                  </div>
+                  <Button className="w-full bg-sage-600 hover:bg-sage-700 text-white">
+                    {method.action}
+                  </Button>
                 </CardContent>
               </Card>
             ))}
@@ -133,13 +167,19 @@ export default function ContactPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <div className="text-center space-y-4 mb-16">
-              <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">Send Me a Message</h2>
-              <p className="text-stone-600">Choose the type of inquiry that best matches your needs.</p>
+              <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">
+                Send Me a Message
+              </h2>
+              <p className="text-stone-600">
+                Choose the type of inquiry that best matches your needs.
+              </p>
             </div>
 
             <Tabs defaultValue="consultation" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="consultation">Free Consultation</TabsTrigger>
+                <TabsTrigger value="consultation">
+                  Free Consultation
+                </TabsTrigger>
                 <TabsTrigger value="question">General Question</TabsTrigger>
                 <TabsTrigger value="booking">Book Session</TabsTrigger>
               </TabsList>
@@ -149,16 +189,21 @@ export default function ContactPage() {
                   <CardContent className="p-8">
                     <div className="space-y-6">
                       <div className="text-center space-y-2">
-                        <h3 className="text-xl font-semibold text-stone-800">Book Your Free Consultation</h3>
+                        <h3 className="text-xl font-semibold text-stone-800">
+                          Book Your Free Consultation
+                        </h3>
                         <p className="text-stone-600 text-sm">
-                          15-minute phone call to discuss your goals and see if hypnotherapy is right for you.
+                          15-minute phone call to discuss your goals and see if
+                          hypnotherapy is right for you.
                         </p>
                       </div>
 
                       <form className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-sm font-medium text-stone-700 mb-2">First Name *</label>
+                            <label className="block text-sm font-medium text-stone-700 mb-2">
+                              First Name *
+                            </label>
                             <input
                               type="text"
                               required
@@ -167,7 +212,9 @@ export default function ContactPage() {
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-stone-700 mb-2">Last Name *</label>
+                            <label className="block text-sm font-medium text-stone-700 mb-2">
+                              Last Name *
+                            </label>
                             <input
                               type="text"
                               required
@@ -178,7 +225,9 @@ export default function ContactPage() {
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-stone-700 mb-2">Email Address *</label>
+                          <label className="block text-sm font-medium text-stone-700 mb-2">
+                            Email Address *
+                          </label>
                           <input
                             type="email"
                             required
@@ -188,7 +237,9 @@ export default function ContactPage() {
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-stone-700 mb-2">Phone Number *</label>
+                          <label className="block text-sm font-medium text-stone-700 mb-2">
+                            Phone Number *
+                          </label>
                           <input
                             type="tel"
                             required
@@ -248,16 +299,21 @@ export default function ContactPage() {
                   <CardContent className="p-8">
                     <div className="space-y-6">
                       <div className="text-center space-y-2">
-                        <h3 className="text-xl font-semibold text-stone-800">Ask a Question</h3>
+                        <h3 className="text-xl font-semibold text-stone-800">
+                          Ask a Question
+                        </h3>
                         <p className="text-stone-600 text-sm">
-                          Have questions about hypnotherapy? I'm here to help with any concerns.
+                          Have questions about hypnotherapy? I'm here to help
+                          with any concerns.
                         </p>
                       </div>
 
                       <form className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-sm font-medium text-stone-700 mb-2">Name *</label>
+                            <label className="block text-sm font-medium text-stone-700 mb-2">
+                              Name *
+                            </label>
                             <input
                               type="text"
                               required
@@ -266,7 +322,9 @@ export default function ContactPage() {
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-stone-700 mb-2">Email *</label>
+                            <label className="block text-sm font-medium text-stone-700 mb-2">
+                              Email *
+                            </label>
                             <input
                               type="email"
                               required
@@ -277,7 +335,9 @@ export default function ContactPage() {
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-stone-700 mb-2">Subject</label>
+                          <label className="block text-sm font-medium text-stone-700 mb-2">
+                            Subject
+                          </label>
                           <input
                             type="text"
                             className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
@@ -286,7 +346,9 @@ export default function ContactPage() {
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-stone-700 mb-2">Your Question *</label>
+                          <label className="block text-sm font-medium text-stone-700 mb-2">
+                            Your Question *
+                          </label>
                           <textarea
                             rows={6}
                             required
@@ -295,7 +357,9 @@ export default function ContactPage() {
                           />
                         </div>
 
-                        <Button className="w-full bg-sage-600 hover:bg-sage-700 text-white">Send Question</Button>
+                        <Button className="w-full bg-sage-600 hover:bg-sage-700 text-white">
+                          Send Question
+                        </Button>
                       </form>
                     </div>
                   </CardContent>
@@ -307,16 +371,21 @@ export default function ContactPage() {
                   <CardContent className="p-8">
                     <div className="space-y-6">
                       <div className="text-center space-y-2">
-                        <h3 className="text-xl font-semibold text-stone-800">Book a Session</h3>
+                        <h3 className="text-xl font-semibold text-stone-800">
+                          Book a Session
+                        </h3>
                         <p className="text-stone-600 text-sm">
-                          Ready to start? Book your first hypnotherapy session directly.
+                          Ready to start? Book your first hypnotherapy session
+                          directly.
                         </p>
                       </div>
 
                       <form className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-sm font-medium text-stone-700 mb-2">First Name *</label>
+                            <label className="block text-sm font-medium text-stone-700 mb-2">
+                              First Name *
+                            </label>
                             <input
                               type="text"
                               required
@@ -325,7 +394,9 @@ export default function ContactPage() {
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-stone-700 mb-2">Last Name *</label>
+                            <label className="block text-sm font-medium text-stone-700 mb-2">
+                              Last Name *
+                            </label>
                             <input
                               type="text"
                               required
@@ -336,7 +407,9 @@ export default function ContactPage() {
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-stone-700 mb-2">Service Needed *</label>
+                          <label className="block text-sm font-medium text-stone-700 mb-2">
+                            Service Needed *
+                          </label>
                           <select
                             required
                             className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
@@ -353,14 +426,18 @@ export default function ContactPage() {
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-sm font-medium text-stone-700 mb-2">Preferred Date</label>
+                            <label className="block text-sm font-medium text-stone-700 mb-2">
+                              Preferred Date
+                            </label>
                             <input
                               type="date"
                               className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-stone-700 mb-2">Preferred Time</label>
+                            <label className="block text-sm font-medium text-stone-700 mb-2">
+                              Preferred Time
+                            </label>
                             <select className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500">
                               <option>Morning (9AM-12PM)</option>
                               <option>Afternoon (12PM-5PM)</option>
@@ -370,7 +447,9 @@ export default function ContactPage() {
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-stone-700 mb-2">Session Type</label>
+                          <label className="block text-sm font-medium text-stone-700 mb-2">
+                            Session Type
+                          </label>
                           <select className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500">
                             <option>In-Person (Perth)</option>
                             <option>Online Session</option>
@@ -388,7 +467,9 @@ export default function ContactPage() {
                           />
                         </div>
 
-                        <Button className="w-full bg-sage-600 hover:bg-sage-700 text-white">Book Session</Button>
+                        <Button className="w-full bg-sage-600 hover:bg-sage-700 text-white">
+                          Book Session
+                        </Button>
                       </form>
                     </div>
                   </CardContent>
@@ -405,10 +486,12 @@ export default function ContactPage() {
           <div className="grid lg:grid-cols-2 gap-16">
             <div className="space-y-8">
               <div className="space-y-4">
-                <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">Visit Our Practice</h2>
+                <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">
+                  Visit Our Practice
+                </h2>
                 <p className="text-stone-600 leading-relaxed">
-                  Located in the heart of Perth, our practice offers a peaceful, private environment designed for your
-                  comfort and relaxation.
+                  Located in the heart of Perth, our practice offers a peaceful,
+                  private environment designed for your comfort and relaxation.
                 </p>
               </div>
 
@@ -433,12 +516,16 @@ export default function ContactPage() {
                     <Clock className="h-5 w-5 text-sage-600" />
                   </div>
                   <div>
-                    <div className="font-semibold text-stone-800">Practice Hours</div>
+                    <div className="font-semibold text-stone-800">
+                      Practice Hours
+                    </div>
                     <div className="text-stone-600 space-y-1">
                       <div>Monday - Friday: 9:00 AM - 6:00 PM</div>
                       <div>Saturday: 9:00 AM - 2:00 PM</div>
                       <div>Sunday: Closed</div>
-                      <div className="text-sage-600 text-sm mt-2">Evening appointments available by request</div>
+                      <div className="text-sage-600 text-sm mt-2">
+                        Evening appointments available by request
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -448,7 +535,9 @@ export default function ContactPage() {
                     <Users className="h-5 w-5 text-sage-600" />
                   </div>
                   <div>
-                    <div className="font-semibold text-stone-800">Online Sessions</div>
+                    <div className="font-semibold text-stone-800">
+                      Online Sessions
+                    </div>
                     <div className="text-stone-600">
                       Available Australia-wide via secure video call
                       <br />
@@ -464,22 +553,29 @@ export default function ContactPage() {
                 <div className="text-center text-stone-500">
                   <MapPin className="h-12 w-12 mx-auto mb-4" />
                   <p>Interactive Map</p>
-                  <p className="text-sm">Google Maps integration would go here</p>
+                  <p className="text-sm">
+                    Google Maps integration would go here
+                  </p>
                 </div>
               </div>
 
               <Card className="border-stone-200">
                 <CardContent className="p-6">
-                  <h3 className="font-semibold text-stone-800 mb-4">Getting Here</h3>
+                  <h3 className="font-semibold text-stone-800 mb-4">
+                    Getting Here
+                  </h3>
                   <div className="space-y-3 text-sm text-stone-600">
                     <div>
-                      <strong>Public Transport:</strong> 2-minute walk from Town Hall Station
+                      <strong>Public Transport:</strong> 2-minute walk from Town
+                      Hall Station
                     </div>
                     <div>
-                      <strong>Parking:</strong> Secure parking available in building
+                      <strong>Parking:</strong> Secure parking available in
+                      building
                     </div>
                     <div>
-                      <strong>Accessibility:</strong> Wheelchair accessible with lift access
+                      <strong>Accessibility:</strong> Wheelchair accessible with
+                      lift access
                     </div>
                   </div>
                 </CardContent>
@@ -494,8 +590,13 @@ export default function ContactPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <div className="text-center space-y-4 mb-16">
-              <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">Common Questions</h2>
-              <p className="text-stone-600">Quick answers to help you feel confident about taking the next step.</p>
+              <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">
+                Common Questions
+              </h2>
+              <p className="text-stone-600">
+                Quick answers to help you feel confident about taking the next
+                step.
+              </p>
             </div>
 
             <div className="grid md:grid-cols-2 gap-8">
@@ -533,8 +634,12 @@ export default function ContactPage() {
               ].map((faq, index) => (
                 <Card key={index} className="border-stone-200">
                   <CardContent className="p-6">
-                    <h3 className="font-semibold text-stone-800 mb-3">{faq.question}</h3>
-                    <p className="text-stone-600 text-sm leading-relaxed">{faq.answer}</p>
+                    <h3 className="font-semibold text-stone-800 mb-3">
+                      {faq.question}
+                    </h3>
+                    <p className="text-stone-600 text-sm leading-relaxed">
+                      {faq.answer}
+                    </p>
                   </CardContent>
                 </Card>
               ))}
@@ -547,8 +652,12 @@ export default function ContactPage() {
       <section className="py-12 bg-amber-50 border-t border-amber-200">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center space-y-4">
-            <h3 className="text-xl font-semibold text-amber-800">Need Immediate Support?</h3>
-            <p className="text-amber-700">If you're experiencing a mental health emergency, please contact:</p>
+            <h3 className="text-xl font-semibold text-amber-800">
+              Need Immediate Support?
+            </h3>
+            <p className="text-amber-700">
+              If you're experiencing a mental health emergency, please contact:
+            </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <div className="text-amber-800">
                 <strong>Lifeline:</strong> 13 11 14
@@ -564,5 +673,5 @@ export default function ContactPage() {
         </div>
       </section>
     </div>
-  )
+  );
 }
