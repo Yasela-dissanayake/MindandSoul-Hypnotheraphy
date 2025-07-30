@@ -428,7 +428,7 @@ export default function HomePage() {
                     </div>
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-stone-600">
-                        Weight Loss Program (12 weeks)
+                        Time to Loss Weight Program (12 weeks)
                       </span>
                       <div className="flex items-center gap-2">
                         <span className="text-sage-600 font-medium">$1450</span>
@@ -445,7 +445,7 @@ export default function HomePage() {
                     </div>
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-stone-600">
-                        Sleep Program (12 weeks)
+                        Time to Sleep Program (12 weeks)
                       </span>
                       <div className="flex items-center gap-2">
                         <span className="text-sage-600 font-medium">$1350</span>

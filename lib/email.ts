@@ -153,7 +153,7 @@ export async function sendClientBookingConfirmation({
                   </div>
                   <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
                     <span style="color: #4a5568; font-weight: 600;">Time:</span>
-                    <span style="color: #2d3748;">${time} (90 minutes)</span>
+                    <span style="color: #2d3748;">${time} </span>
                   </div>
                   <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
                     <span style="color: #4a5568; font-weight: 600;">Session Type:</span>
@@ -378,7 +378,7 @@ export async function sendPractitionerBookingNotification({
                 <div style="display: grid; gap: 8px;">
                   <p style="margin: 0; color: #4a5568;"><strong>Service:</strong> ${service}</p>
                   <p style="margin: 0; color: #4a5568;"><strong>Date:</strong> ${formattedDate}</p>
-                  <p style="margin: 0; color: #4a5568;"><strong>Time:</strong> ${time} (90 minutes)</p>
+                  <p style="margin: 0; color: #4a5568;"><strong>Time:</strong> ${time}</p>
                   <p style="margin: 0; color: #4a5568;"><strong>Type:</strong> ${
                     sessionType === "in-person"
                       ? "In-Person"

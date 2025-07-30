@@ -1108,7 +1108,7 @@ export default function ServicesPage() {
                 {
                   question: "Are your practitioners qualified?",
                   answer:
-                    "All our practitioners are certified in their respective modalities, trauma-informed, and committed to ongoing professional development and ethical practice.",
+                    "All our practitioners are certified to practice mentioned modalities, trauma-informed, and committed to ongoing professional development and ethical practice.",
                 },
                 {
                   question: "Can I combine different healing modalities?",

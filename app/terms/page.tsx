@@ -42,8 +42,8 @@ export default function TermsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-700">
-                Heal With Rangika provides professional hypnotherapy
-                services including but not limited to:
+                Heal With Rangika provides professional hypnotherapy services
+                including but not limited to:
               </p>
               <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
                 <li>Individual hypnotherapy sessions (in-person and online)</li>
@@ -83,7 +83,7 @@ export default function TermsPage() {
               </h4>
               <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
                 <li>All payments are processed securely through Stripe</li>
-                <li>Prices are listed in GBP and include applicable taxes</li>
+                <li>Prices are listed in AUD and include applicable taxes</li>
                 <li>Payment confirmation will be sent via email</li>
                 <li>We accept major credit and debit cards</li>
               </ul>

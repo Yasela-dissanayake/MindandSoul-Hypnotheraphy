@@ -563,8 +563,24 @@ export default function BookingPage() {
   ];
 
   // Generate available time slots
-  const generateTimeSlots = (date: Date) => {
-    const slots = ["08:00-09:30", "10:00-11:30", "12:00-13:30", "14:00-15:30", "16:00-17:30", "18:00-19:30"];
+  const generateTimeSlots = (date: Date, type: String) => {
+    const slots =
+      type === "distance"
+        ? [
+            "09:00-10:00",
+            "11:00-12:00",
+            "13:00-14:00",
+            "15:00-16:00",
+            "17:00-18:00",
+          ]
+        : [
+            "08:00-09:30",
+            "10:00-11:30",
+            "12:00-13:30",
+            "14:00-15:30",
+            "16:00-17:30",
+            "18:00-19:30",
+          ];
     const isWeekend = date.getDay() === 6; // Only Saturday (Sunday disabled)
     const startHour = 8;
     // const endHour = isWeekend ? 14 : 18; // Weekend ends at 2 PM, weekdays at 6 PM
@@ -585,8 +601,17 @@ export default function BookingPage() {
   // const unavailableSlots = ["10:00", "14:00", "15:00"];
   const unavailableSlots = [""];
 
-  const timeSlots = selectedDate ? generateTimeSlots(selectedDate) : [];
+  const timeSlots = selectedDate
+    ? generateTimeSlots(selectedDate, "in-person")
+    : [];
   const availableSlots = timeSlots.filter(
+    (slot) => !unavailableSlots.includes(slot)
+  );
+
+  const timeSlotsDistance = selectedDate
+    ? generateTimeSlots(selectedDate, "distance")
+    : [];
+  const availableSlotsDistance = timeSlotsDistance.filter(
     (slot) => !unavailableSlots.includes(slot)
   );
 
@@ -1352,44 +1377,85 @@ export default function BookingPage() {
                           </h3>
                           {selectedDate ? (
                             <div className="space-y-3">
-                              <div className="grid grid-cols-2 gap-3 max-h-80 overflow-y-auto p-4 border border-stone-200 rounded-lg bg-white">
-                                {availableSlots.length > 0 ? (
-                                  availableSlots.map((time) => (
-                                    <Button
-                                      key={time}
-                                      variant={
-                                        selectedTime === time
-                                          ? "default"
-                                          : "outline"
-                                      }
-                                      size="sm"
-                                      className={`text-sm h-12 ${
-                                        selectedTime === time
-                                          ? "bg-sage-600 hover:bg-sage-700 text-white"
-                                          : "border-stone-300 hover:border-sage-300 hover:bg-sage-50"
-                                      }`}
-                                      onClick={() => setSelectedTime(time)}
-                                    >
-                                      <div className="text-center">
-                                        <div className="font-medium">
-                                          {time}
-                                        </div>
-                                        <div className="text-xs opacity-75">
+                              {sessionType === "distance" ? (
+                                <div className="grid grid-cols-2 gap-3 max-h-80 overflow-y-auto p-4 border border-stone-200 rounded-lg bg-white">
+                                  {availableSlotsDistance.length > 0 ? (
+                                    availableSlotsDistance.map((time) => (
+                                      <Button
+                                        key={time}
+                                        variant={
+                                          selectedTime === time
+                                            ? "default"
+                                            : "outline"
+                                        }
+                                        size="sm"
+                                        className={`text-sm h-12 ${
+                                          selectedTime === time
+                                            ? "bg-sage-600 hover:bg-sage-700 text-white"
+                                            : "border-stone-300 hover:border-sage-300 hover:bg-sage-50"
+                                        }`}
+                                        onClick={() => setSelectedTime(time)}
+                                      >
+                                        <div className="text-center">
+                                          <div className="font-medium">
+                                            {time}
+                                          </div>
+                                          {/* <div className="text-xs opacity-75">
                                           90 min
+                                        </div> */}
                                         </div>
-                                      </div>
-                                    </Button>
-                                  ))
-                                ) : (
-                                  <div className="col-span-2 text-center py-8 text-stone-500">
-                                    <Clock className="h-8 w-8 mx-auto mb-2 text-stone-400" />
-                                    <p>No available slots for this date</p>
-                                    <p className="text-xs mt-1">
-                                      Please select another date
-                                    </p>
-                                  </div>
-                                )}
-                              </div>
+                                      </Button>
+                                    ))
+                                  ) : (
+                                    <div className="col-span-2 text-center py-8 text-stone-500">
+                                      <Clock className="h-8 w-8 mx-auto mb-2 text-stone-400" />
+                                      <p>No available slots for this date</p>
+                                      <p className="text-xs mt-1">
+                                        Please select another date
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                <div className="grid grid-cols-2 gap-3 max-h-80 overflow-y-auto p-4 border border-stone-200 rounded-lg bg-white">
+                                  {availableSlots.length > 0 ? (
+                                    availableSlots.map((time) => (
+                                      <Button
+                                        key={time}
+                                        variant={
+                                          selectedTime === time
+                                            ? "default"
+                                            : "outline"
+                                        }
+                                        size="sm"
+                                        className={`text-sm h-12 ${
+                                          selectedTime === time
+                                            ? "bg-sage-600 hover:bg-sage-700 text-white"
+                                            : "border-stone-300 hover:border-sage-300 hover:bg-sage-50"
+                                        }`}
+                                        onClick={() => setSelectedTime(time)}
+                                      >
+                                        <div className="text-center">
+                                          <div className="font-medium">
+                                            {time}
+                                          </div>
+                                          {/* <div className="text-xs opacity-75">
+                                          90 min
+                                        </div> */}
+                                        </div>
+                                      </Button>
+                                    ))
+                                  ) : (
+                                    <div className="col-span-2 text-center py-8 text-stone-500">
+                                      <Clock className="h-8 w-8 mx-auto mb-2 text-stone-400" />
+                                      <p>No available slots for this date</p>
+                                      <p className="text-xs mt-1">
+                                        Please select another date
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                               {selectedDate.getDay() === 6 && (
                                 // <p className="text-xs text-stone-500 bg-blue-50 p-2 rounded">
                                 //   <strong>Saturday hours:</strong> 9:00 AM -
