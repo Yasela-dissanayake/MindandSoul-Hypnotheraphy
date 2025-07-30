@@ -263,11 +263,10 @@ export default function ServicesPage() {
 
   const specializedServices = [
     {
-      id: "corporate",
+      id: "corporate-wellness",
       icon: Building,
       title: "Corporate Wellness",
-      description:
-        "Empowering teams with mindful tools for a healthier, happier workplace",
+      description: `Empowering teams with mindful tools for a healthier, happier workplace`,
       offerings: [
         "Guided Meditation",
         "Group Hypnosis",
@@ -278,7 +277,7 @@ export default function ServicesPage() {
       bookable: false,
     },
     {
-      id: "training",
+      id: "reiki-training",
       icon: GraduationCap,
       title: "Reiki Training",
       description:
@@ -918,6 +917,15 @@ export default function ServicesPage() {
                       ))}
                     </ul>
 
+                    <Link href={`/services/detailed#${service.id}`}>
+                      <Button
+                        variant="outline"
+                        className="w-full my-6 border-sage-300 text-sage-700 hover:bg-sage-50 bg-transparent"
+                      >
+                        Learn More
+                      </Button>
+                    </Link>
+
                     {service.bookable ? (
                       <Link href={`/booking?service=${service.id}`}>
                         <Button className="w-full bg-sage-600 hover:bg-sage-700 text-white">
@@ -985,6 +993,16 @@ export default function ServicesPage() {
                   <div className="bg-sage-50 p-3 rounded-lg">
                     <p className="text-sm text-sage-700">{service.note}</p>
                   </div>
+
+                  <Link href={`/services/detailed#${service.id}`}>
+                    <Button
+                      variant="outline"
+                      className="w-full my-6 border-sage-300 text-sage-700 hover:bg-sage-50 bg-transparent"
+                    >
+                      Learn More
+                    </Button>
+                  </Link>
+
                   <Link href="/contact">
                     <Button className="w-full bg-stone-600 hover:bg-stone-700 text-white">
                       Send Inquiry

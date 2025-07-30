@@ -197,7 +197,7 @@ export default function AboutPage() {
                 icon: CheckCircle,
                 title: "Professional Memberships",
                 description:
-                  "Member of International Institute of Complimentary Therapists & Reiki Professionals",
+                  "Member of International Association for Reiki Professionals",
                 category: "Professional Bodies",
               },
               {

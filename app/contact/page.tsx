@@ -14,6 +14,7 @@ import {
   Users,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function ContactPage() {
   return (
@@ -107,7 +108,8 @@ export default function ContactPage() {
                 description: "Speak directly for immediate answers",
                 contact: "+61 429 940 130",
                 action: "Call Now",
-                available: "Mon-Fri: 9AM-6PM",
+                available: "Mon-Sat: 8AM-6.30PM",
+                link: "tel:+61429940130",
               },
               {
                 icon: Mail,
@@ -116,6 +118,7 @@ export default function ContactPage() {
                 contact: "healwithrangika@gmail.com",
                 action: "Send Email",
                 available: "Response within 24 hours",
+                link: "mailto:healwithrangika@gmail.com",
               },
               {
                 icon: MessageCircle,
@@ -124,6 +127,7 @@ export default function ContactPage() {
                 contact: "+61 429 940 130",
                 action: "Send SMS",
                 available: "Response same day",
+                link: "tel:+61429940130",
               },
               {
                 icon: Calendar,
@@ -132,6 +136,7 @@ export default function ContactPage() {
                 contact: "Book instantly online",
                 action: "Book Now",
                 available: "Available 24/7",
+                link: "/booking",
               },
             ].map((method, index) => (
               <Card
@@ -152,9 +157,11 @@ export default function ContactPage() {
                   <div className="text-xs text-stone-500">
                     {method.available}
                   </div>
-                  <Button className="w-full bg-sage-600 hover:bg-sage-700 text-white">
-                    {method.action}
-                  </Button>
+                  <Link href={method.link}>
+                    <Button className="w-full bg-sage-600 hover:bg-sage-700 text-white">
+                      {method.action}
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             ))}
@@ -176,12 +183,12 @@ export default function ContactPage() {
             </div>
 
             <Tabs defaultValue="consultation" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="consultation">
                   Free Consultation
                 </TabsTrigger>
                 <TabsTrigger value="question">General Question</TabsTrigger>
-                <TabsTrigger value="booking">Book Session</TabsTrigger>
+                {/* <TabsTrigger value="booking">Book Session</TabsTrigger> */}
               </TabsList>
 
               <TabsContent value="consultation" className="mt-8">
@@ -366,7 +373,7 @@ export default function ContactPage() {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="booking" className="mt-8">
+              {/* <TabsContent value="booking" className="mt-8">
                 <Card className="border-stone-200">
                   <CardContent className="p-8">
                     <div className="space-y-6">
@@ -474,7 +481,7 @@ export default function ContactPage() {
                     </div>
                   </CardContent>
                 </Card>
-              </TabsContent>
+              </TabsContent> */}
             </Tabs>
           </div>
         </div>
@@ -503,10 +510,11 @@ export default function ContactPage() {
                   <div>
                     <div className="font-semibold text-stone-800">Address</div>
                     <div className="text-stone-600">
-                      Suite 12, Level 3<br />
-                      123 Wellness Street
+                      Perth Health Care
                       <br />
-                      Perth NSW 2000
+                      East Perth, 125 Royal Street
+                      <br />
+                      WA 6004
                     </div>
                   </div>
                 </div>
@@ -520,8 +528,8 @@ export default function ContactPage() {
                       Practice Hours
                     </div>
                     <div className="text-stone-600 space-y-1">
-                      <div>Monday - Friday: 9:00 AM - 6:00 PM</div>
-                      <div>Saturday: 9:00 AM - 2:00 PM</div>
+                      <div>Monday - Saturday: 8:00 AM - 6:30 PM</div>
+                      {/* <div>Saturday: 9:00 AM - 2:00 PM</div> */}
                       <div>Sunday: Closed</div>
                       <div className="text-sage-600 text-sm mt-2">
                         Evening appointments available by request
@@ -553,13 +561,13 @@ export default function ContactPage() {
                 <div className="text-center text-stone-500">
                   <MapPin className="h-12 w-12 mx-auto mb-4" />
                   <p>Interactive Map</p>
-                  <p className="text-sm">
+                  {/* <p className="text-sm">
                     Google Maps integration would go here
-                  </p>
+                  </p> */}
                 </div>
               </div>
 
-              <Card className="border-stone-200">
+              {/* <Card className="border-stone-200">
                 <CardContent className="p-6">
                   <h3 className="font-semibold text-stone-800 mb-4">
                     Getting Here
@@ -579,7 +587,7 @@ export default function ContactPage() {
                     </div>
                   </div>
                 </CardContent>
-              </Card>
+              </Card> */}
             </div>
           </div>
         </div>
@@ -649,7 +657,7 @@ export default function ContactPage() {
       </section>
 
       {/* Emergency Contact */}
-      <section className="py-12 bg-amber-50 border-t border-amber-200">
+      {/* <section className="py-12 bg-amber-50 border-t border-amber-200">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center space-y-4">
             <h3 className="text-xl font-semibold text-amber-800">
@@ -671,7 +679,7 @@ export default function ContactPage() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
     </div>
   );
 }

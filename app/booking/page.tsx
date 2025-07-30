@@ -564,20 +564,21 @@ export default function BookingPage() {
 
   // Generate available time slots
   const generateTimeSlots = (date: Date) => {
-    const slots = [];
+    const slots = ["08:00-09:30", "10:00-11:30", "12:00-13:30", "14:00-15:30", "16:00-17:30", "18:00-19:30"];
     const isWeekend = date.getDay() === 6; // Only Saturday (Sunday disabled)
     const startHour = 8;
     // const endHour = isWeekend ? 14 : 18; // Weekend ends at 2 PM, weekdays at 6 PM
     const endHour = 19;
 
-    let hour = startHour;
-    while (hour + 1.5 <= endHour) {
-      // Create slot
-      const time = `${hour.toString().padStart(2, "0")}:00`;
-      slots.push(time);
-      // Move to next slot after 90min slot + 90min break = 3 hours
-      hour += 3;
-    }
+    // let hour = startHour;
+    // while (hour + 1.5 <= endHour) {
+    //   // Create slot
+    //   const time = `${hour.toString().padStart(2, "0")}:00`;
+    //   slots.push(time);
+    //   // Move to next slot after 90min slot + 90min break = 3 hours
+    //   hour += 3;
+    // }
+    // console.log("slots: ", slots);
     return slots;
   };
   // Mock unavailable slots (would come from backend)
@@ -1335,8 +1336,8 @@ export default function BookingPage() {
                             <strong>Note:</strong>
                             {sessionType === "in-person" ||
                             sessionType === "pet-parent-in-person"
-                              ? " In-person sessions are only available on Saturdays (9:00 AM - 2:00 PM). Sundays are closed."
-                              : " Distance healing sessions are available Monday-Saturday. Saturday hours: 9:00 AM - 2:00 PM. Sundays are closed."}
+                              ? " In-person sessions are only available on Saturdays (8:00 AM - 6:30 PM). Sundays are closed."
+                              : " Distance healing sessions are available Monday-Saturday. Saturday hours: 8:00 AM - 6:30 PM. Sundays are closed."}
                           </div>
                         </div>
 

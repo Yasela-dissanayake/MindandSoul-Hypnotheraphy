@@ -88,7 +88,7 @@ export default function HomePage() {
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/booking">
+                <Link href="/contact">
                   <Button
                     size="lg"
                     className="bg-sage-600 hover:bg-sage-700 text-white"
