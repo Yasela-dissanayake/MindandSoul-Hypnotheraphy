@@ -199,10 +199,10 @@ export default function ContactPage() {
                         <h3 className="text-xl font-semibold text-stone-800">
                           Book Your Free Consultation
                         </h3>
-                        <p className="text-stone-600 text-sm">
+                        {/* <p className="text-stone-600 text-sm">
                           15-minute phone call to discuss your goals and see if
                           hypnotherapy is right for you.
-                        </p>
+                        </p> */}
                       </div>
 
                       <form className="space-y-4">
@@ -622,7 +622,7 @@ export default function ContactPage() {
                 {
                   question: "What should I expect in my first session?",
                   answer:
-                    "We'll spend time discussing your goals, I'll explain the process, and we'll do a gentle relaxation exercise. You'll leave feeling calm and optimistic.",
+                    "Your sessions begin with a relaxed conversation in a safe judgements free space. I'll briefly explain how hypnotherapy works, explore your specific needs and create a plan tailored to you.",
                 },
                 {
                   question: "How do I prepare for a session?",

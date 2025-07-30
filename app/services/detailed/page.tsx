@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import {
   Brain,
   Heart,
@@ -25,10 +25,10 @@ import {
   Mail,
   Target,
   Award,
-} from "lucide-react"
-import Link from "next/link"
-import Image from "next/image"
-import { useEffect } from "react"
+} from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
+import { useEffect } from "react";
 
 export default function DetailedServicesPage() {
   const services = [
@@ -39,7 +39,7 @@ export default function DetailedServicesPage() {
       subtitle: "Empowering You Through Subconscious Healing",
       description:
         "Hypnotherapy is a safe, effective therapeutic technique that uses the power of the subconscious mind to support lasting change. Unlike the myths you may have seen in movies, hypnotherapy isn't about mind control or being 'put to sleep.' Instead, it's a deeply relaxed and focused state—similar to daydreaming—where your mind becomes more open to positive suggestions and deeper insight.",
-      image: "https://images.unsplash.com/photo-1600618528240-fb9fc964b853?q=80&w=1200&auto=format&fit=crop",
+      image: "/hypno1.jpeg",
       duration: "45-75 minutes",
       consultation: "30min Free online consultation prior booking",
       conditions: [
@@ -172,10 +172,12 @@ export default function DetailedServicesPage() {
       id: "past-life-regression",
       icon: Star,
       title: "Past Life Regression Therapy",
-      subtitle: "Explore Your Soul's Journey. Heal Through the Wisdom of the Past",
+      subtitle:
+        "Explore Your Soul's Journey. Heal Through the Wisdom of the Past",
       description:
         "Past Life Regression (PLR) is a gentle yet powerful therapeutic technique that allows you to access memories, emotions, and experiences from previous lifetimes that may still be influencing your current life. Through guided hypnosis, you'll journey beyond the limits of your conscious mind—unlocking deep inner knowledge, unresolved patterns, karmic connections, and the root cause of emotional, physical, or spiritual challenges.",
-      image: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?q=80&w=1200&auto=format&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1518709268805-4e9042af2176?q=80&w=1200&auto=format&fit=crop",
       duration: "90-120 minutes",
       consultation: "Pre session Discussion (Online, 30minutes)",
       pricing: {
@@ -226,10 +228,11 @@ export default function DetailedServicesPage() {
       id: "reiki-healing",
       icon: Heart,
       title: "Reiki Healing",
-      subtitle: "Restore Balance. Renew Energy. Reconnect with Your Inner Peace",
+      subtitle:
+        "Restore Balance. Renew Energy. Reconnect with Your Inner Peace",
       description:
         "Reiki is a gentle, non-invasive energy healing technique that promotes relaxation, reduces stress, and supports your body's natural ability to heal itself. By channeling universal life force energy, Reiki helps clear blockages and rebalance your physical, emotional, and spiritual well-being.",
-      image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=1200&auto=format&fit=crop",
+      image: "/reiki2.jpeg",
       duration: "60 minutes",
       benefits: [
         "Release tension, stress and anxiety",
@@ -270,7 +273,7 @@ export default function DetailedServicesPage() {
       subtitle: "Healing. Understanding. Connection",
       description:
         "Animals, like humans, have emotions, energy, and unique stories. Through Animal Reiki and Animal Communication, we create a safe, nurturing space for your beloved companion to heal, express, and be truly heard.",
-      image: "https://images.unsplash.com/photo-1604881991720-f91add269bed?q=80&w=1200&auto=format&fit=crop",
+      image: "/animal3.jpeg",
       duration: "45-60 minutes",
       consultation: "30 minute free online consultation prior booking",
       animalReiki:
@@ -340,10 +343,11 @@ export default function DetailedServicesPage() {
       id: "lama-fera",
       icon: Zap,
       title: "Lama Fera Healing",
-      subtitle: "Ancient Tibetan Healing for Deep Spiritual & Energetic Transformation",
+      subtitle:
+        "Ancient Tibetan Healing for Deep Spiritual & Energetic Transformation",
       description:
         "Lama Fera is a powerful energy healing system that originated in the Himalayan Buddhist monasteries of Tibet. Used by monks for centuries, it works by channeling high-vibrational healing energy from Lord Buddha to release negative energies, clear karmic blocks, and accelerate spiritual growth. Unlike other energy healing methods, Lama Fera is known for its intensity, speed, and deep transformative power. It is particularly effective for those who feel spiritually stuck, emotionally burdened, or energetically blocked.",
-      image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=1200&auto=format&fit=crop",
+      image: "/lama-fera.jpeg",
       duration: "30-45 minutes",
       benefits: [
         "Remove negative energy, psychic disturbances, or entity attachments",
@@ -368,7 +372,7 @@ export default function DetailedServicesPage() {
       subtitle: "Quiet the Mind. Open the Heart. Return to Stillness",
       description:
         "In today's fast-paced world, meditation offers a peaceful refuge—a space to slow down, reconnect with yourself, and cultivate clarity, calm, and emotional balance. My guided meditation sessions are designed to support both beginners and experienced meditators in cultivating a sustainable, nourishing practice.",
-      image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=1200&auto=format&fit=crop",
+      image: "/meditation.jpeg",
       benefits: [
         "Reduce stress, anxiety, and emotional overwhelm",
         "Improve focus, clarity, and mental resilience",
@@ -448,10 +452,11 @@ export default function DetailedServicesPage() {
       id: "corporate-wellness",
       icon: Building,
       title: "Corporate Wellness Services",
-      subtitle: "Empowering Teams with Mindful Tools for a Healthier, Happier Workplace",
+      subtitle:
+        "Empowering Teams with Mindful Tools for a Healthier, Happier Workplace",
       description:
         "Today's work culture demands more than just productivity—it calls for balance, wellbeing, and genuine human connection. My Corporate Wellness programs are designed to help your team reduce stress, boost creativity, and enhance mental clarity through unique, experiential sessions that go beyond the usual offerings.",
-      image: "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=1200&auto=format&fit=crop",
+      image: "/corperate.jpeg",
       services: [
         {
           name: "Guided Meditation for Focus & Calm",
@@ -463,28 +468,31 @@ export default function DetailedServicesPage() {
           name: "Group Hypnosis for Stress Reduction",
           description:
             "Group hypnotherapy offers deep relaxation and subconscious reprogramming to reduce stress, enhance confidence, and manage workplace pressures.",
-          greatFor: "Managing overwhelm, boosting motivation, and changing mindset",
+          greatFor:
+            "Managing overwhelm, boosting motivation, and changing mindset",
         },
         {
           name: "Art Therapy for Expression & Team Connection",
           description:
             "Creative sessions that use painting, drawing, and visual storytelling to process emotions, build self-awareness, and foster team bonding.",
-          greatFor: "Enhancing creativity, emotional intelligence, and communication",
+          greatFor:
+            "Enhancing creativity, emotional intelligence, and communication",
         },
         {
           name: "Baking for Stress Relief & Team Building",
           description:
             "Hands-on baking experiences that blend mindfulness with the comfort of food. These sessions reduce cortisol, build community, and leave teams with something delicious to share.",
-          greatFor: "Decompressing, increasing joy, and nourishing workplace culture",
+          greatFor:
+            "Decompressing, increasing joy, and nourishing workplace culture",
         },
       ],
-      whyChoose: [
-        "Customizable programs for on-site or virtual delivery",
-        "With certifications in wellness, therapy, and creative arts, I bring an integrated approach to each session",
-        "Bringing 17years experience in baking training integrated with the knowledge in mindfulness with Baking",
-        "Suitable for all team sizes and industries",
-        "Designed to create long-term impact, not just a one-time fix",
-      ],
+      // whyChoose: [
+      //   "Customizable programs for on-site or virtual delivery",
+      //   "With certifications in wellness, therapy, and creative arts, I bring an integrated approach to each session",
+      //   "Bringing 17years experience in baking training integrated with the knowledge in mindfulness with Baking",
+      //   "Suitable for all team sizes and industries",
+      //   "Designed to create long-term impact, not just a one-time fix",
+      // ],
     },
     {
       id: "reiki-training",
@@ -493,7 +501,7 @@ export default function DetailedServicesPage() {
       subtitle: "Learn Reiki & Animal Reiki - Awaken Your Inner Healer",
       description:
         "Reiki is more than just a healing technique—it's a spiritual path, a life-changing journey, and a powerful tool for inner transformation. Whether you're drawn to Reiki to support your own well-being, help others, or connect more deeply with animals, learning Reiki opens the door to profound energetic awareness, emotional healing, and soul-aligned living.",
-      image: "https://images.unsplash.com/photo-1593811167562-9cef47bfc4d7?q=80&w=1200&auto=format&fit=crop",
+      image: "/meditation group.jpeg",
       whyLearn: [
         "Reduce stress and anxiety",
         "Support physical and emotional healing",
@@ -552,22 +560,22 @@ export default function DetailedServicesPage() {
         "As a Certified Reiki Master, Animal Reiki Practitioner, and Animal Communicator, I blend traditional Reiki teachings with intuitive development, spiritual insight, and compassionate guidance. My classes are trauma-informed, heart-centered, and grounded in both practice and purpose.",
       note: "All levels include manuals, practice sessions, certificates, and guided support.",
     },
-  ]
+  ];
 
   useEffect(() => {
     // Handle scrolling to anchor on page load
     if (typeof window !== "undefined") {
-      const hash = window.location.hash.substring(1)
+      const hash = window.location.hash.substring(1);
       if (hash) {
         setTimeout(() => {
-          const element = document.getElementById(hash)
+          const element = document.getElementById(hash);
           if (element) {
-            element.scrollIntoView({ behavior: "smooth", block: "start" })
+            element.scrollIntoView({ behavior: "smooth", block: "start" });
           }
-        }, 100)
+        }, 100);
       }
     }
-  }, [])
+  }, []);
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -576,21 +584,28 @@ export default function DetailedServicesPage() {
         <div className="container mx-auto px-4">
           <div className="flex items-center gap-4 mb-8">
             <Link href="/services">
-              <Button variant="outline" size="sm" className="bg-transparent border-stone-300">
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-transparent border-stone-300"
+              >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Services
               </Button>
             </Link>
           </div>
           <div className="text-center space-y-4">
-            <Badge className="bg-sage-100 text-sage-700">Detailed Service Information</Badge>
+            <Badge className="bg-sage-100 text-sage-700">
+              Detailed Service Information
+            </Badge>
             <h1 className="text-4xl lg:text-5xl font-serif text-stone-800">
               Complete Guide to Our
               <span className="text-sage-600"> Healing Services</span>
             </h1>
             <p className="text-lg text-stone-600 max-w-3xl mx-auto">
-              Explore comprehensive details about each healing modality, understand what to expect, and discover how
-              these transformative practices can support your wellness journey.
+              Explore comprehensive details about each healing modality,
+              understand what to expect, and discover how these transformative
+              practices can support your wellness journey.
             </p>
           </div>
         </div>
@@ -600,7 +615,11 @@ export default function DetailedServicesPage() {
       <section className="py-20">
         <div className="container mx-auto px-4 space-y-32">
           {services.map((service, index) => (
-            <div key={service.id} id={service.id} className="max-w-7xl mx-auto scroll-mt-20">
+            <div
+              key={service.id}
+              id={service.id}
+              className="max-w-7xl mx-auto scroll-mt-20"
+            >
               <Card className="border-stone-200 overflow-hidden">
                 <CardContent className="p-0">
                   {/* Service Header */}
@@ -612,11 +631,17 @@ export default function DetailedServicesPage() {
                             <service.icon className="h-8 w-8 text-sage-600" />
                           </div>
                           <div>
-                            <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">{service.title}</h2>
-                            <p className="text-sage-600 font-medium mt-1">{service.subtitle}</p>
+                            <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">
+                              {service.title}
+                            </h2>
+                            <p className="text-sage-600 font-medium mt-1">
+                              {service.subtitle}
+                            </p>
                           </div>
                         </div>
-                        <p className="text-stone-600 leading-relaxed text-lg">{service.description}</p>
+                        <p className="text-stone-600 leading-relaxed text-lg">
+                          {service.description}
+                        </p>
 
                         {/* Quick Info */}
                         <div className="flex flex-wrap gap-4">
@@ -627,21 +652,32 @@ export default function DetailedServicesPage() {
                           {service.consultation && (
                             <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-stone-200">
                               <Phone className="h-4 w-4 text-sage-600" />
-                              <span className="text-sm text-stone-700">{service.consultation}</span>
+                              <span className="text-sm text-stone-700">
+                                {service.consultation}
+                              </span>
                             </div>
                           )}
                         </div>
 
                         {/* CTA Buttons */}
                         <div className="flex flex-col sm:flex-row gap-4">
-                          <Link href={`/booking?service=${service.id}`}>
+                          <Link
+                            href={
+                              service.id != "meditation"
+                                ? `/booking?service=${service.id}`
+                                : "/contact"
+                            }
+                          >
                             <Button className="bg-sage-600 hover:bg-sage-700 text-white">
                               <Calendar className="h-4 w-4 mr-2" />
                               Book This Service
                             </Button>
                           </Link>
                           <Link href="/contact">
-                            <Button variant="outline" className="border-stone-300 bg-transparent">
+                            <Button
+                              variant="outline"
+                              className="border-stone-300 bg-transparent"
+                            >
                               <Mail className="h-4 w-4 mr-2" />
                               Ask Questions
                             </Button>
@@ -672,9 +708,14 @@ export default function DetailedServicesPage() {
                         </h3>
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
                           {service.conditions.map((condition, idx) => (
-                            <div key={idx} className="flex items-center gap-3 p-3 bg-sage-50 rounded-lg">
+                            <div
+                              key={idx}
+                              className="flex items-center gap-3 p-3 bg-sage-50 rounded-lg"
+                            >
                               <CheckCircle className="h-4 w-4 text-sage-600 flex-shrink-0" />
-                              <span className="text-stone-700 text-sm">{condition}</span>
+                              <span className="text-stone-700 text-sm">
+                                {condition}
+                              </span>
                             </div>
                           ))}
                         </div>
@@ -715,8 +756,12 @@ export default function DetailedServicesPage() {
                                 {idx + 1}
                               </div>
                               <div className="flex-1">
-                                <h4 className="font-semibold text-stone-800 mb-2">{step.step}</h4>
-                                <p className="text-stone-600 leading-relaxed">{step.description}</p>
+                                <h4 className="font-semibold text-stone-800 mb-2">
+                                  {step.step}
+                                </h4>
+                                <p className="text-stone-600 leading-relaxed">
+                                  {step.description}
+                                </p>
                               </div>
                             </div>
                           ))}
@@ -734,8 +779,12 @@ export default function DetailedServicesPage() {
                           {service.reasons.map((reason, idx) => (
                             <Card key={idx} className="border-stone-200">
                               <CardContent className="p-6">
-                                <h4 className="font-semibold text-stone-800 mb-3">{reason.title}</h4>
-                                <p className="text-stone-600 text-sm leading-relaxed">{reason.description}</p>
+                                <h4 className="font-semibold text-stone-800 mb-3">
+                                  {reason.title}
+                                </h4>
+                                <p className="text-stone-600 text-sm leading-relaxed">
+                                  {reason.description}
+                                </p>
                               </CardContent>
                             </Card>
                           ))}
@@ -746,43 +795,68 @@ export default function DetailedServicesPage() {
                     {/* Experience/Process for specific services */}
                     {service.experience && (
                       <div className="bg-sage-50 p-6 rounded-xl">
-                        <h3 className="text-xl font-semibold text-stone-800 mb-4">What to Expect</h3>
-                        <p className="text-stone-600 leading-relaxed">{service.experience}</p>
+                        <h3 className="text-xl font-semibold text-stone-800 mb-4">
+                          What to Expect
+                        </h3>
+                        <p className="text-stone-600 leading-relaxed">
+                          {service.experience}
+                        </p>
                       </div>
                     )}
 
                     {service.processDescription && (
                       <div className="bg-sage-50 p-6 rounded-xl">
-                        <h3 className="text-xl font-semibold text-stone-800 mb-4">The Process</h3>
-                        <p className="text-stone-600 leading-relaxed">{service.processDescription}</p>
+                        <h3 className="text-xl font-semibold text-stone-800 mb-4">
+                          The Process
+                        </h3>
+                        <p className="text-stone-600 leading-relaxed">
+                          {service.processDescription}
+                        </p>
                       </div>
                     )}
 
                     {service.whyChoose && (
                       <div className="bg-stone-50 p-6 rounded-xl">
-                        <h3 className="text-xl font-semibold text-stone-800 mb-4">Why Choose Reiki?</h3>
-                        <p className="text-stone-600 leading-relaxed">{service.whyChoose}</p>
+                        <h3 className="text-xl font-semibold text-stone-800 mb-4">
+                          Why Choose Reiki?
+                        </h3>
+                        <p className="text-stone-600 leading-relaxed">
+                          {service.whyChoose}
+                        </p>
                       </div>
                     )}
 
                     {/* Animal Reiki Specific Content */}
                     {service.animalReiki && (
                       <div>
-                        <h3 className="text-2xl font-serif text-stone-800 mb-4">What Is Animal Reiki?</h3>
-                        <p className="text-stone-600 leading-relaxed mb-6">{service.animalReiki}</p>
+                        <h3 className="text-2xl font-serif text-stone-800 mb-4">
+                          What Is Animal Reiki?
+                        </h3>
+                        <p className="text-stone-600 leading-relaxed mb-6">
+                          {service.animalReiki}
+                        </p>
                       </div>
                     )}
 
                     {service.animalCommunication && (
                       <div>
-                        <h3 className="text-2xl font-serif text-stone-800 mb-4">What's Animal Communication?</h3>
-                        <p className="text-stone-600 leading-relaxed mb-4">{service.animalCommunication}</p>
+                        <h3 className="text-2xl font-serif text-stone-800 mb-4">
+                          What's Animal Communication?
+                        </h3>
+                        <p className="text-stone-600 leading-relaxed mb-4">
+                          {service.animalCommunication}
+                        </p>
                         {service.communicationHelps && (
                           <div className="space-y-2">
-                            <p className="font-medium text-stone-800">It can help you:</p>
+                            <p className="font-medium text-stone-800">
+                              It can help you:
+                            </p>
                             <ul className="space-y-2">
                               {service.communicationHelps.map((help, idx) => (
-                                <li key={idx} className="flex items-center gap-3">
+                                <li
+                                  key={idx}
+                                  className="flex items-center gap-3"
+                                >
                                   <CheckCircle className="h-4 w-4 text-sage-600" />
                                   <span className="text-stone-600">{help}</span>
                                 </li>
@@ -796,8 +870,12 @@ export default function DetailedServicesPage() {
                     {/* Pet & Parent Healing */}
                     {service.petParentHealing && (
                       <div className="space-y-6">
-                        <h3 className="text-2xl font-serif text-stone-800">Reiki Healing for Pets & Their Parents</h3>
-                        <p className="text-stone-600 leading-relaxed">{service.petParentHealing.description}</p>
+                        <h3 className="text-2xl font-serif text-stone-800">
+                          Reiki Healing for Pets & Their Parents
+                        </h3>
+                        <p className="text-stone-600 leading-relaxed">
+                          {service.petParentHealing.description}
+                        </p>
 
                         <div className="grid md:grid-cols-2 gap-6">
                           <Card className="border-stone-200">
@@ -807,12 +885,19 @@ export default function DetailedServicesPage() {
                                 For Pets
                               </h4>
                               <ul className="space-y-2">
-                                {service.petParentHealing.forPets.map((benefit, idx) => (
-                                  <li key={idx} className="flex items-start gap-2">
-                                    <CheckCircle className="h-4 w-4 text-sage-600 mt-0.5" />
-                                    <span className="text-stone-600 text-sm">{benefit}</span>
-                                  </li>
-                                ))}
+                                {service.petParentHealing.forPets.map(
+                                  (benefit, idx) => (
+                                    <li
+                                      key={idx}
+                                      className="flex items-start gap-2"
+                                    >
+                                      <CheckCircle className="h-4 w-4 text-sage-600 mt-0.5" />
+                                      <span className="text-stone-600 text-sm">
+                                        {benefit}
+                                      </span>
+                                    </li>
+                                  )
+                                )}
                               </ul>
                             </CardContent>
                           </Card>
@@ -824,20 +909,31 @@ export default function DetailedServicesPage() {
                                 For Pet Parents
                               </h4>
                               <ul className="space-y-2">
-                                {service.petParentHealing.forParents.map((benefit, idx) => (
-                                  <li key={idx} className="flex items-start gap-2">
-                                    <CheckCircle className="h-4 w-4 text-sage-600 mt-0.5" />
-                                    <span className="text-stone-600 text-sm">{benefit}</span>
-                                  </li>
-                                ))}
+                                {service.petParentHealing.forParents.map(
+                                  (benefit, idx) => (
+                                    <li
+                                      key={idx}
+                                      className="flex items-start gap-2"
+                                    >
+                                      <CheckCircle className="h-4 w-4 text-sage-600 mt-0.5" />
+                                      <span className="text-stone-600 text-sm">
+                                        {benefit}
+                                      </span>
+                                    </li>
+                                  )
+                                )}
                               </ul>
                             </CardContent>
                           </Card>
                         </div>
 
                         <div className="bg-amber-50 border border-amber-200 rounded-lg p-6">
-                          <h4 className="font-semibold text-amber-800 mb-3">Crossing the Rainbow Bridge</h4>
-                          <p className="text-amber-700 leading-relaxed">{service.petParentHealing.rainbowBridge}</p>
+                          <h4 className="font-semibold text-amber-800 mb-3">
+                            Crossing the Rainbow Bridge
+                          </h4>
+                          <p className="text-amber-700 leading-relaxed">
+                            {service.petParentHealing.rainbowBridge}
+                          </p>
                         </div>
                       </div>
                     )}
@@ -845,33 +941,52 @@ export default function DetailedServicesPage() {
                     {/* Meditation Programs */}
                     {service.programs && (
                       <div className="space-y-8">
-                        <h3 className="text-2xl font-serif text-stone-800">Meditation Offerings</h3>
+                        <h3 className="text-2xl font-serif text-stone-800">
+                          Meditation Offerings
+                        </h3>
                         {service.programs.map((program, idx) => (
                           <Card key={idx} className="border-stone-200">
                             <CardContent className="p-6 space-y-4">
                               <div className="flex items-start justify-between">
                                 <div className="flex-1">
-                                  <h4 className="text-xl font-semibold text-stone-800">{program.name}</h4>
-                                  <p className="text-sage-600 text-sm mt-1">{program.type}</p>
+                                  <h4 className="text-xl font-semibold text-stone-800">
+                                    {program.name}
+                                  </h4>
+                                  <p className="text-sage-600 text-sm mt-1">
+                                    {program.type}
+                                  </p>
                                 </div>
                                 {program.price && (
                                   <div className="text-right">
-                                    <div className="text-2xl font-bold text-sage-600">${program.price}</div>
-                                    <div className="text-sm text-stone-500">{program.note}</div>
+                                    <div className="text-2xl font-bold text-sage-600">
+                                      ${program.price}
+                                    </div>
+                                    <div className="text-sm text-stone-500">
+                                      {program.note}
+                                    </div>
                                   </div>
                                 )}
                               </div>
 
-                              <p className="text-stone-600 leading-relaxed">{program.description}</p>
+                              <p className="text-stone-600 leading-relaxed">
+                                {program.description}
+                              </p>
 
                               {program.values && (
                                 <div>
-                                  <h5 className="font-medium text-stone-800 mb-2">Values:</h5>
+                                  <h5 className="font-medium text-stone-800 mb-2">
+                                    Values:
+                                  </h5>
                                   <ul className="space-y-1">
                                     {program.values.map((value, valueIdx) => (
-                                      <li key={valueIdx} className="flex items-start gap-2">
+                                      <li
+                                        key={valueIdx}
+                                        className="flex items-start gap-2"
+                                      >
                                         <CheckCircle className="h-4 w-4 text-sage-600 mt-0.5" />
-                                        <span className="text-stone-600 text-sm">{value}</span>
+                                        <span className="text-stone-600 text-sm">
+                                          {value}
+                                        </span>
                                       </li>
                                     ))}
                                   </ul>
@@ -880,12 +995,19 @@ export default function DetailedServicesPage() {
 
                               {program.includes && (
                                 <div>
-                                  <h5 className="font-medium text-stone-800 mb-2">What's Included:</h5>
+                                  <h5 className="font-medium text-stone-800 mb-2">
+                                    What's Included:
+                                  </h5>
                                   <ul className="space-y-1">
                                     {program.includes.map((item, itemIdx) => (
-                                      <li key={itemIdx} className="flex items-start gap-2">
+                                      <li
+                                        key={itemIdx}
+                                        className="flex items-start gap-2"
+                                      >
                                         <CheckCircle className="h-4 w-4 text-sage-600 mt-0.5" />
-                                        <span className="text-stone-600 text-sm">{item}</span>
+                                        <span className="text-stone-600 text-sm">
+                                          {item}
+                                        </span>
                                       </li>
                                     ))}
                                   </ul>
@@ -894,35 +1016,55 @@ export default function DetailedServicesPage() {
 
                               {program.whyMorning && (
                                 <div>
-                                  <h5 className="font-medium text-stone-800 mb-2">Why Morning Meditation Works:</h5>
+                                  <h5 className="font-medium text-stone-800 mb-2">
+                                    Why Morning Meditation Works:
+                                  </h5>
                                   <ul className="space-y-1">
-                                    {program.whyMorning.map((reason, reasonIdx) => (
-                                      <li key={reasonIdx} className="flex items-start gap-2">
-                                        <Star className="h-4 w-4 text-sage-600 mt-0.5" />
-                                        <span className="text-stone-600 text-sm">{reason}</span>
-                                      </li>
-                                    ))}
+                                    {program.whyMorning.map(
+                                      (reason, reasonIdx) => (
+                                        <li
+                                          key={reasonIdx}
+                                          className="flex items-start gap-2"
+                                        >
+                                          <Star className="h-4 w-4 text-sage-600 mt-0.5" />
+                                          <span className="text-stone-600 text-sm">
+                                            {reason}
+                                          </span>
+                                        </li>
+                                      )
+                                    )}
                                   </ul>
                                 </div>
                               )}
 
                               {program.benefits && (
                                 <div>
-                                  <h5 className="font-medium text-stone-800 mb-2">Benefits of Group Meditation:</h5>
+                                  <h5 className="font-medium text-stone-800 mb-2">
+                                    Benefits of Group Meditation:
+                                  </h5>
                                   <ul className="space-y-1">
-                                    {program.benefits.map((benefit, benefitIdx) => (
-                                      <li key={benefitIdx} className="flex items-start gap-2">
-                                        <Users className="h-4 w-4 text-sage-600 mt-0.5" />
-                                        <span className="text-stone-600 text-sm">{benefit}</span>
-                                      </li>
-                                    ))}
+                                    {program.benefits.map(
+                                      (benefit, benefitIdx) => (
+                                        <li
+                                          key={benefitIdx}
+                                          className="flex items-start gap-2"
+                                        >
+                                          <Users className="h-4 w-4 text-sage-600 mt-0.5" />
+                                          <span className="text-stone-600 text-sm">
+                                            {benefit}
+                                          </span>
+                                        </li>
+                                      )
+                                    )}
                                   </ul>
                                 </div>
                               )}
 
                               {program.note && (
                                 <div className="bg-stone-50 p-4 rounded-lg">
-                                  <p className="text-stone-600 text-sm">{program.note}</p>
+                                  <p className="text-stone-600 text-sm">
+                                    {program.note}
+                                  </p>
                                 </div>
                               )}
                             </CardContent>
@@ -934,18 +1076,23 @@ export default function DetailedServicesPage() {
                     {/* Corporate Services */}
                     {service.services && (
                       <div className="space-y-6">
-                        <h3 className="text-2xl font-serif text-stone-800">Our Wellness Service Packages Include:</h3>
+                        <h3 className="text-2xl font-serif text-stone-800">
+                          Our Wellness Service Packages Include:
+                        </h3>
                         <div className="grid md:grid-cols-2 gap-6">
                           {service.services.map((corporateService, idx) => (
                             <Card key={idx} className="border-stone-200">
                               <CardContent className="p-6">
-                                <h4 className="font-semibold text-stone-800 mb-3">{corporateService.name}</h4>
+                                <h4 className="font-semibold text-stone-800 mb-3">
+                                  {corporateService.name}
+                                </h4>
                                 <p className="text-stone-600 text-sm mb-3 leading-relaxed">
                                   {corporateService.description}
                                 </p>
                                 <div className="bg-sage-50 p-3 rounded-lg">
                                   <p className="text-sage-700 text-sm">
-                                    <strong>Great for:</strong> {corporateService.greatFor}
+                                    <strong>Great for:</strong>{" "}
+                                    {corporateService.greatFor}
                                   </p>
                                 </div>
                               </CardContent>
@@ -953,29 +1100,40 @@ export default function DetailedServicesPage() {
                           ))}
                         </div>
 
-                        {service.whyChoose && Array.isArray(service.whyChoose) && (
-                          <div>
-                            <h4 className="text-xl font-semibold text-stone-800 mb-4">Why Choose Me?</h4>
-                            <ul className="space-y-2">
-                              {service.whyChoose.map((reason, idx) => (
-                                <li key={idx} className="flex items-start gap-3">
-                                  <Award className="h-5 w-5 text-sage-600 mt-0.5" />
-                                  <span className="text-stone-600">{reason}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
+                        {service.whyChoose &&
+                          Array.isArray(service.whyChoose) && (
+                            <div>
+                              <h4 className="text-xl font-semibold text-stone-800 mb-4">
+                                Why Choose Me?
+                              </h4>
+                              <ul className="space-y-2">
+                                {service.whyChoose.map((reason, idx) => (
+                                  <li
+                                    key={idx}
+                                    className="flex items-start gap-3"
+                                  >
+                                    <Award className="h-5 w-5 text-sage-600 mt-0.5" />
+                                    <span className="text-stone-600">
+                                      {reason}
+                                    </span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
                       </div>
                     )}
 
                     {/* Reiki Training Content */}
                     {service.whyLearn && (
                       <div>
-                        <h3 className="text-2xl font-serif text-stone-800 mb-4">Why Learn Reiki?</h3>
+                        <h3 className="text-2xl font-serif text-stone-800 mb-4">
+                          Why Learn Reiki?
+                        </h3>
                         <p className="text-stone-600 mb-4">
-                          Reiki is a gentle, natural energy healing method that works holistically on the mind, body,
-                          emotions, and spirit. By learning Reiki, you gain the ability to:
+                          Reiki is a gentle, natural energy healing method that
+                          works holistically on the mind, body, emotions, and
+                          spirit. By learning Reiki, you gain the ability to:
                         </p>
                         <ul className="space-y-2">
                           {service.whyLearn.map((benefit, idx) => (
@@ -990,18 +1148,29 @@ export default function DetailedServicesPage() {
 
                     {service.courses && (
                       <div>
-                        <h3 className="text-2xl font-serif text-stone-800 mb-6">Reiki Course Offerings</h3>
+                        <h3 className="text-2xl font-serif text-stone-800 mb-6">
+                          Reiki Course Offerings
+                        </h3>
                         <div className="space-y-6">
                           {service.courses.map((course, idx) => (
                             <Card key={idx} className="border-stone-200">
                               <CardContent className="p-6">
-                                <h4 className="text-xl font-semibold text-stone-800 mb-2">{course.level}</h4>
-                                <p className="text-sage-600 font-medium mb-4">{course.title}</p>
+                                <h4 className="text-xl font-semibold text-stone-800 mb-2">
+                                  {course.level}
+                                </h4>
+                                <p className="text-sage-600 font-medium mb-4">
+                                  {course.title}
+                                </p>
                                 <ul className="space-y-2">
                                   {course.includes.map((item, itemIdx) => (
-                                    <li key={itemIdx} className="flex items-center gap-3">
+                                    <li
+                                      key={itemIdx}
+                                      className="flex items-center gap-3"
+                                    >
                                       <CheckCircle className="h-4 w-4 text-sage-600" />
-                                      <span className="text-stone-600">{item}</span>
+                                      <span className="text-stone-600">
+                                        {item}
+                                      </span>
                                     </li>
                                   ))}
                                 </ul>
@@ -1014,30 +1183,50 @@ export default function DetailedServicesPage() {
 
                     {service.animalReikiTraining && (
                       <div className="space-y-6">
-                        <h3 className="text-2xl font-serif text-stone-800">Learn Animal Reiki & Communication</h3>
-                        <p className="text-stone-600 leading-relaxed">{service.animalReikiTraining.description}</p>
+                        <h3 className="text-2xl font-serif text-stone-800">
+                          Learn Animal Reiki & Communication
+                        </h3>
+                        <p className="text-stone-600 leading-relaxed">
+                          {service.animalReikiTraining.description}
+                        </p>
 
                         <div>
-                          <h4 className="text-xl font-semibold text-stone-800 mb-4">Why Learn Animal Reiki?</h4>
+                          <h4 className="text-xl font-semibold text-stone-800 mb-4">
+                            Why Learn Animal Reiki?
+                          </h4>
                           <ul className="space-y-2">
-                            {service.animalReikiTraining.whyLearn.map((reason, idx) => (
-                              <li key={idx} className="flex items-center gap-3">
-                                <CheckCircle className="h-4 w-4 text-sage-600" />
-                                <span className="text-stone-600">{reason}</span>
-                              </li>
-                            ))}
+                            {service.animalReikiTraining.whyLearn.map(
+                              (reason, idx) => (
+                                <li
+                                  key={idx}
+                                  className="flex items-center gap-3"
+                                >
+                                  <CheckCircle className="h-4 w-4 text-sage-600" />
+                                  <span className="text-stone-600">
+                                    {reason}
+                                  </span>
+                                </li>
+                              )
+                            )}
                           </ul>
                         </div>
 
                         <div>
-                          <h4 className="text-xl font-semibold text-stone-800 mb-4">Training Includes:</h4>
+                          <h4 className="text-xl font-semibold text-stone-800 mb-4">
+                            Training Includes:
+                          </h4>
                           <ul className="space-y-2">
-                            {service.animalReikiTraining.includes.map((item, idx) => (
-                              <li key={idx} className="flex items-center gap-3">
-                                <CheckCircle className="h-4 w-4 text-sage-600" />
-                                <span className="text-stone-600">{item}</span>
-                              </li>
-                            ))}
+                            {service.animalReikiTraining.includes.map(
+                              (item, idx) => (
+                                <li
+                                  key={idx}
+                                  className="flex items-center gap-3"
+                                >
+                                  <CheckCircle className="h-4 w-4 text-sage-600" />
+                                  <span className="text-stone-600">{item}</span>
+                                </li>
+                              )
+                            )}
                           </ul>
                         </div>
                       </div>
@@ -1045,8 +1234,12 @@ export default function DetailedServicesPage() {
 
                     {service.unique && (
                       <div className="bg-sage-50 p-6 rounded-xl">
-                        <h4 className="text-xl font-semibold text-stone-800 mb-4">What Makes My Training Unique?</h4>
-                        <p className="text-stone-600 leading-relaxed">{service.unique}</p>
+                        <h4 className="text-xl font-semibold text-stone-800 mb-4">
+                          What Makes My Training Unique?
+                        </h4>
+                        <p className="text-stone-600 leading-relaxed">
+                          {service.unique}
+                        </p>
                       </div>
                     )}
 
@@ -1069,13 +1262,21 @@ export default function DetailedServicesPage() {
                           <Card className="border-sage-200">
                             <CardContent className="p-6">
                               <div className="flex justify-between items-center mb-4">
-                                <h4 className="text-lg font-semibold text-stone-800">Single Session</h4>
-                                <div className="text-2xl font-bold text-sage-600">${service.pricing.single}</div>
+                                <h4 className="text-lg font-semibold text-stone-800">
+                                  Single Session
+                                </h4>
+                                <div className="text-2xl font-bold text-sage-600">
+                                  ${service.pricing.single}
+                                </div>
                               </div>
                               {service.pricing.includes && (
-                                <p className="text-stone-600 text-sm mb-4">{service.pricing.includes}</p>
+                                <p className="text-stone-600 text-sm mb-4">
+                                  {service.pricing.includes}
+                                </p>
                               )}
-                              <Link href={`/booking?service=${service.id}&package=single`}>
+                              <Link
+                                href={`/booking?service=${service.id}&package=single`}
+                              >
                                 <Button className="w-full bg-sage-600 hover:bg-sage-700 text-white">
                                   Book Single Session
                                 </Button>
@@ -1097,42 +1298,63 @@ export default function DetailedServicesPage() {
                               <Card className="border-stone-200">
                                 <CardContent className="p-4">
                                   <div className="flex justify-between items-center mb-3">
-                                    <span className="font-medium text-stone-800">Single Session</span>
+                                    <span className="font-medium text-stone-800">
+                                      Single Session
+                                    </span>
                                     <span className="text-lg font-bold text-sage-600">
                                       ${service.pricing.inPerson.single}
                                     </span>
                                   </div>
                                   {service.pricing.inPerson.duration && (
-                                    <p className="text-xs text-stone-500 mb-3">{service.pricing.inPerson.duration}</p>
+                                    <p className="text-xs text-stone-500 mb-3">
+                                      {service.pricing.inPerson.duration}
+                                    </p>
                                   )}
-                                  <Link href={`/booking?service=${service.id}&type=in-person&package=single`}>
-                                    <Button size="sm" className="w-full bg-sage-600 hover:bg-sage-700 text-white">
+                                  <Link
+                                    href={`/booking?service=${service.id}&type=in-person&package=single`}
+                                  >
+                                    <Button
+                                      size="sm"
+                                      className="w-full bg-sage-600 hover:bg-sage-700 text-white"
+                                    >
                                       Book In-Person
                                     </Button>
                                   </Link>
                                 </CardContent>
                               </Card>
 
-                              {service.pricing.inPerson.packages?.map((pkg, idx) => (
-                                <Card key={idx} className="border-stone-200">
-                                  <CardContent className="p-4">
-                                    <div className="flex justify-between items-center mb-3">
-                                      <span className="font-medium text-stone-800">{pkg.sessions} Sessions</span>
-                                      <span className="text-lg font-bold text-sage-600">${pkg.price}</span>
-                                    </div>
-                                    <div className="text-xs text-stone-500 mb-3">
-                                      Save ${service.pricing.inPerson.single * pkg.sessions - pkg.price}
-                                    </div>
-                                    <Link
-                                      href={`/booking?service=${service.id}&type=in-person&package=${pkg.sessions}-sessions`}
-                                    >
-                                      <Button size="sm" className="w-full bg-sage-600 hover:bg-sage-700 text-white">
-                                        Book {pkg.sessions} Sessions
-                                      </Button>
-                                    </Link>
-                                  </CardContent>
-                                </Card>
-                              ))}
+                              {service.pricing.inPerson.packages?.map(
+                                (pkg, idx) => (
+                                  <Card key={idx} className="border-stone-200">
+                                    <CardContent className="p-4">
+                                      <div className="flex justify-between items-center mb-3">
+                                        <span className="font-medium text-stone-800">
+                                          {pkg.sessions} Sessions
+                                        </span>
+                                        <span className="text-lg font-bold text-sage-600">
+                                          ${pkg.price}
+                                        </span>
+                                      </div>
+                                      <div className="text-xs text-stone-500 mb-3">
+                                        Save $
+                                        {service.pricing.inPerson.single *
+                                          pkg.sessions -
+                                          pkg.price}
+                                      </div>
+                                      <Link
+                                        href={`/booking?service=${service.id}&type=in-person&package=${pkg.sessions}-sessions`}
+                                      >
+                                        <Button
+                                          size="sm"
+                                          className="w-full bg-sage-600 hover:bg-sage-700 text-white"
+                                        >
+                                          Book {pkg.sessions} Sessions
+                                        </Button>
+                                      </Link>
+                                    </CardContent>
+                                  </Card>
+                                )
+                              )}
                             </div>
                           </div>
 
@@ -1146,39 +1368,61 @@ export default function DetailedServicesPage() {
                                 <Card className="border-stone-200">
                                   <CardContent className="p-4">
                                     <div className="flex justify-between items-center mb-3">
-                                      <span className="font-medium text-stone-800">Single Session</span>
+                                      <span className="font-medium text-stone-800">
+                                        Single Session
+                                      </span>
                                       <span className="text-lg font-bold text-sage-600">
                                         ${service.pricing.distance.single}
                                       </span>
                                     </div>
-                                    <Link href={`/booking?service=${service.id}&type=distance&package=single`}>
-                                      <Button size="sm" className="w-full bg-sage-600 hover:bg-sage-700 text-white">
+                                    <Link
+                                      href={`/booking?service=${service.id}&type=distance&package=single`}
+                                    >
+                                      <Button
+                                        size="sm"
+                                        className="w-full bg-sage-600 hover:bg-sage-700 text-white"
+                                      >
                                         Book Distance
                                       </Button>
                                     </Link>
                                   </CardContent>
                                 </Card>
 
-                                {service.pricing.distance.packages?.map((pkg, idx) => (
-                                  <Card key={idx} className="border-stone-200">
-                                    <CardContent className="p-4">
-                                      <div className="flex justify-between items-center mb-3">
-                                        <span className="font-medium text-stone-800">{pkg.sessions} Sessions</span>
-                                        <span className="text-lg font-bold text-sage-600">${pkg.price}</span>
-                                      </div>
-                                      <div className="text-xs text-stone-500 mb-3">
-                                        Save ${service.pricing.distance.single * pkg.sessions - pkg.price}
-                                      </div>
-                                      <Link
-                                        href={`/booking?service=${service.id}&type=distance&package=${pkg.sessions}-sessions`}
-                                      >
-                                        <Button size="sm" className="w-full bg-sage-600 hover:bg-sage-700 text-white">
-                                          Book {pkg.sessions}
-                                        </Button>
-                                      </Link>
-                                    </CardContent>
-                                  </Card>
-                                ))}
+                                {service.pricing.distance.packages?.map(
+                                  (pkg, idx) => (
+                                    <Card
+                                      key={idx}
+                                      className="border-stone-200"
+                                    >
+                                      <CardContent className="p-4">
+                                        <div className="flex justify-between items-center mb-3">
+                                          <span className="font-medium text-stone-800">
+                                            {pkg.sessions} Sessions
+                                          </span>
+                                          <span className="text-lg font-bold text-sage-600">
+                                            ${pkg.price}
+                                          </span>
+                                        </div>
+                                        <div className="text-xs text-stone-500 mb-3">
+                                          Save $
+                                          {service.pricing.distance.single *
+                                            pkg.sessions -
+                                            pkg.price}
+                                        </div>
+                                        <Link
+                                          href={`/booking?service=${service.id}&type=distance&package=${pkg.sessions}-sessions`}
+                                        >
+                                          <Button
+                                            size="sm"
+                                            className="w-full bg-sage-600 hover:bg-sage-700 text-white"
+                                          >
+                                            Book {pkg.sessions}
+                                          </Button>
+                                        </Link>
+                                      </CardContent>
+                                    </Card>
+                                  )
+                                )}
                               </div>
                             </div>
                           )}
@@ -1186,24 +1430,39 @@ export default function DetailedServicesPage() {
                           {/* Pet & Parent Package */}
                           {service.pricing.petParentPackage && (
                             <div className="bg-amber-50 border border-amber-200 rounded-lg p-6">
-                              <h4 className="text-lg font-semibold text-amber-800 mb-4">Pet & Parent Package</h4>
-                              <p className="text-amber-700 text-sm mb-4">Healing sessions for both you and your pet</p>
+                              <h4 className="text-lg font-semibold text-amber-800 mb-4">
+                                Pet & Parent Package
+                              </h4>
+                              <p className="text-amber-700 text-sm mb-4">
+                                Healing sessions for both you and your pet
+                              </p>
 
                               <div className="space-y-4">
                                 <div>
-                                  <h5 className="font-medium text-amber-800 mb-3">In-Person Package</h5>
+                                  <h5 className="font-medium text-amber-800 mb-3">
+                                    In-Person Package
+                                  </h5>
                                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
                                     <Card className="border-amber-200 bg-white">
                                       <CardContent className="p-3">
                                         <div className="text-center">
                                           <div className="text-lg font-bold text-sage-600">
-                                            ${service.pricing.petParentPackage.inPerson.single}
+                                            $
+                                            {
+                                              service.pricing.petParentPackage
+                                                .inPerson.single
+                                            }
                                           </div>
-                                          <div className="text-xs text-stone-600 mb-2">Single Session</div>
+                                          <div className="text-xs text-stone-600 mb-2">
+                                            Single Session
+                                          </div>
                                           <Link
                                             href={`/booking?service=${service.id}&type=pet-parent-in-person&package=single`}
                                           >
-                                            <Button size="sm" className="w-full text-xs bg-sage-600 hover:bg-sage-700">
+                                            <Button
+                                              size="sm"
+                                              className="w-full text-xs bg-sage-600 hover:bg-sage-700"
+                                            >
                                               Book
                                             </Button>
                                           </Link>
@@ -1211,43 +1470,63 @@ export default function DetailedServicesPage() {
                                       </CardContent>
                                     </Card>
 
-                                    {service.pricing.petParentPackage.inPerson.packages?.map((pkg, idx) => (
-                                      <Card key={idx} className="border-amber-200 bg-white">
-                                        <CardContent className="p-3">
-                                          <div className="text-center">
-                                            <div className="text-lg font-bold text-sage-600">${pkg.price}</div>
-                                            <div className="text-xs text-stone-600 mb-2">{pkg.sessions} Sessions</div>
-                                            <Link
-                                              href={`/booking?service=${service.id}&type=pet-parent-in-person&package=${pkg.sessions}-sessions`}
-                                            >
-                                              <Button
-                                                size="sm"
-                                                className="w-full text-xs bg-sage-600 hover:bg-sage-700"
+                                    {service.pricing.petParentPackage.inPerson.packages?.map(
+                                      (pkg, idx) => (
+                                        <Card
+                                          key={idx}
+                                          className="border-amber-200 bg-white"
+                                        >
+                                          <CardContent className="p-3">
+                                            <div className="text-center">
+                                              <div className="text-lg font-bold text-sage-600">
+                                                ${pkg.price}
+                                              </div>
+                                              <div className="text-xs text-stone-600 mb-2">
+                                                {pkg.sessions} Sessions
+                                              </div>
+                                              <Link
+                                                href={`/booking?service=${service.id}&type=pet-parent-in-person&package=${pkg.sessions}-sessions`}
                                               >
-                                                Book
-                                              </Button>
-                                            </Link>
-                                          </div>
-                                        </CardContent>
-                                      </Card>
-                                    ))}
+                                                <Button
+                                                  size="sm"
+                                                  className="w-full text-xs bg-sage-600 hover:bg-sage-700"
+                                                >
+                                                  Book
+                                                </Button>
+                                              </Link>
+                                            </div>
+                                          </CardContent>
+                                        </Card>
+                                      )
+                                    )}
                                   </div>
                                 </div>
 
                                 <div>
-                                  <h5 className="font-medium text-amber-800 mb-3">Distance Package</h5>
+                                  <h5 className="font-medium text-amber-800 mb-3">
+                                    Distance Package
+                                  </h5>
                                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
                                     <Card className="border-amber-200 bg-white">
                                       <CardContent className="p-3">
                                         <div className="text-center">
                                           <div className="text-lg font-bold text-sage-600">
-                                            ${service.pricing.petParentPackage.distance.single}
+                                            $
+                                            {
+                                              service.pricing.petParentPackage
+                                                .distance.single
+                                            }
                                           </div>
-                                          <div className="text-xs text-stone-600 mb-2">Single Session</div>
+                                          <div className="text-xs text-stone-600 mb-2">
+                                            Single Session
+                                          </div>
                                           <Link
                                             href={`/booking?service=${service.id}&type=pet-parent-distance&package=single`}
                                           >
-                                            <Button size="sm" className="w-full text-xs bg-sage-600 hover:bg-sage-700">
+                                            <Button
+                                              size="sm"
+                                              className="w-full text-xs bg-sage-600 hover:bg-sage-700"
+                                            >
                                               Book
                                             </Button>
                                           </Link>
@@ -1255,26 +1534,35 @@ export default function DetailedServicesPage() {
                                       </CardContent>
                                     </Card>
 
-                                    {service.pricing.petParentPackage.distance.packages?.map((pkg, idx) => (
-                                      <Card key={idx} className="border-amber-200 bg-white">
-                                        <CardContent className="p-3">
-                                          <div className="text-center">
-                                            <div className="text-lg font-bold text-sage-600">${pkg.price}</div>
-                                            <div className="text-xs text-stone-600 mb-2">{pkg.sessions} Sessions</div>
-                                            <Link
-                                              href={`/booking?service=${service.id}&type=pet-parent-distance&package=${pkg.sessions}-sessions`}
-                                            >
-                                              <Button
-                                                size="sm"
-                                                className="w-full text-xs bg-sage-600 hover:bg-sage-700"
+                                    {service.pricing.petParentPackage.distance.packages?.map(
+                                      (pkg, idx) => (
+                                        <Card
+                                          key={idx}
+                                          className="border-amber-200 bg-white"
+                                        >
+                                          <CardContent className="p-3">
+                                            <div className="text-center">
+                                              <div className="text-lg font-bold text-sage-600">
+                                                ${pkg.price}
+                                              </div>
+                                              <div className="text-xs text-stone-600 mb-2">
+                                                {pkg.sessions} Sessions
+                                              </div>
+                                              <Link
+                                                href={`/booking?service=${service.id}&type=pet-parent-distance&package=${pkg.sessions}-sessions`}
                                               >
-                                                Book
-                                              </Button>
-                                            </Link>
-                                          </div>
-                                        </CardContent>
-                                      </Card>
-                                    ))}
+                                                <Button
+                                                  size="sm"
+                                                  className="w-full text-xs bg-sage-600 hover:bg-sage-700"
+                                                >
+                                                  Book
+                                                </Button>
+                                              </Link>
+                                            </div>
+                                          </CardContent>
+                                        </Card>
+                                      )
+                                    )}
                                   </div>
                                 </div>
                               </div>
@@ -1289,13 +1577,19 @@ export default function DetailedServicesPage() {
                           <Card className="border-amber-200 bg-amber-50">
                             <CardContent className="p-6">
                               <div className="flex justify-between items-center mb-4">
-                                <h4 className="text-lg font-semibold text-amber-800">Age Regression Therapy</h4>
+                                <h4 className="text-lg font-semibold text-amber-800">
+                                  Age Regression Therapy
+                                </h4>
                                 <div className="text-2xl font-bold text-sage-600">
                                   ${service.pricing.ageRegression.price}
                                 </div>
                               </div>
-                              <p className="text-amber-700 text-sm mb-4">{service.pricing.ageRegression.note}</p>
-                              <Link href={`/booking?service=${service.id}&program=age-regression`}>
+                              <p className="text-amber-700 text-sm mb-4">
+                                {service.pricing.ageRegression.note}
+                              </p>
+                              <Link
+                                href={`/booking?service=${service.id}&program=age-regression`}
+                              >
                                 <Button className="w-full bg-sage-600 hover:bg-sage-700 text-white">
                                   Book Age Regression Therapy
                                 </Button>
@@ -1315,30 +1609,50 @@ export default function DetailedServicesPage() {
                         </h3>
                         <div className="space-y-8">
                           {service.specialPrograms.map((program, idx) => (
-                            <Card key={idx} className="border-stone-200 overflow-hidden">
+                            <Card
+                              key={idx}
+                              className="border-stone-200 overflow-hidden"
+                            >
                               <CardContent className="p-0">
                                 <div className="bg-gradient-to-r from-sage-50 to-stone-50 p-6">
                                   <div className="flex justify-between items-start mb-4">
                                     <div>
-                                      <h4 className="text-2xl font-serif text-stone-800">{program.name}</h4>
-                                      <p className="text-sage-600 font-medium">{program.duration}</p>
+                                      <h4 className="text-2xl font-serif text-stone-800">
+                                        {program.name}
+                                      </h4>
+                                      <p className="text-sage-600 font-medium">
+                                        {program.duration}
+                                      </p>
                                     </div>
                                     <div className="text-right">
-                                      <div className="text-3xl font-bold text-sage-600">${program.price}</div>
-                                      <div className="text-sm text-stone-500">Complete Program</div>
+                                      <div className="text-3xl font-bold text-sage-600">
+                                        ${program.price}
+                                      </div>
+                                      <div className="text-sm text-stone-500">
+                                        Complete Program
+                                      </div>
                                     </div>
                                   </div>
-                                  <p className="text-stone-600 leading-relaxed">{program.description}</p>
+                                  <p className="text-stone-600 leading-relaxed">
+                                    {program.description}
+                                  </p>
                                 </div>
 
                                 <div className="p-6 space-y-6">
                                   <div>
-                                    <h5 className="font-semibold text-stone-800 mb-3">What's Included:</h5>
+                                    <h5 className="font-semibold text-stone-800 mb-3">
+                                      What's Included:
+                                    </h5>
                                     <div className="grid md:grid-cols-2 gap-2">
                                       {program.includes.map((item, itemIdx) => (
-                                        <div key={itemIdx} className="flex items-start gap-2">
+                                        <div
+                                          key={itemIdx}
+                                          className="flex items-start gap-2"
+                                        >
                                           <CheckCircle className="h-4 w-4 text-sage-600 mt-0.5 flex-shrink-0" />
-                                          <span className="text-stone-600 text-sm">{item}</span>
+                                          <span className="text-stone-600 text-sm">
+                                            {item}
+                                          </span>
                                         </div>
                                       ))}
                                     </div>
@@ -1346,19 +1660,30 @@ export default function DetailedServicesPage() {
 
                                   {program.benefits && (
                                     <div>
-                                      <h5 className="font-semibold text-stone-800 mb-3">Program Benefits:</h5>
+                                      <h5 className="font-semibold text-stone-800 mb-3">
+                                        Program Benefits:
+                                      </h5>
                                       <div className="grid md:grid-cols-2 gap-2">
-                                        {program.benefits.map((benefit, benefitIdx) => (
-                                          <div key={benefitIdx} className="flex items-start gap-2">
-                                            <Star className="h-4 w-4 text-sage-600 mt-0.5 flex-shrink-0" />
-                                            <span className="text-stone-600 text-sm">{benefit}</span>
-                                          </div>
-                                        ))}
+                                        {program.benefits.map(
+                                          (benefit, benefitIdx) => (
+                                            <div
+                                              key={benefitIdx}
+                                              className="flex items-start gap-2"
+                                            >
+                                              <Star className="h-4 w-4 text-sage-600 mt-0.5 flex-shrink-0" />
+                                              <span className="text-stone-600 text-sm">
+                                                {benefit}
+                                              </span>
+                                            </div>
+                                          )
+                                        )}
                                       </div>
                                     </div>
                                   )}
 
-                                  <Link href={`/booking?service=${service.id}&program=${program.id}`}>
+                                  <Link
+                                    href={`/booking?service=${service.id}&program=${program.id}`}
+                                  >
                                     <Button className="w-full bg-sage-600 hover:bg-sage-700 text-white">
                                       Book {program.name}
                                     </Button>
@@ -1373,13 +1698,19 @@ export default function DetailedServicesPage() {
 
                     {/* Contact CTA */}
                     <div className="bg-sage-600 text-white rounded-xl p-8 text-center">
-                      <h3 className="text-2xl font-serif mb-4">Ready to Begin Your Healing Journey?</h3>
+                      <h3 className="text-2xl font-serif mb-4">
+                        Ready to Begin Your Healing Journey?
+                      </h3>
                       <p className="text-sage-100 mb-6 max-w-2xl mx-auto">
-                        Take the first step towards transformation. Book your session or free consultation today.
+                        Take the first step towards transformation. Book your
+                        session or free consultation today.
                       </p>
                       <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <Link href={`/booking?service=${service.id}`}>
-                          <Button size="lg" className="bg-white text-sage-600 hover:bg-stone-50">
+                          <Button
+                            size="lg"
+                            className="bg-white text-sage-600 hover:bg-stone-50"
+                          >
                             <Calendar className="h-5 w-5 mr-2" />
                             Book This Service
                           </Button>
@@ -1410,10 +1741,12 @@ export default function DetailedServicesPage() {
       <section className="py-20 bg-stone-800 text-white">
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-4xl mx-auto space-y-8">
-            <h2 className="text-3xl lg:text-4xl font-serif">Questions About Our Services?</h2>
+            <h2 className="text-3xl lg:text-4xl font-serif">
+              Questions About Our Services?
+            </h2>
             <p className="text-stone-300 text-lg">
-              I'm here to help you choose the right healing approach for your unique needs. Contact me for personalized
-              guidance.
+              I'm here to help you choose the right healing approach for your
+              unique needs. Contact me for personalized guidance.
             </p>
 
             <div className="grid md:grid-cols-3 gap-8 mt-12">
@@ -1422,14 +1755,14 @@ export default function DetailedServicesPage() {
                 <h3 className="font-semibold">Phone</h3>
                 <div className="space-y-1 text-stone-300">
                   <div>+61 429 940 130</div>
-                  <div>+61 8 9221 1188</div>
+                  {/* <div>+61 8 9221 1188</div> */}
                 </div>
               </div>
 
               <div className="space-y-3">
                 <Mail className="h-8 w-8 text-sage-400 mx-auto" />
                 <h3 className="font-semibold">Email</h3>
-                <div className="text-stone-300">hello@mindandsoul.com.au</div>
+                <div className="text-stone-300">healwithrangika@gmail.com</div>
               </div>
 
               <div className="space-y-3">
@@ -1447,7 +1780,10 @@ export default function DetailedServicesPage() {
 
             <div className="pt-8">
               <Link href="/contact">
-                <Button size="lg" className="bg-sage-600 hover:bg-sage-700 text-white">
+                <Button
+                  size="lg"
+                  className="bg-sage-600 hover:bg-sage-700 text-white"
+                >
                   Get In Touch Today
                 </Button>
               </Link>
@@ -1456,5 +1792,5 @@ export default function DetailedServicesPage() {
         </div>
       </section>
     </div>
-  )
+  );
 }

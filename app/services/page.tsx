@@ -459,7 +459,11 @@ export default function ServicesPage() {
                   value={service.id}
                   className="text-xs"
                 >
-                  {service.title.split(" ")[0]}
+                  {service.id === "animal-reiki"
+                    ? "Animal Reiki"
+                    : service.id === "lama-fera"
+                    ? "Lama Fera"
+                    : service.title.split(" ")[0]}
                 </TabsTrigger>
               ))}
             </TabsList>

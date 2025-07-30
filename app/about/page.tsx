@@ -72,7 +72,7 @@ export default function AboutPage() {
           <div className="max-w-4xl mx-auto space-y-12">
             <div className="text-center space-y-4">
               <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">
-                My Journey to Hypnotherapy
+                My Journey
               </h2>
               <p className="text-stone-600 text-lg leading-relaxed">
                 Every journey begins with a single step, and mine started with a
@@ -197,7 +197,7 @@ export default function AboutPage() {
                 icon: CheckCircle,
                 title: "Professional Memberships",
                 description:
-                  "Member of International Association for Reiki Professionals",
+                  "Member of International Institute for Complimentary Therapists & Member of International Association for Reiki Professionals",
                 category: "Professional Bodies",
               },
               {

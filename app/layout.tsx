@@ -66,7 +66,7 @@ export default function RootLayout({
                 </Link>
                 <Link href="/booking">
                   <Button className="bg-sage-600 hover:bg-sage-700 text-white">
-                    Book Session
+                    Book a Session
                   </Button>
                 </Link>
               </nav>
