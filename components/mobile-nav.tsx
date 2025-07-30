@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Leaf } from "lucide-react";
+import Image from "next/image";
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
@@ -34,7 +35,7 @@ export function MobileNav() {
               className="flex items-center gap-2"
               onClick={() => setOpen(false)}
             >
-              <Leaf className="h-6 w-6 text-sage-600" />
+              <Image width={64} height={64} src="/logo.jpeg" alt="logo" />
               <span className="text-lg font-serif text-stone-800">
                 Heal With Rangika
               </span>
@@ -73,8 +74,8 @@ export function MobileNav() {
             </div>
             <div>
               <p className="font-medium text-stone-800">Hours</p>
-              <p>Mon-Fri: 9AM-6PM</p>
-              <p>Sat: 9AM-2PM</p>
+              <p>Mon-Sat: 8AM-6.30PM</p>
+              {/* <p>Sat: 9AM-2PM</p> */}
             </div>
           </div>
         </div>

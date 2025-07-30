@@ -306,7 +306,7 @@ export default function ManageBookingPage() {
                   <Phone className="h-8 w-8 text-sage-600 mx-auto" />
                   <h3 className="font-semibold text-stone-800">Phone Support</h3>
                   <p className="text-sm text-stone-600">+61 429 940 130</p>
-                  <p className="text-xs text-stone-500">Mon-Fri: 9AM-6PM</p>
+                  <p className="text-xs text-stone-500">Mon-Sat: 8AM-6.30PM</p>
                 </CardContent>
               </Card>
 

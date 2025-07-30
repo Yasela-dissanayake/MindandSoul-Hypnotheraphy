@@ -32,7 +32,7 @@ export default function RootLayout({
               {/* Logo */}
               <Link href="/" className="flex items-center gap-2">
                 {/* <Leaf className="h-8 w-8 text-sage-600" /> */}
-                <Image width={64} height={64} src="logo.jpeg" alt="logo" />
+                <Image width={64} height={64} src="/logo.jpeg" alt="logo" />
                 <h1 className="text-2xl font-serif text-stone-800">
                   Heal With Rangika
                 </h1>
