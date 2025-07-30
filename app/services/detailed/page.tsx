@@ -620,10 +620,10 @@ export default function DetailedServicesPage() {
 
                         {/* Quick Info */}
                         <div className="flex flex-wrap gap-4">
-                          <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-stone-200">
+                          {/* <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-stone-200">
                             <Clock className="h-4 w-4 text-sage-600" />
                             <span className="text-sm text-stone-700">{service.duration}</span>
-                          </div>
+                          </div> */}
                           {service.consultation && (
                             <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-stone-200">
                               <Phone className="h-4 w-4 text-sage-600" />
