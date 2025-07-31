@@ -176,8 +176,7 @@ export default function DetailedServicesPage() {
         "Explore Your Soul's Journey. Heal Through the Wisdom of the Past",
       description:
         "Past Life Regression (PLR) is a gentle yet powerful therapeutic technique that allows you to access memories, emotions, and experiences from previous lifetimes that may still be influencing your current life. Through guided hypnosis, you'll journey beyond the limits of your conscious mind—unlocking deep inner knowledge, unresolved patterns, karmic connections, and the root cause of emotional, physical, or spiritual challenges.",
-      image:
-        "https://images.unsplash.com/photo-1518709268805-4e9042af2176?q=80&w=1200&auto=format&fit=crop",
+      image: "/past-regression.jpeg",
       duration: "90-120 minutes",
       consultation: "Pre session Discussion (Online, 30minutes)",
       pricing: {
