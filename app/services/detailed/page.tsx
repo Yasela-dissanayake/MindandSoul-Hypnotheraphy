@@ -1769,11 +1769,17 @@ export default function DetailedServicesPage() {
                 <MapPin className="h-8 w-8 text-sage-400 mx-auto" />
                 <h3 className="font-semibold">Location</h3>
                 <div className="text-stone-300">
-                  Perth Health Care
+                  Perth Healthcare Centre
                   <br />
-                  125 Royal Street
+                  Ground floor
                   <br />
-                  East Perth, WA 6004
+                  Shop 2/1260
+                  <br />
+                  Hay Street
+                  <br />
+                  West Perth WA 6005
+                  <br />
+                  Australia
                 </div>
               </div>
             </div>

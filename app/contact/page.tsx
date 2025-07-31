@@ -510,11 +510,17 @@ export default function ContactPage() {
                   <div>
                     <div className="font-semibold text-stone-800">Address</div>
                     <div className="text-stone-600">
-                      Perth Health Care
+                      Perth Healthcare Centre
                       <br />
-                      East Perth, 125 Royal Street
+                      Ground floor
                       <br />
-                      WA 6004
+                      Shop 2/1260
+                      <br />
+                      Hay Street
+                      <br />
+                      West Perth WA 6005
+                      <br />
+                      Australia
                     </div>
                   </div>
                 </div>

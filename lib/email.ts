@@ -180,10 +180,12 @@ export async function sendClientBookingConfirmation({
                   <h3 style="color: #2d3748; margin: 0 0 15px 0; font-size: 16px;">📍 Location & Directions</h3>
                   <p style="color: #4a5568; margin: 0 0 10px 0; line-height: 1.5;">
                     <strong>Heal With Rangika</strong><br>
-                    Perth Health Care<br>
-                    East Perth<br>
-                    125 Royal Street<br>
-                    WA 6004
+                    Perth Healthcare Centre<br>
+                    Ground floor<br>
+                    Shop 2/1260<br>
+                    Hay Street<br>
+                    West Perth WA 6005<br>
+                    Australia
                   </p>
     
                 </div>
@@ -255,7 +257,7 @@ export async function sendClientBookingConfirmation({
             <!-- Footer -->
             <div style="background-color: #2d3748; padding: 20px 30px; text-align: center;">
               <p style="color: #a0aec0; margin: 0; font-size: 14px;">
-                Heal With Rangika | Perth Health Care, East Perth, 125 Royal Street, WA 6004
+                Heal With Rangika | Perth Healthcare Centre, Ground floor, Shop 2/1260, Hay Street, West Perth WA 6005, Australia
               </p>
               <p style="color: #718096; margin: 10px 0 0 0; font-size: 12px;">
                 This email was sent regarding your booking confirmation. Please keep this email for your records.

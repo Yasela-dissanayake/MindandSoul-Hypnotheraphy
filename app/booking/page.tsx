@@ -1136,8 +1136,7 @@ export default function BookingPage() {
                                     Visit our peaceful practice in Perth
                                   </p>
                                   <p className="text-xs text-stone-500">
-                                    Perth Health Care, East Perth, 125 Royal
-                                    Street, WA 6004
+                                    Perth Healthcare Centre, Ground floor, Shop 2/1260, Hay Street, West Perth WA 6005, Australia
                                   </p>
                                   <p className="text-sm font-semibold text-sage-600">
                                     $
