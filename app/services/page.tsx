@@ -104,14 +104,14 @@ export default function ServicesPage() {
           description:
             "Address the mind-body connection to manage IBS symptoms and improve digestive health",
         },
-        {
-          id: "past-life",
-          name: "Past Life Regression Therapy",
-          price: 235,
-          note: "per session",
-          description:
-            "Explore past life memories to understand current patterns and relationships",
-        },
+        // {
+        //   id: "past-life",
+        //   name: "Past Life Regression Therapy",
+        //   price: 235,
+        //   note: "per session",
+        //   description:
+        //     "Explore past life memories to understand current patterns and relationships",
+        // },
       ],
       bookable: true,
     },
@@ -256,6 +256,73 @@ export default function ServicesPage() {
         "Deepen spiritual connection and inner wisdom",
         "Create greater peace and presence in daily life",
         "Open paths to spiritual journeys",
+      ],
+      bookable: false,
+    },
+    {
+      id: "past-regression",
+      icon: GraduationCap, // Suggestion: Globe represents journeys, lifetimes, and exploration
+      image: "past-regression.jpeg",
+      title: "Past Life Regression",
+      shortDesc: "Explore your soul's journey through time and lifetimes.",
+      fullDesc:
+        "Explore Your Soul’s Journey. Heal Through the Wisdom of the Past. Past Life Regression (PLR) is a gentle yet powerful therapeutic technique that allows you to access memories, emotions, and experiences from previous lifetimes that may still be influencing your current life. Through guided hypnosis, you’ll journey beyond the limits of your conscious mind—unlocking deep inner knowledge, unresolved patterns, karmic connections, and the root cause of emotional, physical, or spiritual challenges.",
+      duration: "60-90 minutes",
+      pricing: {
+        single: 235,
+        note: "per session",
+      },
+      sessions: "Single sessions",
+      benefits: [
+        "Understand the root cause of phobias, emotional blocks, or chronic patterns",
+        "Gain insight into relationships, especially those with a sense of familiarity or intensity",
+        "Release unexplained fears, guilt, or trauma carried over from other lifetimes",
+        "Discover soul lessons and spiritual growth opportunities",
+        "Reconnect with past talents, wisdom, or experiences that support you today",
+        "Find peace, clarity, and healing through soul remembrance",
+      ],
+      bookable: true,
+    },
+    {
+      id: "corperate-wellness",
+      icon: Building, // Suggestion: Globe represents journeys, lifetimes, and exploration
+      image: "corperate.jpeg",
+      title: "Corporate Wellness",
+      shortDesc: "Explore your soul's journey through time and lifetimes.",
+      fullDesc:
+        "Reiki is more than just a healing technique—it's a spiritual path, a life-changing journey, and a powerful tool for inner transformation. Whether you’re drawn to Reiki to support your own well-being, help others, or connect more deeply with animals, learning Reiki opens the door to profound energetic awareness, emotional healing, and soul-aligned living.",
+      duration: "60-90 minutes",
+      pricing: {
+        single: 235,
+        note: "per session",
+      },
+      sessions: "Single sessions",
+      benefits: [
+        "Guided Meditation",
+        "Group Hypnosis",
+        "Art Therapy",
+        "Baking for Stress Relief",
+      ],
+      bookable: false,
+    },
+    {
+      id: "reiki-training",
+      icon: GraduationCap, // Suggestion: Globe represents journeys, lifetimes, and exploration
+      image: "meditation group.jpeg",
+      title: "Reiki Training",
+      shortDesc: "Explore your soul's journey through time and lifetimes.",
+      fullDesc:
+        "Past Life Regression uses gentle hypnosis to access memories and experiences from previous lifetimes. This process can bring insight, healing, and understanding to current life patterns, relationships, and challenges.",
+      duration: "60-90 minutes",
+      pricing: {
+        single: 235,
+        note: "per session",
+      },
+      sessions: "Single sessions",
+      benefits: [
+        "Level 1: Self-Healing",
+        "Level 2: Practitioner",
+        "Level 3: Master/Teacher",
       ],
       bookable: false,
     },
@@ -452,19 +519,30 @@ export default function ServicesPage() {
             defaultValue="clinical-hypnotherapy"
             className="max-w-6xl mx-auto"
           >
-            <TabsList className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 mb-8">
+            <TabsList
+              className="flex flex-wrap gap-2 justify-center mb-8 overflow-x-auto scrollbar-thin scrollbar-thumb-sage-200 scrollbar-track-transparent"
+              style={{ WebkitOverflowScrolling: "touch" }}
+            >
               {coreServices.map((service) => (
-                <TabsTrigger
-                  key={service.id}
-                  value={service.id}
-                  className="text-xs"
-                >
-                  {service.id === "animal-reiki"
-                    ? "Animal Reiki"
-                    : service.id === "lama-fera"
-                    ? "Lama Fera"
-                    : service.title.split(" ")[0]}
-                </TabsTrigger>
+              <TabsTrigger
+                key={service.id}
+                value={service.id}
+                className="text-xs sm:text-sm px-3 py-2 whitespace-nowrap rounded-md"
+              >
+                {service.id === "animal-reiki"
+                ? "Animal Reiki"
+                : service.id === "lama-fera"
+                ? "Lama Fera"
+                : service.id === "clinical-hypnotherapy"
+                ? "Clinical Hypnotherapy"
+                : service.id === "past-regression"
+                ? "Past Life Regression"
+                : service.id === "corperate-wellness"
+                ? "Corperate Wellness"
+                : service.id === "reiki-training"
+                ? "Reiki Training"
+                : service.title.split(" ")[0]}
+              </TabsTrigger>
               ))}
             </TabsList>
 
@@ -485,238 +563,178 @@ export default function ServicesPage() {
                     </p>
 
                     {/* Detailed Pricing with Individual Booking Buttons */}
-                    <div className="space-y-4 p-4 bg-sage-50 rounded-lg">
-                      <h4 className="font-semibold text-stone-800">
-                        Pricing & Booking Options
-                      </h4>
+                    {service.id === "corperate-wellness" ||
+                    service.id === "reiki-training" ? (
+                      <></>
+                    ) : (
+                      <div className="space-y-4 p-4 bg-sage-50 rounded-lg">
+                        <h4 className="font-semibold text-stone-800">
+                          Pricing & Booking Options
+                        </h4>
 
-                      {service.pricing.single && (
-                        <div className="space-y-3">
-                          <div className="border border-sage-200 rounded-lg p-3 bg-white">
-                            <div className="flex justify-between items-center mb-2">
-                              <span className="text-stone-700 font-medium">
-                                Single Session
-                              </span>
-                              <span className="font-semibold text-sage-600">
-                                ${service.pricing.single}
-                              </span>
-                            </div>
-                            <Link
-                              href={`/booking?service=${service.id}&package=single`}
-                            >
-                              <Button
-                                size="sm"
-                                className="w-full bg-sage-600 hover:bg-sage-700 text-white"
-                              >
-                                Book Single Session
-                              </Button>
-                            </Link>
-                          </div>
-                          {service.pricing.package && (
+                        {service.pricing.single && (
+                          <div className="space-y-3">
                             <div className="border border-sage-200 rounded-lg p-3 bg-white">
                               <div className="flex justify-between items-center mb-2">
                                 <span className="text-stone-700 font-medium">
-                                  {service.pricing.package.sessions} Sessions
-                                  Package
-                                </span>
-                                <span className="font-semibold text-sage-600">
-                                  ${service.pricing.package.price}
-                                </span>
-                              </div>
-                              <div className="text-xs text-stone-500 mb-2">
-                                Save $
-                                {service.pricing.single *
-                                  service.pricing.package.sessions -
-                                  service.pricing.package.price}
-                              </div>
-                              <Link
-                                href={`/booking?service=${service.id}&package=${service.pricing.package.sessions}-sessions`}
-                              >
-                                <Button
-                                  size="sm"
-                                  className="w-full bg-sage-600 hover:bg-sage-700 text-white"
-                                >
-                                  Book {service.pricing.package.sessions}{" "}
-                                  Sessions
-                                </Button>
-                              </Link>
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {service.pricing.inPerson && (
-                        <div className="space-y-3">
-                          <div className="border-b border-sage-200 pb-2">
-                            <h5 className="font-medium text-stone-800 flex items-center gap-2">
-                              <MapPin className="h-4 w-4" />
-                              In-Person Sessions
-                            </h5>
-                          </div>
-                          <div className="space-y-2">
-                            <div className="border border-sage-200 rounded-lg p-3 bg-white">
-                              <div className="flex justify-between items-center mb-2">
-                                <span className="text-stone-700">
                                   Single Session
                                 </span>
                                 <span className="font-semibold text-sage-600">
-                                  ${service.pricing.inPerson.single}
+                                  ${service.pricing.single}
                                 </span>
                               </div>
-                              <Link
-                                href={`/booking?service=${service.id}&type=in-person&package=single`}
-                              >
-                                <Button
-                                  size="sm"
-                                  className="w-full bg-sage-600 hover:bg-sage-700 text-white"
+
+                              {service.id === "past-regression" ? (
+                                <Link
+                                  href={`/booking?service=clinical-hypnotherapy&program=past-life`}
                                 >
-                                  Book In-Person Single
-                                </Button>
-                              </Link>
-                            </div>
-                            {service.pricing.inPerson.packages?.map(
-                              (pkg, idx) => (
-                                <div
-                                  key={idx}
-                                  className="border border-sage-200 rounded-lg p-3 bg-white"
-                                >
-                                  <div className="flex justify-between items-center mb-2">
-                                    <span className="text-stone-700">
-                                      {pkg.sessions} Sessions Package
-                                    </span>
-                                    <span className="font-semibold text-sage-600">
-                                      ${pkg.price}
-                                    </span>
-                                  </div>
-                                  <div className="text-xs text-stone-500 mb-2">
-                                    Save $
-                                    {service.pricing.inPerson.single *
-                                      pkg.sessions -
-                                      pkg.price}
-                                  </div>
-                                  <Link
-                                    href={`/booking?service=${service.id}&type=in-person&package=${pkg.sessions}-sessions`}
+                                  <Button
+                                    size="sm"
+                                    className="w-full bg-sage-600 hover:bg-sage-700 text-white"
                                   >
-                                    <Button
-                                      size="sm"
-                                      className="w-full bg-sage-600 hover:bg-sage-700 text-white"
-                                    >
-                                      Book In-Person {pkg.sessions} Sessions
-                                    </Button>
-                                  </Link>
+                                    Book Past Life Regression
+                                  </Button>
+                                </Link>
+                              ) : (
+                                <Link
+                                  href={`/booking?service=${service.id}&package=single`}
+                                >
+                                  <Button
+                                    size="sm"
+                                    className="w-full bg-sage-600 hover:bg-sage-700 text-white"
+                                  >
+                                    Book Single Session
+                                  </Button>
+                                </Link>
+                              )}
+                            </div>
+                            {service.pricing.package && (
+                              <div className="border border-sage-200 rounded-lg p-3 bg-white">
+                                <div className="flex justify-between items-center mb-2">
+                                  <span className="text-stone-700 font-medium">
+                                    {service.pricing.package.sessions} Sessions
+                                    Package
+                                  </span>
+                                  <span className="font-semibold text-sage-600">
+                                    ${service.pricing.package.price}
+                                  </span>
                                 </div>
-                              )
+                                <div className="text-xs text-stone-500 mb-2">
+                                  Save $
+                                  {service.pricing.single *
+                                    service.pricing.package.sessions -
+                                    service.pricing.package.price}
+                                </div>
+                                <Link
+                                  href={`/booking?service=${service.id}&package=${service.pricing.package.sessions}-sessions`}
+                                >
+                                  <Button
+                                    size="sm"
+                                    className="w-full bg-sage-600 hover:bg-sage-700 text-white"
+                                  >
+                                    Book {service.pricing.package.sessions}{" "}
+                                    Sessions
+                                  </Button>
+                                </Link>
+                              </div>
                             )}
                           </div>
+                        )}
 
-                          {service.pricing.distance && (
-                            <>
-                              <div className="border-b border-sage-200 pb-2 pt-4">
-                                <h5 className="font-medium text-stone-800 flex items-center gap-2">
-                                  <Globe className="h-4 w-4" />
-                                  Distance Healing
-                                </h5>
-                              </div>
-                              <div className="space-y-2">
-                                <div className="border border-sage-200 rounded-lg p-3 bg-white">
-                                  <div className="flex justify-between items-center mb-2">
-                                    <span className="text-stone-700">
-                                      Single Session
-                                    </span>
-                                    <span className="font-semibold text-sage-600">
-                                      ${service.pricing.distance.single}
-                                    </span>
-                                  </div>
-                                  <Link
-                                    href={`/booking?service=${service.id}&type=distance&package=single`}
+                        {service.pricing.inPerson && (
+                          <div className="space-y-3">
+                            <div className="border-b border-sage-200 pb-2">
+                              <h5 className="font-medium text-stone-800 flex items-center gap-2">
+                                <MapPin className="h-4 w-4" />
+                                In-Person Sessions
+                              </h5>
+                            </div>
+                            <div className="space-y-2">
+                              <div className="border border-sage-200 rounded-lg p-3 bg-white">
+                                <div className="flex justify-between items-center mb-2">
+                                  <span className="text-stone-700">
+                                    Single Session
+                                  </span>
+                                  <span className="font-semibold text-sage-600">
+                                    ${service.pricing.inPerson.single}
+                                  </span>
+                                </div>
+                                <Link
+                                  href={`/booking?service=${service.id}&type=in-person&package=single`}
+                                >
+                                  <Button
+                                    size="sm"
+                                    className="w-full bg-sage-600 hover:bg-sage-700 text-white"
                                   >
-                                    <Button
-                                      size="sm"
-                                      className="w-full bg-sage-600 hover:bg-sage-700 text-white"
-                                    >
-                                      Book Distance Single
-                                    </Button>
-                                  </Link>
-                                </div>
-                                {service.pricing.distance.packages?.map(
-                                  (pkg, idx) => (
-                                    <div
-                                      key={idx}
-                                      className="border border-sage-200 rounded-lg p-3 bg-white"
-                                    >
-                                      <div className="flex justify-between items-center mb-2">
-                                        <span className="text-stone-700">
-                                          {pkg.sessions} Sessions Package
-                                        </span>
-                                        <span className="font-semibold text-sage-600">
-                                          ${pkg.price}
-                                        </span>
-                                      </div>
-                                      <div className="text-xs text-stone-500 mb-2">
-                                        Save $
-                                        {service.pricing.distance.single *
-                                          pkg.sessions -
-                                          pkg.price}
-                                      </div>
-                                      <Link
-                                        href={`/booking?service=${service.id}&type=distance&package=${pkg.sessions}-sessions`}
-                                      >
-                                        <Button
-                                          size="sm"
-                                          className="w-full bg-sage-600 hover:bg-sage-700 text-white"
-                                        >
-                                          Book Distance {pkg.sessions} Sessions
-                                        </Button>
-                                      </Link>
+                                    Book In-Person Single
+                                  </Button>
+                                </Link>
+                              </div>
+                              {service.pricing.inPerson.packages?.map(
+                                (pkg, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="border border-sage-200 rounded-lg p-3 bg-white"
+                                  >
+                                    <div className="flex justify-between items-center mb-2">
+                                      <span className="text-stone-700">
+                                        {pkg.sessions} Sessions Package
+                                      </span>
+                                      <span className="font-semibold text-sage-600">
+                                        ${pkg.price}
+                                      </span>
                                     </div>
-                                  )
-                                )}
-                              </div>
-                            </>
-                          )}
-
-                          {service.pricing.petParentPackage && (
-                            <>
-                              <div className="border-b border-sage-200 pb-2 pt-4">
-                                <h5 className="font-medium text-stone-800 flex items-center gap-2">
-                                  <Package className="h-4 w-4" />
-                                  Pet & Parent Package
-                                </h5>
-                              </div>
-                              <div className="space-y-3">
-                                <div className="text-sm text-amber-700 bg-amber-50 p-2 rounded">
-                                  Healing sessions for both you and your pet
-                                </div>
-
-                                <div className="space-y-2">
-                                  <div className="text-sm text-stone-600 font-medium">
-                                    In-Person Package:
+                                    <div className="text-xs text-stone-500 mb-2">
+                                      Save $
+                                      {service.pricing.inPerson.single *
+                                        pkg.sessions -
+                                        pkg.price}
+                                    </div>
+                                    <Link
+                                      href={`/booking?service=${service.id}&type=in-person&package=${pkg.sessions}-sessions`}
+                                    >
+                                      <Button
+                                        size="sm"
+                                        className="w-full bg-sage-600 hover:bg-sage-700 text-white"
+                                      >
+                                        Book In-Person {pkg.sessions} Sessions
+                                      </Button>
+                                    </Link>
                                   </div>
+                                )
+                              )}
+                            </div>
+
+                            {service.pricing.distance && (
+                              <>
+                                <div className="border-b border-sage-200 pb-2 pt-4">
+                                  <h5 className="font-medium text-stone-800 flex items-center gap-2">
+                                    <Globe className="h-4 w-4" />
+                                    Distance Healing
+                                  </h5>
+                                </div>
+                                <div className="space-y-2">
                                   <div className="border border-sage-200 rounded-lg p-3 bg-white">
                                     <div className="flex justify-between items-center mb-2">
                                       <span className="text-stone-700">
                                         Single Session
                                       </span>
                                       <span className="font-semibold text-sage-600">
-                                        $
-                                        {
-                                          service.pricing.petParentPackage
-                                            .inPerson.single
-                                        }
+                                        ${service.pricing.distance.single}
                                       </span>
                                     </div>
                                     <Link
-                                      href={`/booking?service=${service.id}&type=pet-parent-in-person&package=single`}
+                                      href={`/booking?service=${service.id}&type=distance&package=single`}
                                     >
                                       <Button
                                         size="sm"
                                         className="w-full bg-sage-600 hover:bg-sage-700 text-white"
                                       >
-                                        Book Pet & Parent In-Person
+                                        Book Distance Single
                                       </Button>
                                     </Link>
                                   </div>
-                                  {service.pricing.petParentPackage.inPerson.packages?.map(
+                                  {service.pricing.distance.packages?.map(
                                     (pkg, idx) => (
                                       <div
                                         key={idx}
@@ -730,14 +748,20 @@ export default function ServicesPage() {
                                             ${pkg.price}
                                           </span>
                                         </div>
+                                        <div className="text-xs text-stone-500 mb-2">
+                                          Save $
+                                          {service.pricing.distance.single *
+                                            pkg.sessions -
+                                            pkg.price}
+                                        </div>
                                         <Link
-                                          href={`/booking?service=${service.id}&type=pet-parent-in-person&package=${pkg.sessions}-sessions`}
+                                          href={`/booking?service=${service.id}&type=distance&package=${pkg.sessions}-sessions`}
                                         >
                                           <Button
                                             size="sm"
                                             className="w-full bg-sage-600 hover:bg-sage-700 text-white"
                                           >
-                                            Book Pet & Parent {pkg.sessions}{" "}
+                                            Book Distance {pkg.sessions}{" "}
                                             Sessions
                                           </Button>
                                         </Link>
@@ -745,97 +769,152 @@ export default function ServicesPage() {
                                     )
                                   )}
                                 </div>
+                              </>
+                            )}
 
-                                <div className="space-y-2">
-                                  <div className="text-sm text-stone-600 font-medium">
-                                    Distance Package:
-                                  </div>
-                                  <div className="border border-sage-200 rounded-lg p-3 bg-white">
-                                    <div className="flex justify-between items-center mb-2">
-                                      <span className="text-stone-700">
-                                        Single Session
-                                      </span>
-                                      <span className="font-semibold text-sage-600">
-                                        $
-                                        {
-                                          service.pricing.petParentPackage
-                                            .distance.single
-                                        }
-                                      </span>
-                                    </div>
-                                    <Link
-                                      href={`/booking?service=${service.id}&type=pet-parent-distance&package=single`}
-                                    >
-                                      <Button
-                                        size="sm"
-                                        className="w-full bg-sage-600 hover:bg-sage-700 text-white"
-                                      >
-                                        Book Pet & Parent Distance
-                                      </Button>
-                                    </Link>
-                                  </div>
-                                  {service.pricing.petParentPackage.distance.packages?.map(
-                                    (pkg, idx) => (
-                                      <div
-                                        key={idx}
-                                        className="border border-sage-200 rounded-lg p-3 bg-white"
-                                      >
-                                        <div className="flex justify-between items-center mb-2">
-                                          <span className="text-stone-700">
-                                            {pkg.sessions} Sessions Package
-                                          </span>
-                                          <span className="font-semibold text-sage-600">
-                                            ${pkg.price}
-                                          </span>
-                                        </div>
-                                        <Link
-                                          href={`/booking?service=${service.id}&type=pet-parent-distance&package=${pkg.sessions}-sessions`}
-                                        >
-                                          <Button
-                                            size="sm"
-                                            className="w-full bg-sage-600 hover:bg-sage-700 text-white"
-                                          >
-                                            Book Pet & Parent Distance{" "}
-                                            {pkg.sessions}
-                                          </Button>
-                                        </Link>
-                                      </div>
-                                    )
-                                  )}
+                            {service.pricing.petParentPackage && (
+                              <>
+                                <div className="border-b border-sage-200 pb-2 pt-4">
+                                  <h5 className="font-medium text-stone-800 flex items-center gap-2">
+                                    <Package className="h-4 w-4" />
+                                    Pet & Parent Package
+                                  </h5>
                                 </div>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      )}
+                                <div className="space-y-3">
+                                  <div className="text-sm text-amber-700 bg-amber-50 p-2 rounded">
+                                    Healing sessions for both you and your pet
+                                  </div>
 
-                      {service.pricing.eightWeekProgram && (
-                        <div className="space-y-2">
-                          <div className="border border-sage-200 rounded-lg p-3 bg-white">
-                            <div className="flex justify-between items-center mb-2">
-                              <span className="text-stone-700">
-                                8-Week Program
-                              </span>
-                              <span className="font-semibold text-sage-600">
-                                ${service.pricing.eightWeekProgram.price}
-                              </span>
-                            </div>
+                                  <div className="space-y-2">
+                                    <div className="text-sm text-stone-600 font-medium">
+                                      In-Person Package:
+                                    </div>
+                                    <div className="border border-sage-200 rounded-lg p-3 bg-white">
+                                      <div className="flex justify-between items-center mb-2">
+                                        <span className="text-stone-700">
+                                          Single Session
+                                        </span>
+                                        <span className="font-semibold text-sage-600">
+                                          $
+                                          {
+                                            service.pricing.petParentPackage
+                                              .inPerson.single
+                                          }
+                                        </span>
+                                      </div>
+                                      <Link
+                                        href={`/booking?service=${service.id}&type=pet-parent-in-person&package=single`}
+                                      >
+                                        <Button
+                                          size="sm"
+                                          className="w-full bg-sage-600 hover:bg-sage-700 text-white"
+                                        >
+                                          Book Pet & Parent In-Person
+                                        </Button>
+                                      </Link>
+                                    </div>
+                                    {service.pricing.petParentPackage.inPerson.packages?.map(
+                                      (pkg, idx) => (
+                                        <div
+                                          key={idx}
+                                          className="border border-sage-200 rounded-lg p-3 bg-white"
+                                        >
+                                          <div className="flex justify-between items-center mb-2">
+                                            <span className="text-stone-700">
+                                              {pkg.sessions} Sessions Package
+                                            </span>
+                                            <span className="font-semibold text-sage-600">
+                                              ${pkg.price}
+                                            </span>
+                                          </div>
+                                          <Link
+                                            href={`/booking?service=${service.id}&type=pet-parent-in-person&package=${pkg.sessions}-sessions`}
+                                          >
+                                            <Button
+                                              size="sm"
+                                              className="w-full bg-sage-600 hover:bg-sage-700 text-white"
+                                            >
+                                              Book Pet & Parent {pkg.sessions}{" "}
+                                              Sessions
+                                            </Button>
+                                          </Link>
+                                        </div>
+                                      )
+                                    )}
+                                  </div>
 
-                            <Link href="/contact">
-                              <Button className="w-full bg-stone-600 hover:bg-stone-700 text-white">
-                                Inquire About This Service
-                              </Button>
-                            </Link>
+                                  <div className="space-y-2">
+                                    <div className="text-sm text-stone-600 font-medium">
+                                      Distance Package:
+                                    </div>
+                                    <div className="border border-sage-200 rounded-lg p-3 bg-white">
+                                      <div className="flex justify-between items-center mb-2">
+                                        <span className="text-stone-700">
+                                          Single Session
+                                        </span>
+                                        <span className="font-semibold text-sage-600">
+                                          $
+                                          {
+                                            service.pricing.petParentPackage
+                                              .distance.single
+                                          }
+                                        </span>
+                                      </div>
+                                      <Link
+                                        href={`/booking?service=${service.id}&type=pet-parent-distance&package=single`}
+                                      >
+                                        <Button
+                                          size="sm"
+                                          className="w-full bg-sage-600 hover:bg-sage-700 text-white"
+                                        >
+                                          Book Pet & Parent Distance
+                                        </Button>
+                                      </Link>
+                                    </div>
+                                    {service.pricing.petParentPackage.distance.packages?.map(
+                                      (pkg, idx) => (
+                                        <div
+                                          key={idx}
+                                          className="border border-sage-200 rounded-lg p-3 bg-white"
+                                        >
+                                          <div className="flex justify-between items-center mb-2">
+                                            <span className="text-stone-700">
+                                              {pkg.sessions} Sessions Package
+                                            </span>
+                                            <span className="font-semibold text-sage-600">
+                                              ${pkg.price}
+                                            </span>
+                                          </div>
+                                          <Link
+                                            href={`/booking?service=${service.id}&type=pet-parent-distance&package=${pkg.sessions}-sessions`}
+                                          >
+                                            <Button
+                                              size="sm"
+                                              className="w-full bg-sage-600 hover:bg-sage-700 text-white"
+                                            >
+                                              Book Pet & Parent Distance{" "}
+                                              {pkg.sessions}
+                                            </Button>
+                                          </Link>
+                                        </div>
+                                      )
+                                    )}
+                                  </div>
+                                </div>
+                              </>
+                            )}
                           </div>
-                          {service.pricing.recordedSessions && (
+                        )}
+
+                        {service.pricing.eightWeekProgram && (
+                          <div className="space-y-2">
                             <div className="border border-sage-200 rounded-lg p-3 bg-white">
                               <div className="flex justify-between items-center mb-2">
                                 <span className="text-stone-700">
-                                  Recorded Sessions
+                                  8-Week Program
                                 </span>
                                 <span className="font-semibold text-sage-600">
-                                  ${service.pricing.recordedSessions.price} per
-                                  week
+                                  ${service.pricing.eightWeekProgram.price}
                                 </span>
                               </div>
 
@@ -845,58 +924,77 @@ export default function ServicesPage() {
                                 </Button>
                               </Link>
                             </div>
-                          )}
-                        </div>
-                      )}
-
-                      {service.specialPrograms && (
-                        <div className="border-t border-sage-200 pt-4">
-                          <h5 className="font-medium text-stone-800 mb-3">
-                            Special Programs
-                          </h5>
-                          <div className="space-y-3">
-                            {service.specialPrograms.map((program, idx) => (
-                              <div
-                                key={idx}
-                                className="border border-sage-200 rounded-lg p-3 bg-white"
-                              >
-                                <div className="flex justify-between items-start mb-2">
-                                  <div className="flex-1">
-                                    <h6 className="font-medium text-stone-800">
-                                      {program.name}
-                                    </h6>
-                                    <p className="text-xs text-stone-600 mt-1">
-                                      {program.description}
-                                    </p>
-                                  </div>
-                                  <span className="font-semibold text-sage-600 text-sm whitespace-nowrap ml-2">
-                                    ${program.price} {program.note}
+                            {service.pricing.recordedSessions && (
+                              <div className="border border-sage-200 rounded-lg p-3 bg-white">
+                                <div className="flex justify-between items-center mb-2">
+                                  <span className="text-stone-700">
+                                    Recorded Sessions
+                                  </span>
+                                  <span className="font-semibold text-sage-600">
+                                    ${service.pricing.recordedSessions.price}{" "}
+                                    per week
                                   </span>
                                 </div>
-                                <Link
-                                  href={`/booking?service=${service.id}&program=${program.id}`}
-                                >
-                                  <Button
-                                    size="sm"
-                                    className="w-full bg-sage-600 hover:bg-sage-700 text-white"
-                                  >
-                                    Book {program.name}
+
+                                <Link href="/contact">
+                                  <Button className="w-full bg-stone-600 hover:bg-stone-700 text-white">
+                                    Inquire About This Service
                                   </Button>
                                 </Link>
                               </div>
-                            ))}
+                            )}
                           </div>
-                        </div>
-                      )}
+                        )}
 
-                      {service.specialNote && (
-                        <div className="bg-amber-50 border border-amber-200 rounded p-3">
-                          <div className="text-sm text-amber-700">
-                            {service.specialNote}
+                        {service.specialPrograms && (
+                          <div className="border-t border-sage-200 pt-4">
+                            <h5 className="font-medium text-stone-800 mb-3">
+                              Special Programs
+                            </h5>
+                            <div className="space-y-3">
+                              {service.specialPrograms.map((program, idx) => (
+                                <div
+                                  key={idx}
+                                  className="border border-sage-200 rounded-lg p-3 bg-white"
+                                >
+                                  <div className="flex justify-between items-start mb-2">
+                                    <div className="flex-1">
+                                      <h6 className="font-medium text-stone-800">
+                                        {program.name}
+                                      </h6>
+                                      <p className="text-xs text-stone-600 mt-1">
+                                        {program.description}
+                                      </p>
+                                    </div>
+                                    <span className="font-semibold text-sage-600 text-sm whitespace-nowrap ml-2">
+                                      ${program.price} {program.note}
+                                    </span>
+                                  </div>
+                                  <Link
+                                    href={`/booking?service=${service.id}&program=${program.id}`}
+                                  >
+                                    <Button
+                                      size="sm"
+                                      className="w-full bg-sage-600 hover:bg-sage-700 text-white"
+                                    >
+                                      Book {program.name}
+                                    </Button>
+                                  </Link>
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
+                        )}
+
+                        {service.specialNote && (
+                          <div className="bg-amber-50 border border-amber-200 rounded p-3">
+                            <div className="text-sm text-amber-700">
+                              {service.specialNote}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-6">
@@ -931,11 +1029,26 @@ export default function ServicesPage() {
                     </Link>
 
                     {service.bookable ? (
-                      <Link href={`/booking?service=${service.id}`}>
-                        <Button className="w-full bg-sage-600 hover:bg-sage-700 text-white">
-                          Book This Service
-                        </Button>
-                      </Link>
+                      <>
+                        {service.id === "past-regression" ? (
+                          <Link
+                            href={`/booking?service=clinical-hypnotherapy&program=past-life`}
+                          >
+                            <Button
+                              size="sm"
+                              className="w-full bg-sage-600 hover:bg-sage-700 text-white"
+                            >
+                              Book Past Life Regression
+                            </Button>
+                          </Link>
+                        ) : (
+                          <Link href={`/booking?service=${service.id}`}>
+                            <Button className="w-full bg-sage-600 hover:bg-sage-700 text-white">
+                              Book This Service
+                            </Button>
+                          </Link>
+                        )}
+                      </>
                     ) : (
                       <Link href="/contact">
                         <Button className="w-full bg-stone-600 hover:bg-stone-700 text-white">
@@ -952,7 +1065,7 @@ export default function ServicesPage() {
       </section>
 
       {/* Specialized Services */}
-      <section className="py-20 bg-white">
+      {/* <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center space-y-4 mb-16">
             <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">
@@ -1017,7 +1130,7 @@ export default function ServicesPage() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Process Section */}
       <section className="py-20 bg-stone-50">
