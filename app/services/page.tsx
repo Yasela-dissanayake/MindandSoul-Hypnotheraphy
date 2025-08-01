@@ -290,7 +290,7 @@ export default function ServicesPage() {
       title: "Corporate Wellness",
       shortDesc: "Explore your soul's journey through time and lifetimes.",
       fullDesc:
-        "Reiki is more than just a healing technique—it's a spiritual path, a life-changing journey, and a powerful tool for inner transformation. Whether you’re drawn to Reiki to support your own well-being, help others, or connect more deeply with animals, learning Reiki opens the door to profound energetic awareness, emotional healing, and soul-aligned living.",
+        "Today’s work culture demands more than just productivity—it calls for balance, wellbeing, and genuine human connection. My Corporate Wellness programs are designed to help your team reduce stress, boost creativity, and enhance mental clarity through unique, experiential sessions that go beyond the usual offerings.",
       duration: "60-90 minutes",
       pricing: {
         single: 235,
@@ -298,10 +298,10 @@ export default function ServicesPage() {
       },
       sessions: "Single sessions",
       benefits: [
-        "Guided Meditation",
-        "Group Hypnosis",
-        "Art Therapy",
-        "Baking for Stress Relief",
+        "Guided Meditation for Focus & Calm",
+        "Group Hypnosis for Stress Reduction",
+        "Art Therapy for Expression & Team Connection",
+        "Baking for Stress Relief & Team Building",
       ],
       bookable: false,
     },
@@ -312,7 +312,7 @@ export default function ServicesPage() {
       title: "Reiki Training",
       shortDesc: "Explore your soul's journey through time and lifetimes.",
       fullDesc:
-        "Past Life Regression uses gentle hypnosis to access memories and experiences from previous lifetimes. This process can bring insight, healing, and understanding to current life patterns, relationships, and challenges.",
+        "Reiki is more than just a healing technique—it's a spiritual path, a life-changing journey, and a powerful tool for inner transformation. Whether you’re drawn to Reiki to support your own well-being, help others, or connect more deeply with animals, learning Reiki opens the door to profound energetic awareness, emotional healing, and soul-aligned living.",
       duration: "60-90 minutes",
       pricing: {
         single: 235,
@@ -320,9 +320,11 @@ export default function ServicesPage() {
       },
       sessions: "Single sessions",
       benefits: [
-        "Level 1: Self-Healing",
-        "Level 2: Practitioner",
-        "Level 3: Master/Teacher",
+        "Reduce stress and anxiety",
+        "Support physical and emotional healing",
+        "Clear energetic blocks and promote balance",
+        "Deepen your intuition and spiritual connection",
+        "Offer healing to yourself, loved ones, and clients"
       ],
       bookable: false,
     },
@@ -520,29 +522,33 @@ export default function ServicesPage() {
             className="max-w-6xl mx-auto"
           >
             <TabsList
-              className="flex flex-wrap gap-2 justify-center mb-8 overflow-x-auto scrollbar-thin scrollbar-thumb-sage-200 scrollbar-track-transparent"
-              style={{ WebkitOverflowScrolling: "touch" }}
+              className="flex flex-wrap gap-2 justify-center mb-8 min-h-32 md:min-h-14"
+              style={{
+                // Increase height for mobile to fit all tabs in two rows
+                // minHeight: "120px",
+                WebkitOverflowScrolling: "touch",
+              }}
             >
               {coreServices.map((service) => (
-              <TabsTrigger
-                key={service.id}
-                value={service.id}
-                className="text-xs sm:text-sm px-3 py-2 whitespace-nowrap rounded-md"
-              >
-                {service.id === "animal-reiki"
-                ? "Animal Reiki"
-                : service.id === "lama-fera"
-                ? "Lama Fera"
-                : service.id === "clinical-hypnotherapy"
-                ? "Clinical Hypnotherapy"
-                : service.id === "past-regression"
-                ? "Past Life Regression"
-                : service.id === "corperate-wellness"
-                ? "Corperate Wellness"
-                : service.id === "reiki-training"
-                ? "Reiki Training"
-                : service.title.split(" ")[0]}
-              </TabsTrigger>
+                <TabsTrigger
+                  key={service.id}
+                  value={service.id}
+                  className="text-xs sm:text-sm px-3 py-2 whitespace-nowrap rounded-md"
+                >
+                  {service.id === "animal-reiki"
+                    ? "Animal Reiki"
+                    : service.id === "lama-fera"
+                    ? "Lama Fera"
+                    : service.id === "clinical-hypnotherapy"
+                    ? "Clinical Hypnotherapy"
+                    : service.id === "past-regression"
+                    ? "Past Life Regression"
+                    : service.id === "corperate-wellness"
+                    ? "Corperate Wellness"
+                    : service.id === "reiki-training"
+                    ? "Reiki Training"
+                    : service.title.split(" ")[0]}
+                </TabsTrigger>
               ))}
             </TabsList>
 
