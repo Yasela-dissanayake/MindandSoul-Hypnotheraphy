@@ -527,6 +527,30 @@ export default function ContactPage() {
 
                 <div className="flex items-start gap-4">
                   <div className="p-3 bg-sage-100 rounded-lg">
+                    <Phone className="h-5 w-5 text-sage-600 mx-auto" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-stone-800">Phone</div>
+                    <div className="text-stone-600">
+                      +61 429 940 130
+                    </div>
+                  </div>
+                </div>
+
+                 <div className="flex items-start gap-4">
+                  <div className="p-3 bg-sage-100 rounded-lg">
+                    <Mail className="h-5 w-5 text-sage-600 mx-auto" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-stone-800">Email</div>
+                    <div className="text-stone-600">
+                      healwithrangika@gmail.com
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-sage-100 rounded-lg">
                     <Clock className="h-5 w-5 text-sage-600" />
                   </div>
                   <div>
