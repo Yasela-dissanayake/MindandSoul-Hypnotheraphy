@@ -561,10 +561,117 @@ export default function BookingPage() {
       },
     },
   ];
+  // Helper function to convert Perth time to user's local time
+  const convertPerthTimeToLocal = (perthTimeString: string, date: Date) => {
+    // Parse the Perth time slot (e.g., "08:00-09:30")
+    const [startTime, endTime] = perthTimeString.split("-");
+    const [startHour, startMin] = startTime.split(":").map(Number);
+    const [endHour, endMin] = endTime.split(":").map(Number);
 
-  // Generate available time slots
-  const generateTimeSlots = (date: Date, type: String) => {
-    const slots =
+    // Create a date string in Perth timezone format
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    // Create Perth datetime strings
+    const perthStartString = `${year}-${month}-${day}T${startTime}:00`;
+    const perthEndString = `${year}-${month}-${day}T${endTime}:00`;
+
+    // Convert Perth times to user's local timezone using proper timezone handling
+    const convertToLocal = (perthTimeString: string) => {
+      // Create a date object representing the time in Perth
+      const perthDate = new Date(perthTimeString);
+
+      // Create a temporary date to handle Perth timezone
+      const tempDate = new Date();
+      tempDate.setFullYear(year, date.getMonth(), date.getDate());
+      tempDate.setHours(parseInt(perthTimeString.split("T")[1].split(":")[0]));
+      tempDate.setMinutes(
+        parseInt(perthTimeString.split("T")[1].split(":")[1])
+      );
+      tempDate.setSeconds(0);
+      tempDate.setMilliseconds(0);
+
+      // Convert using Intl.DateTimeFormat to handle timezones properly
+      const perthTime = new Intl.DateTimeFormat("en-AU", {
+        timeZone: "Australia/Perth",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }).formatToParts(tempDate);
+
+      // Reconstruct the Perth time
+      const perthISO = `${perthTime.find((p) => p.type === "year")?.value}-${
+        perthTime.find((p) => p.type === "month")?.value
+      }-${perthTime.find((p) => p.type === "day")?.value}T${
+        perthTime.find((p) => p.type === "hour")?.value
+      }:${perthTime.find((p) => p.type === "minute")?.value}:00`;
+
+      // Now convert this to user's local time
+      const localDate = new Date(
+        tempDate.toLocaleString("sv-SE", { timeZone: "Australia/Perth" })
+      );
+
+      return localDate.toLocaleTimeString("en-GB", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+    };
+
+    // Much simpler approach - use Date constructor with timezone awareness
+    const formatLocalTime = (hour: number, minute: number) => {
+      // Create a date object representing Perth time
+      const perthDateTime = new Date();
+      perthDateTime.setFullYear(year, date.getMonth(), date.getDate());
+      perthDateTime.setHours(hour, minute, 0, 0);
+
+      // Convert Perth time to local time
+      // Perth is UTC+8, so we subtract 8 hours to get UTC, then convert to local
+      const utcTime = new Date(perthDateTime.getTime() - 8 * 60 * 60 * 1000);
+      const localTime = new Date(
+        utcTime.getTime() + new Date().getTimezoneOffset() * -60 * 1000
+      );
+
+      return localTime.toLocaleTimeString("en-GB", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+    };
+
+    const localStart = formatLocalTime(startHour, startMin);
+    const localEnd = formatLocalTime(endHour, endMin);
+
+    return `${localStart}-${localEnd}`;
+  };
+
+  // Helper function to get Perth UTC offset (handles daylight saving)
+  const getPerthUTCOffset = (date: Date): number => {
+    // Create a date in Perth timezone to check if DST is active
+    const perthDate = new Date(
+      date.toLocaleString("en-US", { timeZone: "Australia/Perth" })
+    );
+    const utcDate = new Date(date.toUTCString());
+
+    // Calculate offset in hours
+    const offset = (perthDate.getTime() - utcDate.getTime()) / (1000 * 60 * 60);
+    return offset;
+  };
+
+  // Get user's timezone for display
+  const getUserTimezone = () => {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  };
+
+  // Updated generateTimeSlots function
+  const generateTimeSlots = (date: Date, type: string) => {
+    // Base Perth time slots (these remain as your source of truth)
+    const perthTimeSlots =
       type === "distance"
         ? [
             "09:00-10:00",
@@ -581,22 +688,15 @@ export default function BookingPage() {
             "16:00-17:30",
             "18:00-19:30",
           ];
-    const isWeekend = date.getDay() === 6; // Only Saturday (Sunday disabled)
-    const startHour = 8;
-    // const endHour = isWeekend ? 14 : 18; // Weekend ends at 2 PM, weekdays at 6 PM
-    const endHour = 19;
 
-    // let hour = startHour;
-    // while (hour + 1.5 <= endHour) {
-    //   // Create slot
-    //   const time = `${hour.toString().padStart(2, "0")}:00`;
-    //   slots.push(time);
-    //   // Move to next slot after 90min slot + 90min break = 3 hours
-    //   hour += 3;
-    // }
-    // console.log("slots: ", slots);
-    return slots;
+    // Convert each Perth time slot to user's local time
+    const localTimeSlots = perthTimeSlots.map((perthSlot) =>
+      convertPerthTimeToLocal(perthSlot, date)
+    );
+
+    return localTimeSlots;
   };
+
   // Mock unavailable slots (would come from backend)
   // const unavailableSlots = ["10:00", "14:00", "15:00"];
   const unavailableSlots = [""];
@@ -1136,7 +1236,9 @@ export default function BookingPage() {
                                     Visit our peaceful practice in Perth
                                   </p>
                                   <p className="text-xs text-stone-500">
-                                    Perth Healthcare Centre, Ground floor, Shop 2/1260, Hay Street, West Perth WA 6005, Australia
+                                    Perth Healthcare Centre, Ground floor, Shop
+                                    2/1260, Hay Street, West Perth WA 6005,
+                                    Australia
                                   </p>
                                   <p className="text-sm font-semibold text-sage-600">
                                     $

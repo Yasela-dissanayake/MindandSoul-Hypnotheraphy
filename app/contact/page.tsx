@@ -51,9 +51,9 @@ export default function ContactPage() {
                 </div>
               </div>
             </div>
-            <div className="relative">
+            <div className="relative ">
               <Image
-                src="contact.jpeg"
+                src="rangika1.jpeg"
                 alt="Peaceful consultation room"
                 width={500}
                 height={500}
