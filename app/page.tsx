@@ -333,7 +333,9 @@ export default function HomePage() {
                       <span className="font-medium text-stone-700">
                         Single Session
                       </span>
-                      <span className="font-semibold text-sage-600">$140</span>
+                      <span className="font-semibold text-sage-600">
+                        AUD 140
+                      </span>
                     </div>
                     <div className="text-xs text-stone-500 mb-2">
                       Duration: 60-90 minutes
@@ -353,10 +355,10 @@ export default function HomePage() {
                       <span className="font-medium text-stone-700">
                         3 Sessions Package
                       </span>
-                      <span className="font-semibold text-sage-600">$390</span>
+                      <span className="font-semibold text-sage-600">AUD 390</span>
                     </div>
                     <div className="text-xs text-stone-500 mb-2">
-                      Save $30 • Duration: 60-90 minutes each
+                      Save AUD 30 • Duration: 60-90 minutes each
                     </div>
                     <Link href="/booking?service=clinical-hypnotherapy&package=3-sessions">
                       <Button
@@ -397,7 +399,7 @@ export default function HomePage() {
                         Age Regression Therapy
                       </span>
                       <div className="flex items-center gap-2">
-                        <span className="text-sage-600 font-medium">$190</span>
+                        <span className="text-sage-600 font-medium">AUD 190</span>
                         <Link href="/booking?service=clinical-hypnotherapy&program=age-regression">
                           <Button
                             size="sm"
@@ -414,7 +416,7 @@ export default function HomePage() {
                         Past Life Regression
                       </span>
                       <div className="flex items-center gap-2">
-                        <span className="text-sage-600 font-medium">$235</span>
+                        <span className="text-sage-600 font-medium">AUD 235</span>
                         <Link href="/booking?service=clinical-hypnotherapy&program=past-life">
                           <Button
                             size="sm"
@@ -431,7 +433,7 @@ export default function HomePage() {
                         Time to Loss Weight Program (12 weeks)
                       </span>
                       <div className="flex items-center gap-2">
-                        <span className="text-sage-600 font-medium">$1450</span>
+                        <span className="text-sage-600 font-medium">AUD 1450</span>
                         <Link href="/booking?service=clinical-hypnotherapy&program=weight-loss">
                           <Button
                             size="sm"
@@ -448,7 +450,7 @@ export default function HomePage() {
                         Time to Sleep Program (12 weeks)
                       </span>
                       <div className="flex items-center gap-2">
-                        <span className="text-sage-600 font-medium">$1350</span>
+                        <span className="text-sage-600 font-medium">AUD 1350</span>
                         <Link href="/booking?service=clinical-hypnotherapy&program=sleep-program">
                           <Button
                             size="sm"
@@ -465,7 +467,7 @@ export default function HomePage() {
                         IBS Freedom Program (12 weeks)
                       </span>
                       <div className="flex items-center gap-2">
-                        <span className="text-sage-600 font-medium">$1350</span>
+                        <span className="text-sage-600 font-medium">AUD 1350</span>
                         <Link href="/booking?service=clinical-hypnotherapy&program=ibs-program">
                           <Button
                             size="sm"
@@ -509,7 +511,7 @@ export default function HomePage() {
                       <span className="font-medium text-stone-700">
                         Single Session
                       </span>
-                      <span className="font-semibold text-sage-600">$120</span>
+                      <span className="font-semibold text-sage-600">AUD 120</span>
                     </div>
                     <div className="text-xs text-stone-500 mb-2">
                       Duration: 60 minutes
@@ -529,10 +531,10 @@ export default function HomePage() {
                       <span className="font-medium text-stone-700">
                         3 Sessions Package
                       </span>
-                      <span className="font-semibold text-sage-600">$320</span>
+                      <span className="font-semibold text-sage-600">AUD 320</span>
                     </div>
                     <div className="text-xs text-stone-500 mb-2">
-                      Save $40 • Duration: 60 minutes each
+                      Save AUD 40 • Duration: 60 minutes each
                     </div>
                     <Link href="/booking?service=reiki-healing&type=in-person&package=3-sessions">
                       <Button
@@ -556,7 +558,7 @@ export default function HomePage() {
                       <span className="font-medium text-stone-700">
                         Single Session
                       </span>
-                      <span className="font-semibold text-sage-600">$90</span>
+                      <span className="font-semibold text-sage-600">AUD 90</span>
                     </div>
                     <div className="text-xs text-stone-500 mb-2">
                       Duration: 60 minutes
@@ -577,7 +579,7 @@ export default function HomePage() {
                         3 Sessions
                       </div>
                       <div className="text-sm font-semibold text-sage-600 mb-2">
-                        $250
+                        AUD 250
                       </div>
                       <Link href="/booking?service=reiki-healing&type=distance&package=3-sessions">
                         <Button
@@ -593,7 +595,7 @@ export default function HomePage() {
                         5 Sessions
                       </div>
                       <div className="text-sm font-semibold text-sage-600 mb-2">
-                        $420
+                        AUD 420
                       </div>
                       <Link href="/booking?service=reiki-healing&type=distance&package=5-sessions">
                         <Button
@@ -653,7 +655,7 @@ export default function HomePage() {
                       <span className="font-medium text-stone-700">
                         Single Session
                       </span>
-                      <span className="font-semibold text-sage-600">$160</span>
+                      <span className="font-semibold text-sage-600">AUD 160</span>
                     </div>
                     <div className="text-xs text-stone-500 mb-2">
                       Duration: 45-60 minutes
@@ -674,7 +676,7 @@ export default function HomePage() {
                         3 Sessions
                       </div>
                       <div className="text-sm font-semibold text-sage-600 mb-2">
-                        $450
+                        AUD 450
                       </div>
                       <Link href="/booking?service=animal-reiki&type=in-person&package=3-sessions">
                         <Button
@@ -690,7 +692,7 @@ export default function HomePage() {
                         5 Sessions
                       </div>
                       <div className="text-sm font-semibold text-sage-600 mb-2">
-                        $750
+                        AUD 750
                       </div>
                       <Link href="/booking?service=animal-reiki&type=in-person&package=5-sessions">
                         <Button
@@ -715,7 +717,7 @@ export default function HomePage() {
                       <span className="font-medium text-stone-700">
                         Single Session
                       </span>
-                      <span className="font-semibold text-sage-600">$110</span>
+                      <span className="font-semibold text-sage-600">AUD 110</span>
                     </div>
                     <div className="text-xs text-stone-500 mb-2">
                       Duration: 45-60 minutes
@@ -736,7 +738,7 @@ export default function HomePage() {
                         3 Sessions
                       </div>
                       <div className="text-sm font-semibold text-sage-600 mb-2">
-                        $300
+                        AUD 300
                       </div>
                       <Link href="/booking?service=animal-reiki&type=distance&package=3-sessions">
                         <Button
@@ -752,7 +754,7 @@ export default function HomePage() {
                         5 Sessions
                       </div>
                       <div className="text-sm font-semibold text-sage-600 mb-2">
-                        $500
+                        AUD 500
                       </div>
                       <Link href="/booking?service=animal-reiki&type=distance&package=5-sessions">
                         <Button
@@ -783,7 +785,7 @@ export default function HomePage() {
                       </div>
                       <div className="grid grid-cols-3 gap-1 text-xs">
                         <div className="text-center">
-                          <div className="text-sage-600 font-medium">$250</div>
+                          <div className="text-sage-600 font-medium">AUD 250</div>
                           <Link href="/booking?service=animal-reiki&type=pet-parent-in-person&package=single">
                             <Button
                               size="sm"
@@ -794,7 +796,7 @@ export default function HomePage() {
                           </Link>
                         </div>
                         <div className="text-center">
-                          <div className="text-sage-600 font-medium">$700</div>
+                          <div className="text-sage-600 font-medium">AUD 700</div>
                           <Link href="/booking?service=animal-reiki&type=pet-parent-in-person&package=3-sessions">
                             <Button
                               size="sm"
@@ -805,7 +807,7 @@ export default function HomePage() {
                           </Link>
                         </div>
                         <div className="text-center">
-                          <div className="text-sage-600 font-medium">$1000</div>
+                          <div className="text-sage-600 font-medium">AUD 1000</div>
                           <Link href="/booking?service=animal-reiki&type=pet-parent-in-person&package=5-sessions">
                             <Button
                               size="sm"
@@ -825,7 +827,7 @@ export default function HomePage() {
                       </div>
                       <div className="grid grid-cols-3 gap-1 text-xs">
                         <div className="text-center">
-                          <div className="text-sage-600 font-medium">$200</div>
+                          <div className="text-sage-600 font-medium">AUD 200</div>
                           <Link href="/booking?service=animal-reiki&type=pet-parent-distance&package=single">
                             <Button
                               size="sm"
@@ -836,7 +838,7 @@ export default function HomePage() {
                           </Link>
                         </div>
                         <div className="text-center">
-                          <div className="text-sage-600 font-medium">$550</div>
+                          <div className="text-sage-600 font-medium">AUD 550</div>
                           <Link href="/booking?service=animal-reiki&type=pet-parent-distance&package=3-sessions">
                             <Button
                               size="sm"
@@ -847,7 +849,7 @@ export default function HomePage() {
                           </Link>
                         </div>
                         <div className="text-center">
-                          <div className="text-sage-600 font-medium">$950</div>
+                          <div className="text-sage-600 font-medium">AUD 950</div>
                           <Link href="/booking?service=animal-reiki&type=pet-parent-distance&package=5-sessions">
                             <Button
                               size="sm"
@@ -903,7 +905,7 @@ export default function HomePage() {
                       <span className="font-medium text-stone-700">
                         In-Person Session
                       </span>
-                      <span className="font-semibold text-sage-600">$150</span>
+                      <span className="font-semibold text-sage-600">AUD 150</span>
                     </div>
                     <div className="text-xs text-stone-500 mb-2">
                       Duration: 30-45 minutes
@@ -923,7 +925,7 @@ export default function HomePage() {
                       <span className="font-medium text-stone-700">
                         Distance Session
                       </span>
-                      <span className="font-semibold text-sage-600">$120</span>
+                      <span className="font-semibold text-sage-600">AUD 120</span>
                     </div>
                     <div className="text-xs text-stone-500 mb-2">
                       Duration: 30-45 minutes

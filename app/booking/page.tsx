@@ -301,7 +301,7 @@ function PaymentForm({
             Processing Payment...
           </>
         ) : (
-          `Complete Booking - $${selectedServiceData?.price} AUD`
+          `Complete Booking - AUD ${selectedServiceData?.price}`
         )}
       </Button>
     </form>
@@ -934,7 +934,7 @@ export default function BookingPage() {
                         : "Distance Healing"}
                     </p>
                     <p>
-                      <strong>Amount Paid:</strong> $
+                      <strong>Amount Paid:</strong> AUD {""}
                       {bookingConfirmation.amount}{" "}
                       {bookingConfirmation.currency}
                     </p>
@@ -1115,7 +1115,7 @@ export default function BookingPage() {
                                       {service.duration}
                                     </span>
                                     <span className="font-semibold text-sage-600">
-                                      From ${service.price}
+                                      From AUD {""}{service.price}
                                     </span>
                                   </div>
 
@@ -1126,7 +1126,7 @@ export default function BookingPage() {
                                         <div className="flex items-center gap-1">
                                           <MapPin className="h-3 w-3" />
                                           <span>
-                                            In-Person: $
+                                            In-Person: AUD {""}
                                             {service.pricing.inPerson.single}
                                           </span>
                                         </div>
@@ -1135,7 +1135,7 @@ export default function BookingPage() {
                                         <div className="flex items-center gap-1">
                                           <Globe className="h-3 w-3" />
                                           <span>
-                                            Distance: $
+                                            Distance: AUD {""}
                                             {service.pricing.distance.single}
                                           </span>
                                         </div>
@@ -1146,7 +1146,7 @@ export default function BookingPage() {
                                   {service.packages && (
                                     <div className="text-xs text-sage-600">
                                       Package: {service.packages[1]?.sessions}{" "}
-                                      sessions for ${service.packages[1]?.price}
+                                      sessions for AUD {""}{service.packages[1]?.price}
                                     </div>
                                   )}
                                 </div>
@@ -1186,7 +1186,7 @@ export default function BookingPage() {
                                             </p>
                                           </div>
                                           <span className="font-semibold text-sage-600 text-sm whitespace-nowrap ml-2">
-                                            ${program.price}
+                                            AUD {""} {program.price}
                                           </span>
                                         </div>
                                         <div className="text-xs text-stone-500">
@@ -1241,7 +1241,7 @@ export default function BookingPage() {
                                     Australia
                                   </p>
                                   <p className="text-sm font-semibold text-sage-600">
-                                    $
+                                    AUD {""}
                                     {
                                       selectedServiceData.pricing.inPerson
                                         .single
@@ -1279,7 +1279,7 @@ export default function BookingPage() {
                                     Available Australia-wide
                                   </p>
                                   <p className="text-sm font-semibold text-sage-600">
-                                    $
+                                    AUD {""}
                                     {
                                       selectedServiceData.pricing.distance
                                         .single
@@ -1314,7 +1314,7 @@ export default function BookingPage() {
                                     Healing for both you and your pet
                                   </p>
                                   <p className="text-sm font-semibold text-sage-600">
-                                    $
+                                    AUD {""}
                                     {
                                       selectedServiceData.pricing
                                         .petParentInPerson.single
@@ -1348,7 +1348,7 @@ export default function BookingPage() {
                                     Remote healing for both you and your pet
                                   </p>
                                   <p className="text-sm font-semibold text-sage-600">
-                                    $
+                                    AUD {""}
                                     {
                                       selectedServiceData.pricing
                                         .petParentDistance.single
@@ -1384,17 +1384,17 @@ export default function BookingPage() {
                                   {pkg.name}
                                 </h4>
                                 <div className="text-2xl font-bold text-sage-600">
-                                  ${pkg.price}
+                                  AUD {""} {pkg.price}
                                 </div>
                                 {pkg.sessions > 1 && (
                                   <div className="text-xs text-stone-500">
-                                    ${Math.round(pkg.price / pkg.sessions)} per
+                                    AUD {""} {Math.round(pkg.price / pkg.sessions)} per
                                     session
                                   </div>
                                 )}
                                 {pkg.savings && (
                                   <div className="text-xs text-green-600 font-medium">
-                                    Save ${pkg.savings}
+                                    Save AUD {""} {pkg.savings}
                                   </div>
                                 )}
                               </CardContent>
@@ -1597,7 +1597,7 @@ export default function BookingPage() {
                                 {getCurrentDuration()}
                               </p>
                               <p>
-                                <strong>Investment:</strong> $
+                                <strong>Investment:</strong> AUD {""}
                                 {getCurrentPrice()}
                               </p>
                             </div>
@@ -1894,7 +1894,7 @@ export default function BookingPage() {
                         <div className="flex justify-between items-center">
                           <span className="text-lg font-semibold">Total:</span>
                           <span className="text-2xl font-bold text-sage-600">
-                            ${getCurrentPrice()} AUD
+                            ${getCurrentPrice()} AUD {""}
                           </span>
                         </div>
                       </div>

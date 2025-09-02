@@ -152,7 +152,7 @@ export default function ManageBookingPage() {
                           <p className="text-sm text-stone-600">Booking ID: {booking.id}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-2xl font-bold text-sage-600">${booking.price}</p>
+                          <p className="text-2xl font-bold text-sage-600">$ AUD {""}{booking.price}</p>
                           <p className="text-sm text-stone-500">{booking.paymentStatus}</p>
                         </div>
                       </div>
