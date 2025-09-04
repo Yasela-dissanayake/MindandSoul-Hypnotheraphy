@@ -925,7 +925,8 @@ export default function HomePage() {
                       <span className="font-medium text-stone-700">
                         Distance Session
                       </span>
-                      <span className="font-semibold text-sage-600">AUD 120</span>
+                      <span className="font-semibold text-sage-600">AUD 
+                        120</span>
                     </div>
                     <div className="text-xs text-stone-500 mb-2">
                       Duration: 30-45 minutes

@@ -324,7 +324,7 @@ export default function ServicesPage() {
         "Support physical and emotional healing",
         "Clear energetic blocks and promote balance",
         "Deepen your intuition and spiritual connection",
-        "Offer healing to yourself, loved ones, and clients"
+        "Offer healing to yourself, loved ones, and clients",
       ],
       bookable: false,
     },
@@ -586,7 +586,7 @@ export default function ServicesPage() {
                                   Single Session
                                 </span>
                                 <span className="font-semibold text-sage-600">
-                                  ${service.pricing.single}
+                                  AUD {service.pricing.single}
                                 </span>
                               </div>
 
@@ -622,11 +622,11 @@ export default function ServicesPage() {
                                     Package
                                   </span>
                                   <span className="font-semibold text-sage-600">
-                                    ${service.pricing.package.price}
+                                    AUD {service.pricing.package.price}
                                   </span>
                                 </div>
                                 <div className="text-xs text-stone-500 mb-2">
-                                  Save $
+                                  Save AUD{" "}
                                   {service.pricing.single *
                                     service.pricing.package.sessions -
                                     service.pricing.package.price}
@@ -662,7 +662,7 @@ export default function ServicesPage() {
                                     Single Session
                                   </span>
                                   <span className="font-semibold text-sage-600">
-                                    ${service.pricing.inPerson.single}
+                                    AUD {service.pricing.inPerson.single}
                                   </span>
                                 </div>
                                 <Link
@@ -687,11 +687,11 @@ export default function ServicesPage() {
                                         {pkg.sessions} Sessions Package
                                       </span>
                                       <span className="font-semibold text-sage-600">
-                                        ${pkg.price}
+                                        AUD {pkg.price}
                                       </span>
                                     </div>
                                     <div className="text-xs text-stone-500 mb-2">
-                                      Save $
+                                      Save AUD{" "}
                                       {service.pricing.inPerson.single *
                                         pkg.sessions -
                                         pkg.price}
@@ -726,7 +726,7 @@ export default function ServicesPage() {
                                         Single Session
                                       </span>
                                       <span className="font-semibold text-sage-600">
-                                        ${service.pricing.distance.single}
+                                        AUD {service.pricing.distance.single}
                                       </span>
                                     </div>
                                     <Link
@@ -751,11 +751,11 @@ export default function ServicesPage() {
                                             {pkg.sessions} Sessions Package
                                           </span>
                                           <span className="font-semibold text-sage-600">
-                                            ${pkg.price}
+                                            AUD {pkg.price}
                                           </span>
                                         </div>
                                         <div className="text-xs text-stone-500 mb-2">
-                                          Save $
+                                          Save AUD{" "}
                                           {service.pricing.distance.single *
                                             pkg.sessions -
                                             pkg.price}
@@ -801,7 +801,7 @@ export default function ServicesPage() {
                                           Single Session
                                         </span>
                                         <span className="font-semibold text-sage-600">
-                                          $
+                                          AUD
                                           {
                                             service.pricing.petParentPackage
                                               .inPerson.single
@@ -830,7 +830,7 @@ export default function ServicesPage() {
                                               {pkg.sessions} Sessions Package
                                             </span>
                                             <span className="font-semibold text-sage-600">
-                                              ${pkg.price}
+                                              AUD {pkg.price}
                                             </span>
                                           </div>
                                           <Link
@@ -859,7 +859,7 @@ export default function ServicesPage() {
                                           Single Session
                                         </span>
                                         <span className="font-semibold text-sage-600">
-                                          $
+                                          AUD
                                           {
                                             service.pricing.petParentPackage
                                               .distance.single
@@ -888,7 +888,7 @@ export default function ServicesPage() {
                                               {pkg.sessions} Sessions Package
                                             </span>
                                             <span className="font-semibold text-sage-600">
-                                              ${pkg.price}
+                                              AUD {pkg.price}
                                             </span>
                                           </div>
                                           <Link
@@ -920,7 +920,7 @@ export default function ServicesPage() {
                                   8-Week Program
                                 </span>
                                 <span className="font-semibold text-sage-600">
-                                  ${service.pricing.eightWeekProgram.price}
+                                  AUD {service.pricing.eightWeekProgram.price}
                                 </span>
                               </div>
 
@@ -937,7 +937,7 @@ export default function ServicesPage() {
                                     Recorded Sessions
                                   </span>
                                   <span className="font-semibold text-sage-600">
-                                    ${service.pricing.recordedSessions.price}{" "}
+                                    AUD {service.pricing.recordedSessions.price}{" "}
                                     per week
                                   </span>
                                 </div>
@@ -973,7 +973,7 @@ export default function ServicesPage() {
                                       </p>
                                     </div>
                                     <span className="font-semibold text-sage-600 text-sm whitespace-nowrap ml-2">
-                                      ${program.price} {program.note}
+                                      AUD {program.price} {program.note}
                                     </span>
                                   </div>
                                   <Link
