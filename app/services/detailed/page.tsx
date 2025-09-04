@@ -958,7 +958,7 @@ export default function DetailedServicesPage() {
                                 {program.price && (
                                   <div className="text-right">
                                     <div className="text-2xl font-bold text-sage-600">
-                                      ${program.price}
+                                      AUD {program.price}
                                     </div>
                                     <div className="text-sm text-stone-500">
                                       {program.note}
@@ -1265,7 +1265,7 @@ export default function DetailedServicesPage() {
                                   Single Session
                                 </h4>
                                 <div className="text-2xl font-bold text-sage-600">
-                                  ${service.pricing.single}
+                                  AUD {service.pricing.single}
                                 </div>
                               </div>
                               {service.pricing.includes && (
@@ -1301,7 +1301,7 @@ export default function DetailedServicesPage() {
                                       Single Session
                                     </span>
                                     <span className="text-lg font-bold text-sage-600">
-                                      ${service.pricing.inPerson.single}
+                                      AUD {service.pricing.inPerson.single}
                                     </span>
                                   </div>
                                   {service.pricing.inPerson.duration && (
@@ -1331,11 +1331,11 @@ export default function DetailedServicesPage() {
                                           {pkg.sessions} Sessions
                                         </span>
                                         <span className="text-lg font-bold text-sage-600">
-                                          ${pkg.price}
+                                          AUD {pkg.price}
                                         </span>
                                       </div>
                                       <div className="text-xs text-stone-500 mb-3">
-                                        Save $
+                                        Save AUD{" "}
                                         {service.pricing.inPerson.single *
                                           pkg.sessions -
                                           pkg.price}
@@ -1371,7 +1371,7 @@ export default function DetailedServicesPage() {
                                         Single Session
                                       </span>
                                       <span className="text-lg font-bold text-sage-600">
-                                        ${service.pricing.distance.single}
+                                        AUD {service.pricing.distance.single}
                                       </span>
                                     </div>
                                     <Link
@@ -1399,11 +1399,11 @@ export default function DetailedServicesPage() {
                                             {pkg.sessions} Sessions
                                           </span>
                                           <span className="text-lg font-bold text-sage-600">
-                                            ${pkg.price}
+                                            AUD {pkg.price}
                                           </span>
                                         </div>
                                         <div className="text-xs text-stone-500 mb-3">
-                                          Save $
+                                          Save AUD{" "}
                                           {service.pricing.distance.single *
                                             pkg.sessions -
                                             pkg.price}
@@ -1446,7 +1446,7 @@ export default function DetailedServicesPage() {
                                       <CardContent className="p-3">
                                         <div className="text-center">
                                           <div className="text-lg font-bold text-sage-600">
-                                            $
+                                            AUD{" "}
                                             {
                                               service.pricing.petParentPackage
                                                 .inPerson.single
@@ -1478,7 +1478,7 @@ export default function DetailedServicesPage() {
                                           <CardContent className="p-3">
                                             <div className="text-center">
                                               <div className="text-lg font-bold text-sage-600">
-                                                ${pkg.price}
+                                                AUD {pkg.price}
                                               </div>
                                               <div className="text-xs text-stone-600 mb-2">
                                                 {pkg.sessions} Sessions
@@ -1510,7 +1510,7 @@ export default function DetailedServicesPage() {
                                       <CardContent className="p-3">
                                         <div className="text-center">
                                           <div className="text-lg font-bold text-sage-600">
-                                            $
+                                            AUD{" "}
                                             {
                                               service.pricing.petParentPackage
                                                 .distance.single
@@ -1542,7 +1542,7 @@ export default function DetailedServicesPage() {
                                           <CardContent className="p-3">
                                             <div className="text-center">
                                               <div className="text-lg font-bold text-sage-600">
-                                                ${pkg.price}
+                                                AUD {pkg.price}
                                               </div>
                                               <div className="text-xs text-stone-600 mb-2">
                                                 {pkg.sessions} Sessions
@@ -1580,7 +1580,7 @@ export default function DetailedServicesPage() {
                                   Age Regression Therapy
                                 </h4>
                                 <div className="text-2xl font-bold text-sage-600">
-                                  ${service.pricing.ageRegression.price}
+                                  AUD {service.pricing.ageRegression.price}
                                 </div>
                               </div>
                               <p className="text-amber-700 text-sm mb-4">
@@ -1625,7 +1625,7 @@ export default function DetailedServicesPage() {
                                     </div>
                                     <div className="text-right">
                                       <div className="text-3xl font-bold text-sage-600">
-                                        ${program.price}
+                                        AUD {program.price}
                                       </div>
                                       <div className="text-sm text-stone-500">
                                         Complete Program
