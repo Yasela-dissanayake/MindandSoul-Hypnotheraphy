@@ -15,8 +15,45 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 
 export default function ContactPage() {
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+
+   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage("");
+
+    const formData = new FormData(e.currentTarget);
+    const body = {
+      name: formData.get("name"),
+      email: formData.get("email"),
+      subject: formData.get("subject"),
+      question: formData.get("question"),
+    };
+
+    try {
+      const res = await fetch("/api/send-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (res.ok) {
+        setMessage("✅ Your question has been sent successfully!");
+        e.currentTarget.reset();
+      } else {
+        setMessage("❌ Failed to send. Please try again later.");
+      }
+    } catch (err) {
+      console.error(err);
+      setMessage("❌ Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-stone-50">
       {/* Hero Section */}
@@ -531,13 +568,11 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <div className="font-semibold text-stone-800">Phone</div>
-                    <div className="text-stone-600">
-                      +61 429 940 130
-                    </div>
+                    <div className="text-stone-600">+61 429 940 130</div>
                   </div>
                 </div>
 
-                 <div className="flex items-start gap-4">
+                <div className="flex items-start gap-4">
                   <div className="p-3 bg-sage-100 rounded-lg">
                     <Mail className="h-5 w-5 text-sage-600 mx-auto" />
                   </div>
