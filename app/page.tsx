@@ -1,3 +1,8 @@
+"use client";
+
+import { useState } from "react";
+import { toast } from "@/components/ui/use-toast";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +30,56 @@ import Image from "next/image";
 import Link from "next/link";
 
 export default function HomePage() {
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>,
+    type: "question" | "consultation"
+  ) => {
+    e.preventDefault();
+    setLoading(true);
+    // setMessage("");
+
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    // const formData = new FormData(e.currentTarget);
+    const body = Object.fromEntries(formData.entries());
+    body.formType = type;
+
+    try {
+      const res = await fetch("/api/send-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (res.ok) {
+        toast({
+          title: "✅ Success",
+          description: "Your request has been sent!",
+          duration: 3000,
+        });
+        console.log("Form submitted:", body);
+        form.reset();
+      } else {
+        toast({
+          title: "❌ Failed",
+          description: "Please try again later.",
+          variant: "destructive",
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: "⚠️ Error",
+        description: "Something went wrong.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const testimonials = [
     {
       name: "Shabeena Packeerally",
@@ -355,7 +410,9 @@ export default function HomePage() {
                       <span className="font-medium text-stone-700">
                         3 Sessions Package
                       </span>
-                      <span className="font-semibold text-sage-600">AUD 390</span>
+                      <span className="font-semibold text-sage-600">
+                        AUD 390
+                      </span>
                     </div>
                     <div className="text-xs text-stone-500 mb-2">
                       Save AUD 30 • Duration: 60-90 minutes each
@@ -399,7 +456,9 @@ export default function HomePage() {
                         Age Regression Therapy
                       </span>
                       <div className="flex items-center gap-2">
-                        <span className="text-sage-600 font-medium">AUD 190</span>
+                        <span className="text-sage-600 font-medium">
+                          AUD 190
+                        </span>
                         <Link href="/booking?service=clinical-hypnotherapy&program=age-regression">
                           <Button
                             size="sm"
@@ -416,7 +475,9 @@ export default function HomePage() {
                         Past Life Regression
                       </span>
                       <div className="flex items-center gap-2">
-                        <span className="text-sage-600 font-medium">AUD 235</span>
+                        <span className="text-sage-600 font-medium">
+                          AUD 235
+                        </span>
                         <Link href="/booking?service=clinical-hypnotherapy&program=past-life">
                           <Button
                             size="sm"
@@ -433,7 +494,9 @@ export default function HomePage() {
                         Time to Loss Weight Program (12 weeks)
                       </span>
                       <div className="flex items-center gap-2">
-                        <span className="text-sage-600 font-medium">AUD 1450</span>
+                        <span className="text-sage-600 font-medium">
+                          AUD 1450
+                        </span>
                         <Link href="/booking?service=clinical-hypnotherapy&program=weight-loss">
                           <Button
                             size="sm"
@@ -450,7 +513,9 @@ export default function HomePage() {
                         Time to Sleep Program (12 weeks)
                       </span>
                       <div className="flex items-center gap-2">
-                        <span className="text-sage-600 font-medium">AUD 1350</span>
+                        <span className="text-sage-600 font-medium">
+                          AUD 1350
+                        </span>
                         <Link href="/booking?service=clinical-hypnotherapy&program=sleep-program">
                           <Button
                             size="sm"
@@ -467,7 +532,9 @@ export default function HomePage() {
                         IBS Freedom Program (12 weeks)
                       </span>
                       <div className="flex items-center gap-2">
-                        <span className="text-sage-600 font-medium">AUD 1350</span>
+                        <span className="text-sage-600 font-medium">
+                          AUD 1350
+                        </span>
                         <Link href="/booking?service=clinical-hypnotherapy&program=ibs-program">
                           <Button
                             size="sm"
@@ -511,7 +578,9 @@ export default function HomePage() {
                       <span className="font-medium text-stone-700">
                         Single Session
                       </span>
-                      <span className="font-semibold text-sage-600">AUD 120</span>
+                      <span className="font-semibold text-sage-600">
+                        AUD 120
+                      </span>
                     </div>
                     <div className="text-xs text-stone-500 mb-2">
                       Duration: 60 minutes
@@ -531,7 +600,9 @@ export default function HomePage() {
                       <span className="font-medium text-stone-700">
                         3 Sessions Package
                       </span>
-                      <span className="font-semibold text-sage-600">AUD 320</span>
+                      <span className="font-semibold text-sage-600">
+                        AUD 320
+                      </span>
                     </div>
                     <div className="text-xs text-stone-500 mb-2">
                       Save AUD 40 • Duration: 60 minutes each
@@ -558,7 +629,9 @@ export default function HomePage() {
                       <span className="font-medium text-stone-700">
                         Single Session
                       </span>
-                      <span className="font-semibold text-sage-600">AUD 90</span>
+                      <span className="font-semibold text-sage-600">
+                        AUD 90
+                      </span>
                     </div>
                     <div className="text-xs text-stone-500 mb-2">
                       Duration: 60 minutes
@@ -655,7 +728,9 @@ export default function HomePage() {
                       <span className="font-medium text-stone-700">
                         Single Session
                       </span>
-                      <span className="font-semibold text-sage-600">AUD 160</span>
+                      <span className="font-semibold text-sage-600">
+                        AUD 160
+                      </span>
                     </div>
                     <div className="text-xs text-stone-500 mb-2">
                       Duration: 45-60 minutes
@@ -717,7 +792,9 @@ export default function HomePage() {
                       <span className="font-medium text-stone-700">
                         Single Session
                       </span>
-                      <span className="font-semibold text-sage-600">AUD 110</span>
+                      <span className="font-semibold text-sage-600">
+                        AUD 110
+                      </span>
                     </div>
                     <div className="text-xs text-stone-500 mb-2">
                       Duration: 45-60 minutes
@@ -785,7 +862,9 @@ export default function HomePage() {
                       </div>
                       <div className="grid grid-cols-3 gap-1 text-xs">
                         <div className="text-center">
-                          <div className="text-sage-600 font-medium">AUD 250</div>
+                          <div className="text-sage-600 font-medium">
+                            AUD 250
+                          </div>
                           <Link href="/booking?service=animal-reiki&type=pet-parent-in-person&package=single">
                             <Button
                               size="sm"
@@ -796,7 +875,9 @@ export default function HomePage() {
                           </Link>
                         </div>
                         <div className="text-center">
-                          <div className="text-sage-600 font-medium">AUD 700</div>
+                          <div className="text-sage-600 font-medium">
+                            AUD 700
+                          </div>
                           <Link href="/booking?service=animal-reiki&type=pet-parent-in-person&package=3-sessions">
                             <Button
                               size="sm"
@@ -807,7 +888,9 @@ export default function HomePage() {
                           </Link>
                         </div>
                         <div className="text-center">
-                          <div className="text-sage-600 font-medium">AUD 1000</div>
+                          <div className="text-sage-600 font-medium">
+                            AUD 1000
+                          </div>
                           <Link href="/booking?service=animal-reiki&type=pet-parent-in-person&package=5-sessions">
                             <Button
                               size="sm"
@@ -827,7 +910,9 @@ export default function HomePage() {
                       </div>
                       <div className="grid grid-cols-3 gap-1 text-xs">
                         <div className="text-center">
-                          <div className="text-sage-600 font-medium">AUD 200</div>
+                          <div className="text-sage-600 font-medium">
+                            AUD 200
+                          </div>
                           <Link href="/booking?service=animal-reiki&type=pet-parent-distance&package=single">
                             <Button
                               size="sm"
@@ -838,7 +923,9 @@ export default function HomePage() {
                           </Link>
                         </div>
                         <div className="text-center">
-                          <div className="text-sage-600 font-medium">AUD 550</div>
+                          <div className="text-sage-600 font-medium">
+                            AUD 550
+                          </div>
                           <Link href="/booking?service=animal-reiki&type=pet-parent-distance&package=3-sessions">
                             <Button
                               size="sm"
@@ -849,7 +936,9 @@ export default function HomePage() {
                           </Link>
                         </div>
                         <div className="text-center">
-                          <div className="text-sage-600 font-medium">AUD 950</div>
+                          <div className="text-sage-600 font-medium">
+                            AUD 950
+                          </div>
                           <Link href="/booking?service=animal-reiki&type=pet-parent-distance&package=5-sessions">
                             <Button
                               size="sm"
@@ -905,7 +994,9 @@ export default function HomePage() {
                       <span className="font-medium text-stone-700">
                         In-Person Session
                       </span>
-                      <span className="font-semibold text-sage-600">AUD 150</span>
+                      <span className="font-semibold text-sage-600">
+                        AUD 150
+                      </span>
                     </div>
                     <div className="text-xs text-stone-500 mb-2">
                       Duration: 30-45 minutes
@@ -925,8 +1016,9 @@ export default function HomePage() {
                       <span className="font-medium text-stone-700">
                         Distance Session
                       </span>
-                      <span className="font-semibold text-sage-600">AUD 
-                        120</span>
+                      <span className="font-semibold text-sage-600">
+                        AUD 120
+                      </span>
                     </div>
                     <div className="text-xs text-stone-500 mb-2">
                       Duration: 30-45 minutes
@@ -1253,70 +1345,116 @@ export default function HomePage() {
 
             <Card className="border-stone-200">
               <CardContent className="p-8 space-y-6">
-                <h3 className="text-xl font-semibold text-stone-800">
-                  Book Your Free Consultation
-                </h3>
-                <p className="text-stone-600 text-sm">
-                  30-minute online consultation to discuss your goals and find
-                  the right healing approach for you.
-                </p>
-                <form className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-6">
+                  <div className="text-center space-y-2">
+                    <h3 className="text-xl font-semibold text-stone-800">
+                      Book Your Free Consultation
+                    </h3>
+                    {/* <p className="text-stone-600 text-sm">
+                          15-minute phone call to discuss your goals and see if
+                          hypnotherapy is right for you.
+                        </p> */}
+                  </div>
+
+                  <form
+                    onSubmit={(e) => handleSubmit(e, "consultation")}
+                    className="space-y-4"
+                  >
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-stone-700 mb-2">
+                          First Name *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
+                          placeholder="Your first name"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-stone-700 mb-2">
+                          Last Name *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
+                          placeholder="Your last name"
+                        />
+                      </div>
+                    </div>
+
                     <div>
                       <label className="block text-sm font-medium text-stone-700 mb-2">
-                        First Name
+                        Email Address *
                       </label>
                       <input
-                        type="text"
+                        type="email"
+                        required
                         className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
-                        placeholder="Your first name"
+                        placeholder="your.email@example.com"
                       />
                     </div>
+
                     <div>
                       <label className="block text-sm font-medium text-stone-700 mb-2">
-                        Last Name
+                        Phone Number *
                       </label>
                       <input
-                        type="text"
+                        type="tel"
+                        required
                         className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
-                        placeholder="Your last name"
+                        placeholder="+61 xxx xxx xxx"
                       />
                     </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-stone-700 mb-2">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
-                      placeholder="your.email@example.com"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-stone-700 mb-2">
-                      Phone
-                    </label>
-                    <input
-                      type="tel"
-                      className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
-                      placeholder="+61 xxx xxx xxx"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-stone-700 mb-2">
-                      How can we help you?
-                    </label>
-                    <textarea
-                      rows={4}
-                      className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
-                      placeholder="Tell us about your goals and what you'd like to achieve..."
-                    />
-                  </div>
-                  <Button className="w-full bg-sage-600 hover:bg-sage-700 text-white">
-                    Send Message
-                  </Button>
-                </form>
+
+                    <div>
+                      <label className="block text-sm font-medium text-stone-700 mb-2">
+                        Preferred Contact Method
+                      </label>
+                      <select className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500">
+                        <option>Phone Call</option>
+                        <option>Email</option>
+                        <option>Text Message</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-stone-700 mb-2">
+                        What would you like to work on?
+                      </label>
+                      <select className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500">
+                        <option>Anxiety & Stress Relief</option>
+                        <option>Confidence Building</option>
+                        <option>Habit Change</option>
+                        <option>Weight Management</option>
+                        <option>Sleep Improvement</option>
+                        <option>Pain Management</option>
+                        <option>Other</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-stone-700 mb-2">
+                        Tell me more about your situation
+                      </label>
+                      <textarea
+                        rows={4}
+                        className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
+                        placeholder="Share what you'd like to achieve and any questions you have..."
+                      />
+                    </div>
+
+                    <Button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full bg-sage-600 hover:bg-sage-700 text-white"
+                    >
+                      Request Free Consultation
+                    </Button>
+                  </form>
+                </div>
               </CardContent>
             </Card>
           </div>

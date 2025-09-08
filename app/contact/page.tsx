@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,23 +18,26 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function ContactPage() {
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
+  // const [message, setMessage] = useState("");
 
-   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>,
+    type: "question" | "consultation"
+  ) => {
     e.preventDefault();
     setLoading(true);
-    setMessage("");
+    // setMessage("");
 
-    const formData = new FormData(e.currentTarget);
-    const body = {
-      name: formData.get("name"),
-      email: formData.get("email"),
-      subject: formData.get("subject"),
-      question: formData.get("question"),
-    };
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    // const formData = new FormData(e.currentTarget);
+    const body = Object.fromEntries(formData.entries());
+    body.formType = type;
 
     try {
       const res = await fetch("/api/send-email", {
@@ -42,18 +47,32 @@ export default function ContactPage() {
       });
 
       if (res.ok) {
-        setMessage("✅ Your question has been sent successfully!");
-        e.currentTarget.reset();
+        toast({
+          title: "✅ Success",
+          description: "Your request has been sent!",
+          duration: 3000,
+        });
+        console.log("Form submitted:", body);
+        form.reset();
       } else {
-        setMessage("❌ Failed to send. Please try again later.");
+        toast({
+          title: "❌ Failed",
+          description: "Please try again later.",
+          variant: "destructive",
+        });
       }
     } catch (err) {
       console.error(err);
-      setMessage("❌ Something went wrong.");
+      toast({
+        title: "⚠️ Error",
+        description: "Something went wrong.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
   };
+
   return (
     <div className="min-h-screen bg-stone-50">
       {/* Hero Section */}
@@ -242,7 +261,10 @@ export default function ContactPage() {
                         </p> */}
                       </div>
 
-                      <form className="space-y-4">
+                      <form
+                        onSubmit={(e) => handleSubmit(e, "consultation")}
+                        className="space-y-4"
+                      >
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm font-medium text-stone-700 mb-2">
@@ -329,7 +351,11 @@ export default function ContactPage() {
                           />
                         </div>
 
-                        <Button className="w-full bg-sage-600 hover:bg-sage-700 text-white">
+                        <Button
+                          type="submit"
+                          disabled={loading}
+                          className="w-full bg-sage-600 hover:bg-sage-700 text-white"
+                        >
                           Request Free Consultation
                         </Button>
                       </form>
@@ -352,7 +378,10 @@ export default function ContactPage() {
                         </p>
                       </div>
 
-                      <form className="space-y-4">
+                      <form
+                        onSubmit={(e) => handleSubmit(e, "question")}
+                        className="space-y-4"
+                      >
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm font-medium text-stone-700 mb-2">
@@ -401,7 +430,11 @@ export default function ContactPage() {
                           />
                         </div>
 
-                        <Button className="w-full bg-sage-600 hover:bg-sage-700 text-white">
+                        <Button
+                          type="submit"
+                          disabled={loading}
+                          className="w-full bg-sage-600 hover:bg-sage-700 text-white"
+                        >
                           Send Question
                         </Button>
                       </form>
