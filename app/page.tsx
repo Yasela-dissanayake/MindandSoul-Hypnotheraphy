@@ -46,6 +46,7 @@ export default function HomePage() {
     const body = Object.fromEntries(formData.entries());
     body.formType = type;
 
+    console.log("Form data:", body);
     try {
       const res = await fetch("/api/send-email", {
         method: "POST",
@@ -1368,6 +1369,7 @@ export default function HomePage() {
                         <input
                           type="text"
                           required
+                          name="firstName"
                           className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                           placeholder="Your first name"
                         />
@@ -1379,6 +1381,7 @@ export default function HomePage() {
                         <input
                           type="text"
                           required
+                          name="lastName"
                           className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                           placeholder="Your last name"
                         />
@@ -1392,6 +1395,7 @@ export default function HomePage() {
                       <input
                         type="email"
                         required
+                        name="email"
                         className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                         placeholder="your.email@example.com"
                       />
@@ -1404,6 +1408,7 @@ export default function HomePage() {
                       <input
                         type="tel"
                         required
+                        name="phone"
                         className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                         placeholder="+61 xxx xxx xxx"
                       />
@@ -1424,7 +1429,10 @@ export default function HomePage() {
                       <label className="block text-sm font-medium text-stone-700 mb-2">
                         What would you like to work on?
                       </label>
-                      <select className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500">
+                      <select
+                        name="contactMethod"
+                        className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
+                      >
                         <option>Anxiety & Stress Relief</option>
                         <option>Confidence Building</option>
                         <option>Habit Change</option>

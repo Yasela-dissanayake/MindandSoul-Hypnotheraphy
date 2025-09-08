@@ -188,7 +188,7 @@ export default function ContactPage() {
               {
                 icon: Calendar,
                 title: "Online Booking",
-                description: "Schedule your free consultation",
+                description: "Book your service",
                 contact: "Book instantly online",
                 action: "Book Now",
                 available: "Available 24/7",
@@ -273,6 +273,7 @@ export default function ContactPage() {
                             <input
                               type="text"
                               required
+                              name="firstName"
                               className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                               placeholder="Your first name"
                             />
@@ -284,6 +285,7 @@ export default function ContactPage() {
                             <input
                               type="text"
                               required
+                              name="lastName"
                               className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                               placeholder="Your last name"
                             />
@@ -297,6 +299,7 @@ export default function ContactPage() {
                           <input
                             type="email"
                             required
+                            name="email"
                             className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                             placeholder="your.email@example.com"
                           />
@@ -309,6 +312,7 @@ export default function ContactPage() {
                           <input
                             type="tel"
                             required
+                            name="phone"
                             className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                             placeholder="+61 xxx xxx xxx"
                           />
@@ -318,7 +322,10 @@ export default function ContactPage() {
                           <label className="block text-sm font-medium text-stone-700 mb-2">
                             Preferred Contact Method
                           </label>
-                          <select className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500">
+                          <select
+                            name="contactMethod"
+                            className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
+                          >
                             <option>Phone Call</option>
                             <option>Email</option>
                             <option>Text Message</option>
@@ -329,7 +336,10 @@ export default function ContactPage() {
                           <label className="block text-sm font-medium text-stone-700 mb-2">
                             What would you like to work on?
                           </label>
-                          <select className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500">
+                          <select
+                            name="workOn"
+                            className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
+                          >
                             <option>Anxiety & Stress Relief</option>
                             <option>Confidence Building</option>
                             <option>Habit Change</option>
@@ -346,6 +356,7 @@ export default function ContactPage() {
                           </label>
                           <textarea
                             rows={4}
+                            name="details"
                             className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                             placeholder="Share what you'd like to achieve and any questions you have..."
                           />
@@ -390,6 +401,7 @@ export default function ContactPage() {
                             <input
                               type="text"
                               required
+                              name="name"
                               className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                               placeholder="Your name"
                             />
@@ -401,6 +413,7 @@ export default function ContactPage() {
                             <input
                               type="email"
                               required
+                              name="email"
                               className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                               placeholder="your.email@example.com"
                             />
@@ -413,6 +426,7 @@ export default function ContactPage() {
                           </label>
                           <input
                             type="text"
+                            name="subject"
                             className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                             placeholder="What's your question about?"
                           />
@@ -425,6 +439,7 @@ export default function ContactPage() {
                           <textarea
                             rows={6}
                             required
+                            name="question"
                             className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                             placeholder="Please share your question or concern in detail..."
                           />
