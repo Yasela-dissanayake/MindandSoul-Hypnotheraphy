@@ -1,7 +1,11 @@
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
+import { isAuthorizedInternalRequest } from "@/lib/security";
 import nodemailer from "nodemailer";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  if (!isAuthorizedInternalRequest(req)) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
   try {
     const data = await req.json();
 
