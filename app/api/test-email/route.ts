@@ -4,8 +4,13 @@ import {
   sendConfirmationEmail,
   sendPractitionerNotification,
 } from "@/lib/email";
+import { isAuthorizedInternalRequest } from "@/lib/security";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  if (!isAuthorizedInternalRequest(request)) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
   try {
     console.log("GET /api/test-email - Testing email configuration...");
 
@@ -50,6 +55,10 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  if (!isAuthorizedInternalRequest(request)) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
   try {
     console.log("POST /api/test-email - Sending test emails...");
 
