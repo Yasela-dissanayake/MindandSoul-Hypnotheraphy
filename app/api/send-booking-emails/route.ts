@@ -3,6 +3,7 @@ import {
   sendClientBookingConfirmation,
   sendPractitionerBookingNotification,
 } from "@/lib/email";
+import { isAuthorizedInternalRequest } from "@/lib/security";
 
 export async function POST(request: NextRequest) {
   try {
@@ -59,6 +60,10 @@ export async function POST(request: NextRequest) {
       medicalConditions,
     });
 
+    if (!isAuthorizedInternalRequest(request)) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
     if (clientEmailResult.success && practitionerEmailResult.success) {
       return NextResponse.json({
         success: true,
@@ -83,7 +88,7 @@ export async function POST(request: NextRequest) {
             practitionerEmail: practitionerEmailResult,
           },
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
   } catch (error) {
@@ -94,7 +99,7 @@ export async function POST(request: NextRequest) {
         error: "Internal server error",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
