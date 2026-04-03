@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import Stripe from "stripe"
-import { sendConfirmationEmail, sendPractitionerNotification } from "@/lib/email"
+import { sendClientBookingConfirmation, sendPractitionerBookingNotification } from "@/lib/email"
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2023-10-16",
@@ -58,6 +58,7 @@ async function handleSuccessfulPayment(paymentIntent: Stripe.PaymentIntent) {
       clientName: paymentIntent.metadata.client_name,
       clientEmail: paymentIntent.metadata.client_email,
       clientPhone: paymentIntent.metadata.client_phone,
+      concerns: paymentIntent.metadata.concerns || "",
       status: "confirmed",
       createdAt: new Date(),
     }
@@ -65,7 +66,7 @@ async function handleSuccessfulPayment(paymentIntent: Stripe.PaymentIntent) {
     console.log("Processing successful payment for:", bookingData.clientEmail)
 
     // Send confirmation email to client
-    const clientEmailResult = await sendConfirmationEmail(bookingData)
+    const clientEmailResult = await sendClientBookingConfirmation(bookingData)
     if (clientEmailResult.success) {
       console.log("✅ Confirmation email sent to client:", clientEmailResult.messageId)
     } else {
@@ -73,7 +74,7 @@ async function handleSuccessfulPayment(paymentIntent: Stripe.PaymentIntent) {
     }
 
     // Send notification to practitioner
-    const practitionerEmailResult = await sendPractitionerNotification(bookingData)
+    const practitionerEmailResult = await sendPractitionerBookingNotification(bookingData)
     if (practitionerEmailResult.success) {
       console.log("✅ Notification sent to practitioner:", practitionerEmailResult.messageId)
     } else {

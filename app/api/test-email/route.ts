@@ -1,8 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 import {
-  testEmailConfiguration,
-  sendConfirmationEmail,
-  sendPractitionerNotification,
+  verifyEmailConfig,
+  sendClientBookingConfirmation,
+  sendPractitionerBookingNotification,
 } from "@/lib/email";
 import { isAuthorizedInternalRequest } from "@/lib/security";
 
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     console.log("GET /api/test-email - Testing email configuration...");
 
     // Test email configuration
-    const configTest = await testEmailConfiguration();
+    const configTest = await verifyEmailConfig();
 
     if (!configTest.success) {
       return NextResponse.json(
@@ -80,16 +80,17 @@ export async function POST(request: NextRequest) {
       amount: body.amount || 120,
       currency: body.currency || "aud",
       paymentIntentId: body.paymentIntentId || "pi_test_123456789",
+      concerns: body.concerns || "This is a test booking - no real concerns.",
     };
 
     console.log("Sending test email to:", testEmail);
 
     // Send confirmation email
-    const clientResult = await sendConfirmationEmail(testBookingData);
+    const clientResult = await sendClientBookingConfirmation(testBookingData);
     console.log("Client email result:", clientResult);
 
     // Send practitioner notification
-    const practitionerResult = await sendPractitionerNotification(
+    const practitionerResult = await sendPractitionerBookingNotification(
       testBookingData
     );
     console.log("Practitioner email result:", practitionerResult);
