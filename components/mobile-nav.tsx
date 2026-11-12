@@ -16,6 +16,7 @@ export function MobileNav() {
     { href: "/services", label: "Services" },
     { href: "/testimonials", label: "Testimonials" },
     { href: "/contact", label: "Contact" },
+    { href: "/login", label: "Client login" },
   ];
 
   return (

@@ -1,0 +1,421 @@
+"use client";
+
+import { useRef, useState } from "react";
+import Link from "next/link";
+import { ArrowDown, ArrowUp, Award, Pencil, Plus, Sparkles, Upload, X } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import type { EditorCourse, LibraryOption } from "@/lib/admin-plans";
+import { KIND_LABEL } from "@/lib/catalog";
+import { uploadFile } from "@/lib/upload-client";
+import {
+  addCourseItems,
+  deleteCourseModule,
+  enrollStudent,
+  moveCourseItem,
+  moveCourseModule,
+  removeCertificate,
+  removeCourseItem,
+  saveCourseModule,
+  setCertificate,
+  setCourseArchived,
+  setEnrollmentCompleted,
+  unenrollStudent,
+  updateCourse,
+  updateCourseItem,
+} from "@/app/admin/_actions/courses";
+import { useAction } from "./use-action";
+import { ConfirmButton } from "./confirm-button";
+import { KIND_ICON, LibraryPicker } from "./library-picker";
+import { NoteButton, Section } from "./plan-editor";
+
+const selectCls = "h-10 w-full rounded-md border border-input bg-white px-3 text-sm";
+
+export function CourseDetails({ course }: { course: EditorCourse }) {
+  const [editing, setEditing] = useState(false);
+  const [f, setF] = useState({ title: course.title, description: course.description ?? "" });
+  const { pending, run } = useAction();
+  if (!editing) {
+    return (
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="font-serif text-3xl text-stone-800">{course.title}</h1>
+            {course.archived && <Badge variant="secondary">Hidden from students</Badge>}
+          </div>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
+              <Pencil className="mr-1.5 h-3.5 w-3.5" /> Edit
+            </Button>
+            <Button size="sm" variant="outline" disabled={pending} onClick={() => run(() => setCourseArchived(course.id, !course.archived), course.archived ? "Course visible again" : "Course hidden")}>
+              {course.archived ? "Show to students" : "Hide course"}
+            </Button>
+          </div>
+        </div>
+        {course.description && <p className="whitespace-pre-line text-stone-600">{course.description}</p>}
+      </div>
+    );
+  }
+  return (
+    <div className="space-y-3 rounded-xl bg-stone-50 p-4">
+      <div className="space-y-2">
+        <Label>Course name</Label>
+        <Input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
+      </div>
+      <div className="space-y-2">
+        <Label>Description (students see this)</Label>
+        <Textarea value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} />
+      </div>
+      <div className="flex gap-2">
+        <Button className="bg-sage-600 hover:bg-sage-700" disabled={pending} onClick={() => run(() => updateCourse(course.id, f), "Saved", (r) => r.ok && setEditing(false))}>
+          Save
+        </Button>
+        <Button variant="ghost" onClick={() => setEditing(false)}>
+          Cancel
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+export function CourseModulesEditor({ course }: { course: EditorCourse }) {
+  const { pending, run } = useAction();
+  const [edit, setEdit] = useState<{ id?: string; title: string; description: string } | null>(null);
+  const form = edit && (
+    <div className="space-y-2 rounded-lg bg-stone-50 p-3">
+      <Input placeholder="e.g. Module 2: Hand positions" value={edit.title} onChange={(e) => setEdit({ ...edit, title: e.target.value })} />
+      <Textarea placeholder="What this module covers (optional)" value={edit.description} onChange={(e) => setEdit({ ...edit, description: e.target.value })} />
+      <div className="flex gap-2">
+        <Button size="sm" className="bg-sage-600 hover:bg-sage-700" disabled={pending} onClick={() => run(() => saveCourseModule(course.id, edit), "Saved", (r) => r.ok && setEdit(null))}>
+          Save
+        </Button>
+        <Button size="sm" variant="ghost" onClick={() => setEdit(null)}>
+          Cancel
+        </Button>
+      </div>
+    </div>
+  );
+  return (
+    <Section
+      title="Modules"
+      hint="Students see the modules in this order and can mark each one complete."
+      action={
+        !edit && (
+          <Button size="sm" variant="outline" onClick={() => setEdit({ title: `Module ${course.modules.length + 1}: `, description: "" })}>
+            <Plus className="mr-1 h-3.5 w-3.5" /> Add module
+          </Button>
+        )
+      }
+    >
+      {course.modules.length === 0 && !edit && <p className="text-sm text-stone-500">No modules yet.</p>}
+      <ol className="space-y-2">
+        {course.modules.map((m, i) =>
+          edit?.id === m.id ? (
+            <li key={m.id}>{form}</li>
+          ) : (
+            <li key={m.id} className="flex items-center gap-2 rounded-lg border border-stone-200 p-2.5">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-stone-100 text-xs">{i + 1}</span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-stone-800">{m.title}</p>
+                <p className="truncate text-xs text-stone-500">
+                  {course.items.filter((x) => x.moduleId === m.id).length} items{m.description ? ` · ${m.description}` : ""}
+                </p>
+              </div>
+              <Button size="icon" variant="ghost" className="h-8 w-8" disabled={pending || i === 0} onClick={() => run(() => moveCourseModule(m.id, -1))} aria-label="Move up">
+                <ArrowUp className="h-4 w-4" />
+              </Button>
+              <Button size="icon" variant="ghost" className="h-8 w-8" disabled={pending || i === course.modules.length - 1} onClick={() => run(() => moveCourseModule(m.id, 1))} aria-label="Move down">
+                <ArrowDown className="h-4 w-4" />
+              </Button>
+              <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setEdit({ id: m.id, title: m.title, description: m.description ?? "" })} aria-label="Edit">
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <ConfirmButton icon title={`Delete "${m.title}"?`} description="Its material stays in the course, just not in a module. Students' ticks for it are removed." onConfirm={() => run(() => deleteCourseModule(m.id), "Deleted")} />
+            </li>
+          ),
+        )}
+      </ol>
+      {edit && !edit.id && form}
+    </Section>
+  );
+}
+
+export function CourseMaterialEditor({ course, library }: { course: EditorCourse; library: LibraryOption[] }) {
+  const { pending, run } = useAction();
+  const [picking, setPicking] = useState(false);
+  const main = course.items.filter((i) => !i.extra);
+  const extras = course.items.filter((i) => i.extra);
+
+  const row = (item: EditorCourse["items"][number], i: number, list: EditorCourse["items"]) => {
+    const Icon = KIND_ICON[item.resource.kind];
+    return (
+      <li key={item.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-stone-200 p-2.5">
+        <Icon className="h-4 w-4 shrink-0 text-sage-600" />
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium text-stone-800">{item.resource.title}</p>
+          <p className="truncate text-xs text-stone-500">
+            {KIND_LABEL[item.resource.kind]}
+            {item.note ? ` · ${item.note}` : ""}
+            {!item.extra && !item.moduleId && course.modules.length ? " · not in a module" : ""}
+          </p>
+        </div>
+        <select
+          className="h-8 max-w-[12rem] rounded-md border border-input bg-white px-2 text-xs"
+          value={item.extra ? "__extra" : (item.moduleId ?? "")}
+          disabled={pending}
+          onChange={(e) =>
+            run(() =>
+              updateCourseItem(item.id, {
+                moduleId: e.target.value === "__extra" || !e.target.value ? null : e.target.value,
+                note: item.note,
+                extra: e.target.value === "__extra",
+              }),
+            )
+          }
+          aria-label="Where"
+        >
+          <option value="">Course material</option>
+          {course.modules.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.title}
+            </option>
+          ))}
+          <option value="__extra">Extras</option>
+        </select>
+        <NoteButton note={item.note} onSave={(note) => updateCourseItem(item.id, { moduleId: item.moduleId, note, extra: item.extra })} />
+        <Button size="icon" variant="ghost" className="h-8 w-8" disabled={pending || i === 0} onClick={() => run(() => moveCourseItem(item.id, -1))} aria-label="Move up">
+          <ArrowUp className="h-4 w-4" />
+        </Button>
+        <Button size="icon" variant="ghost" className="h-8 w-8" disabled={pending || i === list.length - 1} onClick={() => run(() => moveCourseItem(item.id, 1))} aria-label="Move down">
+          <ArrowDown className="h-4 w-4" />
+        </Button>
+        <Button size="icon" variant="ghost" className="h-8 w-8" disabled={pending} onClick={() => run(() => removeCourseItem(item.id), "Removed from course")} aria-label="Remove">
+          <X className="h-4 w-4" />
+        </Button>
+      </li>
+    );
+  };
+
+  return (
+    <Section
+      title="Course material & extras"
+      hint="Everything here is shared: every student on this course sees it, including anything you add later."
+      action={
+        <Button size="sm" className="bg-sage-600 hover:bg-sage-700" onClick={() => setPicking(true)}>
+          <Plus className="mr-1 h-3.5 w-3.5" /> Add material
+        </Button>
+      }
+    >
+      {course.items.length === 0 && <p className="text-sm text-stone-500">No material yet. Add the tutorials, PDFs, recordings and videos for this course.</p>}
+      {main.length > 0 && <ul className="space-y-2">{main.map((it, i) => row(it, i, main))}</ul>}
+      {extras.length > 0 && (
+        <div className="space-y-2">
+          <p className="flex items-center gap-1.5 pt-2 text-sm font-medium text-stone-700">
+            <Sparkles className="h-4 w-4 text-sage-600" /> Extras
+          </p>
+          <ul className="space-y-2">{extras.map((it, i) => row(it, i, extras))}</ul>
+        </div>
+      )}
+      <LibraryPicker
+        open={picking}
+        onOpenChange={setPicking}
+        library={library}
+        exclude={course.items.map((i) => i.resource.id)}
+        targets={course.modules}
+        targetLabel="Module"
+        defaultTag={course.title}
+        showExtra
+        onAdd={(ids, moduleId, extra) => run(() => addCourseItems(course.id, ids, moduleId, extra), "Added to the course")}
+        pending={pending}
+      />
+    </Section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Certificates and enrolments
+// ---------------------------------------------------------------------------
+
+export function CertificateUpload({ enrollmentId, hasCertificate }: { enrollmentId: string; hasCertificate: boolean }) {
+  const ref = useRef<HTMLInputElement>(null);
+  const [pct, setPct] = useState<number | null>(null);
+  const { pending, run } = useAction();
+
+  const onFile = async (file: File) => {
+    try {
+      setPct(0);
+      const up = await uploadFile(file, { purpose: "certificate", filename: file.name, onProgress: setPct });
+      run(() => setCertificate(enrollmentId, { key: up.key, name: file.name, contentType: up.contentType }), "Certificate uploaded");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Upload failed.");
+    } finally {
+      setPct(null);
+    }
+  };
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {hasCertificate && (
+        <>
+          <Button size="sm" variant="outline" asChild>
+            <a href={`/api/files/certificate/${enrollmentId}`} target="_blank" rel="noreferrer">
+              <Award className="mr-1.5 h-3.5 w-3.5 text-amber-600" /> View certificate
+            </a>
+          </Button>
+          <ConfirmButton label="Remove" title="Remove this certificate?" description="The student will no longer see it." onConfirm={() => run(() => removeCertificate(enrollmentId), "Certificate removed")} />
+        </>
+      )}
+      <Button size="sm" variant={hasCertificate ? "ghost" : "outline"} disabled={pending || pct !== null} onClick={() => ref.current?.click()}>
+        <Upload className="mr-1.5 h-3.5 w-3.5" /> {hasCertificate ? "Replace" : "Upload certificate"}
+      </Button>
+      <input ref={ref} type="file" accept="application/pdf,.pdf,image/*,.jpg,.jpeg,.png" className="hidden" onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])} />
+      {pct !== null && <Progress value={pct} className="h-1.5 w-24" />}
+    </div>
+  );
+}
+
+type Enrolled = {
+  enrollmentId: string;
+  userId: string;
+  name: string;
+  email: string;
+  modulesDone: number;
+  completed: boolean;
+  hasCertificate: boolean;
+  startedAt: string;
+};
+
+export function CourseStudents({
+  courseId,
+  totalModules,
+  students,
+  candidates,
+}: {
+  courseId: string;
+  totalModules: number;
+  students: Enrolled[];
+  candidates: { id: string; name: string }[];
+}) {
+  const { pending, run } = useAction();
+  const [pick, setPick] = useState("");
+
+  return (
+    <Section title={`Students (${students.length})`} hint="Only these people can see this course. Upload each student's signed certificate when they finish.">
+      <div className="flex flex-wrap gap-2">
+        <select className={`${selectCls} max-w-xs`} value={pick} onChange={(e) => setPick(e.target.value)}>
+          <option value="">Add an existing person…</option>
+          {candidates.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+        <Button variant="outline" disabled={!pick || pending} onClick={() => run(() => enrollStudent(pick, courseId), "Enrolled", (r) => r.ok && setPick(""))}>
+          Enrol
+        </Button>
+        <Button variant="ghost" asChild>
+          <Link href="/admin/clients?add=1">New person…</Link>
+        </Button>
+      </div>
+      {students.length === 0 && <p className="text-sm text-stone-500">No students yet.</p>}
+      <ul className="space-y-2">
+        {students.map((s) => (
+          <li key={s.enrollmentId} className="space-y-2 rounded-lg border border-stone-200 p-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Link href={`/admin/clients/${s.userId}?tab=courses`} className="flex-1 font-medium text-stone-800 hover:underline">
+                {s.name}
+                <span className="block text-xs font-normal text-stone-500">{s.email}</span>
+              </Link>
+              {s.completed && <Badge className="bg-sage-100 text-sage-800 hover:bg-sage-100">Completed</Badge>}
+              <span className="text-xs text-stone-500">
+                {totalModules ? `${s.modulesDone}/${totalModules} modules` : ""}
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <CertificateUpload enrollmentId={s.enrollmentId} hasCertificate={s.hasCertificate} />
+              <Button size="sm" variant="ghost" disabled={pending} onClick={() => run(() => setEnrollmentCompleted(s.enrollmentId, !s.completed), s.completed ? "Marked as in progress" : "Marked as completed")}>
+                {s.completed ? "Mark in progress" : "Mark completed"}
+              </Button>
+              <ConfirmButton
+                label="Remove"
+                title={`Remove ${s.name} from this course?`}
+                description="They'll no longer see the course. Their module ticks and certificate for it are deleted."
+                onConfirm={() => run(() => unenrollStudent(s.enrollmentId), "Removed from course")}
+              />
+            </div>
+          </li>
+        ))}
+      </ul>
+    </Section>
+  );
+}
+
+/** On a person's page: their courses, with certificate upload. */
+export function PersonCourses({
+  userId,
+  enrollments,
+  allCourses,
+}: {
+  userId: string;
+  enrollments: (Enrolled & { courseId: string; courseTitle: string; totalModules: number })[];
+  allCourses: { id: string; title: string }[];
+}) {
+  const { pending, run } = useAction();
+  const [pick, setPick] = useState("");
+  const available = allCourses.filter((c) => !enrollments.some((e) => e.courseId === c.id));
+  return (
+    <div className="space-y-4">
+      {enrollments.length === 0 && <p className="rounded-xl bg-white p-5 text-stone-500 ring-1 ring-stone-200">Not enrolled in any course.</p>}
+      {enrollments.map((e) => (
+        <section key={e.enrollmentId} className="space-y-3 rounded-2xl bg-white p-5 ring-1 ring-stone-200">
+          <div className="flex flex-wrap items-center gap-2">
+            <Link href={`/admin/courses/${e.courseId}`} className="flex-1 font-serif text-xl text-stone-800 hover:underline">
+              {e.courseTitle}
+            </Link>
+            {e.completed && <Badge className="bg-sage-100 text-sage-800 hover:bg-sage-100">Completed</Badge>}
+          </div>
+          {e.totalModules > 0 && (
+            <div className="space-y-1">
+              <Progress value={(e.modulesDone / e.totalModules) * 100} className="h-2 bg-sage-100 [&>div]:bg-sage-500" />
+              <p className="text-xs text-stone-500">
+                {e.modulesDone} of {e.totalModules} modules marked done · enrolled {new Date(e.startedAt).toLocaleDateString("en-AU")}
+              </p>
+            </div>
+          )}
+          <div className="flex flex-wrap items-center gap-2">
+            <CertificateUpload enrollmentId={e.enrollmentId} hasCertificate={e.hasCertificate} />
+            <Button size="sm" variant="ghost" disabled={pending} onClick={() => run(() => setEnrollmentCompleted(e.enrollmentId, !e.completed), "Saved")}>
+              {e.completed ? "Mark in progress" : "Mark completed"}
+            </Button>
+            <ConfirmButton
+              label="Remove from course"
+              title={`Remove from ${e.courseTitle}?`}
+              description="They'll no longer see this course. Their module ticks and certificate for it are deleted."
+              onConfirm={() => run(() => unenrollStudent(e.enrollmentId), "Removed")}
+            />
+          </div>
+        </section>
+      ))}
+      {available.length > 0 && (
+        <div className="flex flex-wrap gap-2 rounded-2xl border-2 border-dashed border-sage-200 bg-white p-4">
+          <select className={`${selectCls} max-w-xs`} value={pick} onChange={(e) => setPick(e.target.value)}>
+            <option value="">Enrol in a course…</option>
+            {available.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.title}
+              </option>
+            ))}
+          </select>
+          <Button className="bg-sage-600 hover:bg-sage-700" disabled={!pick || pending} onClick={() => run(() => enrollStudent(userId, pick), "Enrolled", (r) => r.ok && setPick(""))}>
+            Enrol
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}

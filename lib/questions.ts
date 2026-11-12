@@ -1,0 +1,29 @@
+import type { Prisma } from "@prisma/client";
+import { db } from "@/lib/db";
+import type { QuestionRow } from "@/components/admin/questions-list";
+
+/** Questions for the admin lists: unanswered first, then newest. */
+export async function loadQuestions(where: Prisma.QuestionWhereInput, take = 100): Promise<QuestionRow[]> {
+  const rows = await db.question.findMany({
+    where,
+    orderBy: [{ createdAt: "desc" }],
+    take,
+    include: { user: { select: { id: true, name: true, email: true } }, plan: { select: { title: true } } },
+  });
+  return rows
+    .map((q) => ({
+      id: q.id,
+      clientId: q.user.id,
+      clientName: q.user.name || q.user.email,
+      topic: q.topic,
+      planTitle: q.plan?.title ?? null,
+      body: q.body,
+      answer: q.answer,
+      answeredAt: q.answeredAt?.toISOString() ?? null,
+      answerSeen: Boolean(q.answerSeenAt),
+      createdAt: q.createdAt.toISOString(),
+    }))
+    .sort((a, b) => Number(Boolean(a.answeredAt)) - Number(Boolean(b.answeredAt)));
+}
+
+export const countWaitingQuestions = () => db.question.count({ where: { answeredAt: null, user: { status: { not: "FINISHED" } } } });

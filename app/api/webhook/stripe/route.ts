@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
 import Stripe from "stripe"
-import { sendConfirmationEmail, sendPractitionerNotification } from "@/lib/email"
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2023-10-16",
@@ -64,21 +63,8 @@ async function handleSuccessfulPayment(paymentIntent: Stripe.PaymentIntent) {
 
     console.log("Processing successful payment for:", bookingData.clientEmail)
 
-    // Send confirmation email to client
-    const clientEmailResult = await sendConfirmationEmail(bookingData)
-    if (clientEmailResult.success) {
-      console.log("✅ Confirmation email sent to client:", clientEmailResult.messageId)
-    } else {
-      console.error("❌ Failed to send confirmation email:", clientEmailResult.error)
-    }
-
-    // Send notification to practitioner
-    const practitionerEmailResult = await sendPractitionerNotification(bookingData)
-    if (practitionerEmailResult.success) {
-      console.log("✅ Notification sent to practitioner:", practitionerEmailResult.messageId)
-    } else {
-      console.error("❌ Failed to send practitioner notification:", practitionerEmailResult.error)
-    }
+    // Confirmation emails are sent by /api/send-booking-emails right after payment
+    // in the browser, so they are not sent again here (that would send duplicates).
 
     // TODO: Save to your database
     console.log("📝 Saving booking to database:", {

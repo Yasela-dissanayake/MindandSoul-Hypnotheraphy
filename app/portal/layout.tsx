@@ -1,0 +1,54 @@
+import { cache, Suspense } from "react";
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/authz";
+import { Toaster } from "@/components/ui/sonner";
+import { PortalNav } from "@/components/portal/portal-nav";
+import { getAreas } from "@/lib/plans";
+import { db } from "@/lib/db";
+
+export const metadata: Metadata = { title: "My space · Heal With Rangika", robots: { index: false } };
+
+/** The menu (which areas they have + the "new answer" dot). Streams in, so the page never waits for it. */
+const navData = cache((userId: string) =>
+  Promise.all([getAreas(userId), db.question.count({ where: { userId, answeredAt: { not: null }, answerSeenAt: null } })]),
+);
+
+async function Nav({ userId, variant }: { userId: string; variant: "top" | "bottom" }) {
+  const [areas, newAnswers] = await navData(userId); // shared by the top and bottom menus
+  return <PortalNav {...areas} newAnswers={newAnswers} variant={variant} />;
+}
+
+export default async function PortalLayout({ children }: { children: React.ReactNode }) {
+  const session = await auth();
+  if (!session?.user) redirect("/login");
+  if (session.user.role === "ADMIN") redirect("/admin");
+  const showNav = session.user.hasConsented;
+
+  return (
+    <div className="min-h-screen bg-stone-50 pb-24 md:pb-10">
+      <header className="sticky top-0 z-40 border-b border-stone-200 bg-white/90 backdrop-blur">
+        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
+          <Link href="/portal" className="flex items-center gap-2">
+            <Image src="/logo.jpeg" alt="" width={36} height={36} className="rounded-full" />
+            <span className="font-serif text-lg text-stone-800">Heal With Rangika</span>
+          </Link>
+          {showNav && (
+            <Suspense fallback={null}>
+              <Nav userId={session.user.id} variant="top" />
+            </Suspense>
+          )}
+        </div>
+      </header>
+      <main className="mx-auto max-w-3xl px-4 py-6">{children}</main>
+      {showNav && (
+        <Suspense fallback={null}>
+          <Nav userId={session.user.id} variant="bottom" />
+        </Suspense>
+      )}
+      <Toaster position="top-center" />
+    </div>
+  );
+}

@@ -25,3 +25,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+# local dev file storage
+/.local-uploads
+
+# env example is committed
+!.env.example

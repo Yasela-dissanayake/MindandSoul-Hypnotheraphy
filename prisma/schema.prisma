@@ -1,0 +1,515 @@
+// Heal With Rangika: client portal and admin dashboard
+// Spec: docs/PORTAL_AND_ADMIN_SPEC.md
+//
+// Two areas:
+//  - SESSIONS: one-to-one clients (Reiki healing, Animal Reiki, Clinical Hypnotherapy) on Zoom.
+//    Each client has their own session plan(s) with weekly work, trackers and uploads.
+//  - COURSES: students (Reiki Level 1/2/3, Animal Reiki & Communication). Course content is
+//    shared: uploaded once, seen by every enrolled student. Certificates per student.
+// One login can be both a session client and a course student.
+
+generator client {
+  provider        = "prisma-client-js"
+  // Load related rows (e.g. a plan with its tasks) in one database trip instead of one per level.
+  previewFeatures = ["relationJoins"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // pooled connection (used by the app)
+  directUrl = env("DIRECT_URL") // direct connection (used for migrations)
+}
+
+enum Role {
+  ADMIN
+  CLIENT
+}
+
+/// One-to-one session services
+enum Service {
+  REIKI_HEALING
+  ANIMAL_REIKI
+  HYPNOTHERAPY
+}
+
+enum UserStatus {
+  INVITED // account created, has not signed in yet
+  ACTIVE
+  FINISHED // can no longer sign in, history kept
+}
+
+enum ResourceKind {
+  AUDIO
+  PDF
+  DOCUMENT // Word document
+  IMAGE
+  VIDEO // YouTube link (shown as a player)
+  LINK // any other web link
+}
+
+enum Recurrence {
+  ONCE
+  DAILY
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  DECLINED
+}
+
+enum VoiceMode {
+  COMPUTER
+  RECORDED
+  BOTH
+}
+
+enum NotifyMode {
+  IMMEDIATE
+  DAILY_DIGEST
+}
+
+// ---------------------------------------------------------------------------
+// People and sign-in (Auth.js models + our fields)
+// ---------------------------------------------------------------------------
+
+model User {
+  id            String     @id @default(cuid())
+  name          String?
+  email         String     @unique
+  emailVerified DateTime?
+  image         String?
+  role          Role       @default(CLIENT)
+  status        UserStatus @default(INVITED)
+  timezone      String     @default("Australia/Brisbane")
+  reminderHour  Int        @default(20) // 0-23 in the user's own time zone
+  remindersOn   Boolean    @default(true)
+  voiceOn       Boolean    @default(true)
+  consentAt     DateTime?
+  invitedAt     DateTime?
+
+  // Sign-in with username/email + password (created by the admin)
+  username          String?   @unique
+  passwordHash      String? // one-way hash, used to check the password
+  passwordView      String? // encrypted copy the admin can view, cleared when the client sets their own
+  passwordChangedAt DateTime?
+  sessionVersion    Int       @default(0) // bump to sign the person out everywhere
+  failedLogins      Int       @default(0)
+  lockedUntil       DateTime?
+  lastActiveAt      DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  accounts       Account[]
+  sessions       Session[]
+  plans          Plan[]
+  enrollments    Enrollment[]
+  completions    TaskCompletion[]
+  trackerEntries TrackerEntry[]
+  submissions    Submission[]
+  questions      Question[]
+  journal        JournalEntry[]
+  notes          PrivateNote[]
+  personalFiles  Resource[]
+  reminderLogs   ReminderLog[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ---------------------------------------------------------------------------
+// Library: every file or link Rangika shares
+// ---------------------------------------------------------------------------
+
+model Resource {
+  id                String       @id @default(cuid())
+  title             String
+  description       String?
+  kind              ResourceKind
+  storageKey        String? // uploaded files (R2 object key)
+  url               String? // VIDEO and LINK
+  contentType       String?
+  sizeBytes         Int?
+  tag               String? // free label to find it again, e.g. "Reiki Level 1" or "Weight loss"
+  personalForUserId String? // set = made for one client only
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  personalFor User?        @relation(fields: [personalForUserId], references: [id], onDelete: Cascade)
+  planItems   PlanItem[]
+  courseItems CourseItem[]
+  tasks       Task[]
+}
+
+// ---------------------------------------------------------------------------
+// SESSIONS: a client's session plan (userId set) or a ready-made package (userId null)
+// ---------------------------------------------------------------------------
+
+model Plan {
+  id             String    @id @default(cuid())
+  userId         String? // null = ready-made package (template)
+  templateId     String? // which template it was copied from
+  title          String
+  description    String?
+  service        Service
+  totalSessions  Int? // e.g. 6
+  currentSession Int? // e.g. 3
+  startDate      String? // YYYY-MM-DD, day 1 of week 1 (client plans only)
+  clientNote     String? // note from Rangika shown to the client
+  meetingLink    String? // Zoom link for their sessions
+  completedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user        User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  modules     PlanModule[]
+  items       PlanItem[]
+  tasks       Task[]
+  prompts     Prompt[]
+  trackers    Tracker[]
+  submissions Submission[]
+  questions   Question[]
+
+  @@index([userId])
+}
+
+/// A section of a session plan, usually a week ("Week 1").
+model PlanModule {
+  id          String    @id @default(cuid())
+  planId      String
+  title       String
+  description String?
+  order       Int       @default(0)
+  completedAt DateTime?
+
+  plan  Plan       @relation(fields: [planId], references: [id], onDelete: Cascade)
+  items PlanItem[]
+  tasks Task[]
+}
+
+model PlanItem {
+  id         String  @id @default(cuid())
+  planId     String
+  moduleId   String?
+  resourceId String
+  note       String?
+  order      Int     @default(0)
+
+  plan     Plan        @relation(fields: [planId], references: [id], onDelete: Cascade)
+  module   PlanModule? @relation(fields: [moduleId], references: [id], onDelete: SetNull)
+  resource Resource    @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, resourceId])
+}
+
+model Task {
+  id           String     @id @default(cuid())
+  planId       String
+  moduleId     String?
+  title        String
+  instructions String?
+  resourceId   String? // linked recording, worksheet or video
+  recurrence   Recurrence @default(DAILY)
+  startDay     Int        @default(1) // day number of the plan, 1 = start date (week N = days 7N-6..7N)
+  endDay       Int? // last day (daily tasks); null = no end
+  paused       Boolean    @default(false)
+  order        Int        @default(0)
+  createdAt    DateTime   @default(now())
+
+  plan        Plan             @relation(fields: [planId], references: [id], onDelete: Cascade)
+  module      PlanModule?      @relation(fields: [moduleId], references: [id], onDelete: SetNull)
+  resource    Resource?        @relation(fields: [resourceId], references: [id], onDelete: SetNull)
+  completions TaskCompletion[]
+}
+
+model TaskCompletion {
+  id         String    @id @default(cuid())
+  taskId     String
+  userId     String
+  forDate    String // YYYY-MM-DD in the client's time zone
+  doneAt     DateTime  @default(now())
+  notifiedAt DateTime? // when Rangika was emailed about it
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, forDate])
+  @@index([userId, forDate])
+}
+
+model Prompt {
+  id     String @id @default(cuid())
+  planId String
+  day    Int // shown from this day of the plan until the next prompt
+  text   String
+
+  plan Plan @relation(fields: [planId], references: [id], onDelete: Cascade)
+}
+
+/// A daily progress form, e.g. "Weight & measurements" or "Urge intensity".
+model Tracker {
+  id          String   @id @default(cuid())
+  planId      String
+  title       String
+  description String?
+  /// [{ id, label, type: "number" | "scale" | "yesno" | "text", unit?, required? }]
+  fields      Json
+  active      Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  plan    Plan           @relation(fields: [planId], references: [id], onDelete: Cascade)
+  entries TrackerEntry[]
+}
+
+model TrackerEntry {
+  id        String   @id @default(cuid())
+  trackerId String
+  userId    String
+  forDate   String // YYYY-MM-DD in the client's time zone
+  values    Json // { fieldId: value }
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tracker Tracker @relation(fields: [trackerId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([trackerId, forDate])
+  @@index([userId, forDate])
+}
+
+/// Work a client uploads for Rangika: a completed worksheet, a recording, a photo.
+model Submission {
+  id           String    @id @default(cuid())
+  userId       String
+  planId       String?
+  title        String
+  note         String?
+  storageKey   String
+  contentType  String
+  sizeBytes    Int
+  originalName String
+  seenAt       DateTime? // when Rangika opened it
+  createdAt    DateTime  @default(now())
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan Plan? @relation(fields: [planId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+}
+
+/// A typed question from a client about their work ("Do I fill this in every day?").
+/// Rangika is told straight away and answers it in the dashboard.
+model Question {
+  id           String    @id @default(cuid())
+  userId       String
+  planId       String?
+  topic        String? // what it's about, e.g. "Daily check-in" (copied so it survives edits)
+  topicHref    String? // portal link to that thing, e.g. /portal/trackers/abc
+  body         String
+  answer       String?
+  answeredAt   DateTime?
+  answerSeenAt DateTime? // when the client saw the answer
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan Plan? @relation(fields: [planId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([answeredAt])
+}
+
+// ---------------------------------------------------------------------------
+// COURSES: shared content, students enrol
+// ---------------------------------------------------------------------------
+
+model Course {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  order       Int      @default(0)
+  archived    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  modules     CourseModule[]
+  items       CourseItem[]
+  enrollments Enrollment[]
+}
+
+model CourseModule {
+  id          String   @id @default(cuid())
+  courseId    String
+  title       String
+  description String?
+  order       Int      @default(0)
+
+  course   Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  items    CourseItem[]
+  progress ModuleProgress[]
+}
+
+model CourseItem {
+  id         String   @id @default(cuid())
+  courseId   String
+  moduleId   String?
+  resourceId String
+  note       String?
+  extra      Boolean  @default(false) // "Extras": bonus videos, meditations etc.
+  order      Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  course   Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  module   CourseModule? @relation(fields: [moduleId], references: [id], onDelete: SetNull)
+  resource Resource      @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, resourceId])
+}
+
+model Enrollment {
+  id                 String    @id @default(cuid())
+  userId             String
+  courseId           String
+  startedAt          DateTime  @default(now())
+  completedAt        DateTime?
+  certificateKey     String? // scanned, signed certificate (R2 object key)
+  certificateName    String?
+  certificateType    String?
+  certificateAt      DateTime?
+
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course   Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  progress ModuleProgress[]
+
+  @@unique([userId, courseId])
+}
+
+model ModuleProgress {
+  id           String   @id @default(cuid())
+  enrollmentId String
+  moduleId     String
+  completedAt  DateTime @default(now())
+
+  enrollment Enrollment   @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  module     CourseModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@unique([enrollmentId, moduleId])
+}
+
+// ---------------------------------------------------------------------------
+// Journal and notes
+// ---------------------------------------------------------------------------
+
+model JournalEntry {
+  id           String    @id @default(cuid())
+  userId       String
+  prompt       String?
+  body         String? // typed text
+  audioKey     String? // voice message (R2 object key)
+  audioType    String?
+  audioSeconds Int?
+  audioBytes   Int?
+  readAt       DateTime? // when Rangika read it
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model PrivateNote {
+  id        String   @id @default(cuid())
+  userId    String // the client the note is about
+  body      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ---------------------------------------------------------------------------
+// Access requests, encouragement, settings, email bookkeeping
+// ---------------------------------------------------------------------------
+
+// Someone signed in with Google but has no account yet: Rangika approves or declines.
+model AccessRequest {
+  id        String        @id @default(cuid())
+  email     String        @unique
+  name      String?
+  image     String?
+  provider  String        @default("google")
+  status    RequestStatus @default(PENDING)
+  attempts  Int           @default(1)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  decidedAt DateTime?
+}
+
+model VoiceClip {
+  id         String   @id @default(cuid())
+  label      String
+  storageKey String
+  sizeBytes  Int?
+  createdAt  DateTime @default(now())
+}
+
+model EncouragementMessage {
+  id   String @id @default(cuid())
+  text String
+}
+
+model Settings {
+  id                  Int        @id @default(1)
+  voiceMode           VoiceMode  @default(BOTH)
+  notifyMode          NotifyMode @default(IMMEDIATE)
+  activityEmails      Boolean    @default(true) // email Rangika when a client sends a journal entry, tracker answers or an upload
+  defaultReminderHour Int        @default(20)
+  adminTimezone       String     @default("Australia/Brisbane")
+  welcomeNote         String?
+  inviteEmailText     String?
+  reminderEmailText   String?
+  lastDigestDate      String?
+}
+
+model ReminderLog {
+  id      String   @id @default(cuid())
+  userId  String
+  forDate String
+  sentAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, forDate])
+}
