@@ -684,13 +684,13 @@ export default function DetailedServicesPage() {
                         </div>
                       </div>
 
-                      <div className="relative">
+                      <div className="relative h-[400px] overflow-hidden rounded-xl shadow-lg">
                         <Image
                           src={service.image || "/placeholder.svg"}
                           alt={`${service.title} healing session`}
-                          width={600}
-                          height={400}
-                          className="rounded-xl object-cover w-full h-[400px] shadow-lg"
+                          fill
+                          sizes="(min-width: 1024px) 50vw, 100vw"
+                          className="object-cover"
                         />
                       </div>
                     </div>

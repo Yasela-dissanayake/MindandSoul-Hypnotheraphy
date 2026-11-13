@@ -5,7 +5,12 @@ import {
 } from "@/lib/email";
 import { isAuthorizedInternalRequest } from "@/lib/security";
 
+// Internal/testing only. Real bookings send their emails from /api/booking/confirm
+// (after Stripe confirms the payment), so this route must never send for strangers.
 export async function POST(request: NextRequest) {
+  if (!isAuthorizedInternalRequest(request)) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
   try {
     const body = await request.json();
 
@@ -59,10 +64,6 @@ export async function POST(request: NextRequest) {
       emergencyContact,
       medicalConditions,
     });
-
-    if (!isAuthorizedInternalRequest(request)) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
-    }
 
     if (clientEmailResult.success && practitionerEmailResult.success) {
       return NextResponse.json({

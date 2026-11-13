@@ -24,7 +24,7 @@ export default function TestimonialsPage() {
       service: "Meditation Coaching",
       rating: 5,
       date: "Recent client",
-      image: "/placeholder.svg?height=80&width=80",
+      image: "/placeholder.svg",
       testimonial:
         "Having attended a meditation session instructed by Rangi, I experienced an amazing sense of calm and relaxation that eased my inner worry. She has mastered the art of meditation and was able to deliver it beautifully. This platform is truly a sanctuary for healing and self-discovery, and I highly recommend it to anyone seeking inner peace.",
       result: "Amazing sense of calm and relaxation, eased inner worry",
@@ -36,7 +36,7 @@ export default function TestimonialsPage() {
       service: "Healing Meditation",
       rating: 5,
       date: "Recent client",
-      image: "/placeholder.svg?height=80&width=80",
+      image: "/placeholder.svg",
       testimonial:
         "The healing meditation done with Rangika was mind-blowing. Seeking validation all the time, I wasn't sure what was expected from the session. I'm pleased with the result and totally owe the comfort I feel from eased up migraine to her, may you be blessed to carry on your valuable work to make this world a better place.",
       result: "Mind-blowing healing experience, migraine relief",
@@ -48,7 +48,7 @@ export default function TestimonialsPage() {
       service: "Animal Reiki (Remote)",
       rating: 5,
       date: "Recent client",
-      image: "/placeholder.svg?height=80&width=80",
+      image: "/placeholder.svg",
       testimonial:
         "My pet and I have never been this happy! My dog Bella is much calmer, less aggressive, and responds to her trainer well whom she used to hate before. All thanks to the Reiki session performed remotely by Rangi and the crystal she wears recommended by Rangi. Your hands are indeed magical. Thank you so much.",
       result: "Dog became calmer, less aggressive, better training response",
@@ -60,7 +60,7 @@ export default function TestimonialsPage() {
       service: "Clinical Hypnotherapy - Anger Management",
       rating: 5,
       date: "Recent client",
-      image: "/placeholder.svg?height=80&width=80",
+      image: "/placeholder.svg",
       testimonial:
         "I recently had the privilege of working with Mrs. Rangika Mathew for hypnotherapy sessions focused on anger management. From the very first session, I felt a deep sense of trust and professionalism in her approach. Her techniques helped me uncover and address the root causes of my emotions, allowing me to develop a calmer, more balanced mindset. Through guided hypnosis, I gained valuable tools to handle stress and triggers more effectively, leading to noticeable improvements in my daily interactions and overall well-being. I highly recommend her services to anyone seeking emotional healing, self-awareness, or a deeper connection with their inner self.",
       result:
@@ -73,7 +73,7 @@ export default function TestimonialsPage() {
       service: "Past Life Regression Therapy",
       rating: 5,
       date: "Recent client",
-      image: "/placeholder.svg?height=80&width=80",
+      image: "/placeholder.svg",
       testimonial:
         "I didn't know what to expect from Past Life Regression, but what I experienced was deeply healing and eye-opening. The session gently guided me into a past life that helped me understand patterns I've been struggling with for years—especially around fear and relationships. I came away with a sense of peace, clarity, and even forgiveness I didn't know I needed. The way the session was held—with such safety, warmth, and compassion—made all the difference. It was truly a turning point in my healing journey. I'm truly grateful to you.",
       result: "Understanding of life patterns, peace, clarity, and forgiveness",
@@ -85,7 +85,7 @@ export default function TestimonialsPage() {
       service: "Reiki Energy Healing",
       rating: 5,
       date: "Recent client",
-      image: "/placeholder.svg?height=80&width=80",
+      image: "/placeholder.svg",
       testimonial:
         "I began Reiki sessions hoping to feel more relaxed, but I didn't expect how much it would help with my anger and emotional overwhelm. I used to react quickly and carry so much tension in my body, but after a few sessions, I noticed a real shift. The energy work helped me release built-up emotions I didn't even know I was holding. I feel calmer, more in control, and more connected to myself. Each session brings a sense of peace I hadn't felt in years. This has been a truly transformative part of my healing journey. Rangika's super intuitive guidance is nothing less than a path to total healing and understanding.",
       result:

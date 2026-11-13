@@ -1,16 +1,42 @@
 import nodemailer from "nodemailer";
+import { lookup } from "node:dns/promises";
 import { format } from "date-fns";
 
-// Create transporter
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number.parseInt(process.env.SMTP_PORT || "587"),
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+// Nodemailer looks up the mail server with its own DNS method, which hangs forever on some
+// networks (no error, no email). Looking it up with the computer's normal method first avoids that.
+async function smtpHost(): Promise<{ host: string; servername?: string }> {
+  const host = process.env.SMTP_HOST || "";
+  try {
+    const { address } = await lookup(host, { family: 4 });
+    return { host: address, servername: host };
+  } catch {
+    return { host };
+  }
+}
+
+const transporter = {
+  async get() {
+    const { host, servername } = await smtpHost();
+    return nodemailer.createTransport({
+      host,
+      port: Number.parseInt(process.env.SMTP_PORT || "587"),
+      secure: false,
+      connectionTimeout: 20_000,
+      greetingTimeout: 20_000,
+      tls: servername ? { servername } : undefined,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
   },
-});
+  async verify() {
+    return (await this.get()).verify();
+  },
+  async sendMail(options: nodemailer.SendMailOptions) {
+    return (await this.get()).sendMail(options);
+  },
+};
 
 // Verify transporter configuration
 export async function verifyEmailConfig() {
@@ -32,7 +58,7 @@ export async function sendTestEmail(to?: string, customData?: any) {
     const recipient = to || process.env.EMAIL_FROM || "test@example.com";
 
     const mailOptions = {
-      from: process.env.EMAIL_FROM,
+      from: process.env.SMTP_FROM || process.env.EMAIL_FROM, // booking emails go through Gmail SMTP
       to: recipient,
       subject: "Test Email from Heal With Rangika",
       html: `
@@ -105,7 +131,7 @@ export async function sendClientBookingConfirmation({
     const isInPerson = sessionType === "in-person";
 
     const mailOptions = {
-      from: process.env.EMAIL_FROM,
+      from: process.env.SMTP_FROM || process.env.EMAIL_FROM, // booking emails go through Gmail SMTP
       to: clientEmail,
       subject: `Booking Confirmed - ${service} Session`,
       html: `
@@ -325,7 +351,7 @@ export async function sendPractitionerBookingNotification({
       process.env.PRACTITIONER_EMAIL || process.env.EMAIL_FROM;
 
     const mailOptions = {
-      from: process.env.EMAIL_FROM,
+      from: process.env.SMTP_FROM || process.env.EMAIL_FROM, // booking emails go through Gmail SMTP
       to: practitionerEmail,
       subject: `New Booking: ${clientName} - ${service}`,
       html: `

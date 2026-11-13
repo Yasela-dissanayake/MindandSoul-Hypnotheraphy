@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -29,10 +29,6 @@ import {
 import {
   format,
   addDays,
-  isBefore,
-  startOfDay,
-  isAfter,
-  isSunday,
 } from "date-fns";
 import { loadStripe } from "@stripe/stripe-js";
 import {
@@ -67,22 +63,34 @@ const cardElementOptions = {
 };
 
 // Payment Form Component
+// A free booking time from /api/booking/availability. Rangika sets her times in Perth time;
+// visitors only ever see them converted to their own time zone.
+type Slot = { start: string; end: string; startsAt: string; endsAt: string };
+type LocalSlot = Slot & { perthDate: string };
+type Availability = { timezone: string; days: Record<string, Slot[]> };
+
+/** "2026-11-14T01:00:00Z" → "9:00 am" in the visitor's own time zone. */
+const localTime = (iso: string) =>
+  new Date(iso).toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit" });
+
 function PaymentForm({
   bookingData,
   selectedServiceData,
-  selectedDate,
-  selectedTime,
+  slotDate,
+  slot,
   sessionType,
   onPaymentSuccess,
   onPaymentError,
+  onSlotTaken,
 }: {
   bookingData: any;
   selectedServiceData: any;
-  selectedDate: Date | undefined;
-  selectedTime: string;
+  slotDate: string;
+  slot: Slot | undefined;
   sessionType: string;
   onPaymentSuccess: (paymentIntent: any) => void;
   onPaymentError: (error: string) => void;
+  onSlotTaken: (message: string) => void;
 }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -114,33 +122,47 @@ function PaymentForm({
       return;
     }
 
+    if (!slot) {
+      onSlotTaken("Please choose a time for your session.");
+      setIsProcessing(false);
+      return;
+    }
+
+    let paymentIntentId = "";
     try {
-      // Create payment intent on the server
+      // Keep the chosen time and create the payment on the server
       const response = await fetch("/api/create-payment-intent", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          amount: selectedServiceData.price * 100, // Convert to cents
+          amount: Math.round(selectedServiceData.price * 100), // Convert to cents
           currency: "aud",
           booking_data: {
             ...bookingData,
             service: selectedServiceData.title,
-            date: selectedDate ? format(selectedDate, "yyyy-MM-dd") : "",
-            time: selectedTime,
+            date: slotDate,
+            start: slot.start,
             session_type: sessionType,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           },
         }),
       });
 
-      const { client_secret, error } = await response.json();
+      const { client_secret, payment_intent_id, error, code } = await response.json();
 
+      if (code === "SLOT_TAKEN") {
+        onSlotTaken(error);
+        setIsProcessing(false);
+        return;
+      }
       if (error) {
         setPaymentError(error);
         setIsProcessing(false);
         return;
       }
+      paymentIntentId = payment_intent_id;
 
       // Confirm payment with Stripe
       const { error: stripeError, paymentIntent } =
@@ -156,51 +178,21 @@ function PaymentForm({
         });
 
       if (stripeError) {
+        // Let the time go so they (or someone else) can try again straight away.
+        void fetch(`/api/create-payment-intent?payment_intent_id=${encodeURIComponent(paymentIntentId)}`, { method: "DELETE" });
         setPaymentError(stripeError.message || "Payment failed");
         onPaymentError(stripeError.message || "Payment failed");
       } else if (paymentIntent && paymentIntent.status === "succeeded") {
-        // Payment successful - now send emails
-        console.log("Payment successful, sending emails...");
-
+        // Saves the booking and sends the confirmation emails (the server checks with Stripe).
         try {
-          // Send confirmation emails
-          const emailResponse = await fetch("/api/send-booking-emails", {
+          await fetch("/api/booking/confirm", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              paymentIntentId: paymentIntent.id,
-              amount: selectedServiceData.price,
-              currency: "aud",
-              service: selectedServiceData.title,
-              date: selectedDate ? format(selectedDate, "yyyy-MM-dd") : "",
-              time: selectedTime,
-              sessionType: sessionType,
-              clientName: `${bookingData.firstName} ${bookingData.lastName}`,
-              clientEmail: bookingData.email,
-              clientPhone: bookingData.phone,
-              concerns: bookingData.concerns,
-              previousTherapy: bookingData.previousTherapy,
-              // emergencyContact: bookingData.emergencyContact,
-              medicalConditions: bookingData.medicalConditions,
-            }),
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ paymentIntentId: paymentIntent.id }),
           });
-
-          const emailResult = await emailResponse.json();
-
-          if (emailResult.success) {
-            console.log("✅ Booking emails sent successfully");
-          } else {
-            console.error(
-              "❌ Failed to send booking emails:",
-              emailResult.error
-            );
-            // Don't fail the booking if emails fail - just log it
-          }
-        } catch (emailError) {
-          console.error("Error sending booking emails:", emailError);
-          // Don't fail the booking if emails fail
+        } catch (confirmError) {
+          // The Stripe webhook confirms it as well, so the booking isn't lost.
+          console.error("Error confirming booking:", confirmError);
         }
 
         onPaymentSuccess(paymentIntent);
@@ -561,159 +553,58 @@ export default function BookingPage() {
       },
     },
   ];
-  // Helper function to convert Perth time to user's local time
-  const convertPerthTimeToLocal = (perthTimeString: string, date: Date) => {
-    // Parse the Perth time slot (e.g., "08:00-09:30")
-    const [startTime, endTime] = perthTimeString.split("-");
-    const [startHour, startMin] = startTime.split(":").map(Number);
-    const [endHour, endMin] = endTime.split(":").map(Number);
+  // Free times come from Rangika's booking calendar (her weekly hours, minus
+  // blocked days/times and bookings already taken). Reloaded when the session type changes.
+  const [availability, setAvailability] = useState<Availability | null>(null);
+  const [availabilityError, setAvailabilityError] = useState(false);
+  const [slotNotice, setSlotNotice] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
-    // Create a date string in Perth timezone format
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-
-    // Create Perth datetime strings
-    const perthStartString = `${year}-${month}-${day}T${startTime}:00`;
-    const perthEndString = `${year}-${month}-${day}T${endTime}:00`;
-
-    // Convert Perth times to user's local timezone using proper timezone handling
-    const convertToLocal = (perthTimeString: string) => {
-      // Create a date object representing the time in Perth
-      const perthDate = new Date(perthTimeString);
-
-      // Create a temporary date to handle Perth timezone
-      const tempDate = new Date();
-      tempDate.setFullYear(year, date.getMonth(), date.getDate());
-      tempDate.setHours(parseInt(perthTimeString.split("T")[1].split(":")[0]));
-      tempDate.setMinutes(
-        parseInt(perthTimeString.split("T")[1].split(":")[1])
-      );
-      tempDate.setSeconds(0);
-      tempDate.setMilliseconds(0);
-
-      // Convert using Intl.DateTimeFormat to handle timezones properly
-      const perthTime = new Intl.DateTimeFormat("en-AU", {
-        timeZone: "Australia/Perth",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
-      }).formatToParts(tempDate);
-
-      // Reconstruct the Perth time
-      const perthISO = `${perthTime.find((p) => p.type === "year")?.value}-${
-        perthTime.find((p) => p.type === "month")?.value
-      }-${perthTime.find((p) => p.type === "day")?.value}T${
-        perthTime.find((p) => p.type === "hour")?.value
-      }:${perthTime.find((p) => p.type === "minute")?.value}:00`;
-
-      // Now convert this to user's local time
-      const localDate = new Date(
-        tempDate.toLocaleString("sv-SE", { timeZone: "Australia/Perth" })
-      );
-
-      return localDate.toLocaleTimeString("en-GB", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      });
+  useEffect(() => {
+    let cancelled = false;
+    setAvailability(null);
+    setAvailabilityError(false);
+    fetch(`/api/booking/availability?type=${encodeURIComponent(sessionType)}`, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+      .then((data: Availability) => !cancelled && setAvailability(data))
+      .catch(() => !cancelled && setAvailabilityError(true));
+    return () => {
+      cancelled = true;
     };
+  }, [sessionType, reloadKey]);
 
-    // Much simpler approach - use Date constructor with timezone awareness
-    const formatLocalTime = (hour: number, minute: number) => {
-      // Create a date object representing Perth time
-      const perthDateTime = new Date();
-      perthDateTime.setFullYear(year, date.getMonth(), date.getDate());
-      perthDateTime.setHours(hour, minute, 0, 0);
+  // Group the times by the visitor's own date: Rangika's Saturday morning in Perth can
+  // still be Friday evening for someone overseas.
+  const localDays = useMemo(() => {
+    const out: Record<string, LocalSlot[]> = {};
+    for (const [perthDate, slots] of Object.entries(availability?.days ?? {})) {
+      for (const slot of slots) {
+        const key = format(new Date(slot.startsAt), "yyyy-MM-dd");
+        (out[key] ??= []).push({ ...slot, perthDate });
+      }
+    }
+    for (const list of Object.values(out)) list.sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+    return out;
+  }, [availability]);
 
-      // Convert Perth time to local time
-      // Perth is UTC+8, so we subtract 8 hours to get UTC, then convert to local
-      const utcTime = new Date(perthDateTime.getTime() - 8 * 60 * 60 * 1000);
-      const localTime = new Date(
-        utcTime.getTime() + new Date().getTimezoneOffset() * -60 * 1000
-      );
+  // The chosen time no longer exists (session type changed, or the list was reloaded).
+  const dateKey = selectedDate ? format(selectedDate, "yyyy-MM-dd") : "";
+  const daySlots = (dateKey && localDays[dateKey]) || [];
+  const selectedSlot = daySlots.find((s) => s.startsAt === selectedTime);
+  useEffect(() => {
+    if (availability && selectedTime && !selectedSlot) setSelectedTime("");
+  }, [availability, selectedTime, selectedSlot]);
 
-      return localTime.toLocaleTimeString("en-GB", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      });
-    };
+  const visitorTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const timeLabel = selectedSlot ? `${localTime(selectedSlot.startsAt)} – ${localTime(selectedSlot.endsAt)} (your time)` : "";
 
-    const localStart = formatLocalTime(startHour, startMin);
-    const localEnd = formatLocalTime(endHour, endMin);
-
-    return `${localStart}-${localEnd}`;
+  const handleSlotTaken = (message: string) => {
+    setSlotNotice(message);
+    setSelectedTime("");
+    setReloadKey((k) => k + 1);
+    setCurrentStep(1);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
-
-  // Helper function to get Perth UTC offset (handles daylight saving)
-  const getPerthUTCOffset = (date: Date): number => {
-    // Create a date in Perth timezone to check if DST is active
-    const perthDate = new Date(
-      date.toLocaleString("en-US", { timeZone: "Australia/Perth" })
-    );
-    const utcDate = new Date(date.toUTCString());
-
-    // Calculate offset in hours
-    const offset = (perthDate.getTime() - utcDate.getTime()) / (1000 * 60 * 60);
-    return offset;
-  };
-
-  // Get user's timezone for display
-  const getUserTimezone = () => {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone;
-  };
-
-  // Updated generateTimeSlots function
-  const generateTimeSlots = (date: Date, type: string) => {
-    // Base Perth time slots (these remain as your source of truth)
-    const perthTimeSlots =
-      type === "distance"
-        ? [
-            "09:00-10:00",
-            "11:00-12:00",
-            "13:00-14:00",
-            "15:00-16:00",
-            "17:00-18:00",
-          ]
-        : [
-            "08:00-09:30",
-            "10:00-11:30",
-            "12:00-13:30",
-            "14:00-15:30",
-            "16:00-17:30",
-            "18:00-19:30",
-          ];
-
-    // Convert each Perth time slot to user's local time
-    const localTimeSlots = perthTimeSlots.map((perthSlot) =>
-      convertPerthTimeToLocal(perthSlot, date)
-    );
-
-    return localTimeSlots;
-  };
-
-  // Mock unavailable slots (would come from backend)
-  // const unavailableSlots = ["10:00", "14:00", "15:00"];
-  const unavailableSlots = [""];
-
-  const timeSlots = selectedDate
-    ? generateTimeSlots(selectedDate, "in-person")
-    : [];
-  const availableSlots = timeSlots.filter(
-    (slot) => !unavailableSlots.includes(slot)
-  );
-
-  const timeSlotsDistance = selectedDate
-    ? generateTimeSlots(selectedDate, "distance")
-    : [];
-  const availableSlotsDistance = timeSlotsDistance.filter(
-    (slot) => !unavailableSlots.includes(slot)
-  );
 
   const selectedServiceData = services.find((s) => s.id === selectedService);
 
@@ -923,7 +814,7 @@ export default function BookingPage() {
                         format(selectedDate, "EEEE, MMMM d, yyyy")}
                     </p>
                     <p>
-                      <strong>Time:</strong> {selectedTime}
+                      <strong>Time:</strong> {timeLabel}
                     </p>
                   </div>
                   <div>
@@ -1407,173 +1298,126 @@ export default function BookingPage() {
                     {/* Date & Time Selection */}
                     {(selectedService && selectedProgram) ||
                     (selectedService && sessionType && selectedPackage) ? (
-                      <div className="grid lg:grid-cols-2 gap-8">
-                        <div className="space-y-4">
-                          <h3 className="text-lg font-semibold text-stone-800">
-                            Select Date
-                          </h3>
-                          <div className="border border-stone-200 rounded-lg bg-white p-4">
-                            <div className="calendar-wrapper">
-                              <Calendar
-                                mode="single"
-                                selected={selectedDate}
-                                onSelect={handleDateSelect}
-                                disabled={(date) => {
-                                  const today = startOfDay(new Date());
-                                  const maxDate = addDays(new Date(), 90);
-                                  const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-
-                                  // Always disable past dates, future dates beyond 90 days, and Sundays
-                                  if (
-                                    isBefore(date, today) ||
-                                    isAfter(date, maxDate) ||
-                                    isSunday(date)
-                                  ) {
-                                    return true;
-                                  }
-
-                                  // Session type-based availability
-                                  if (
-                                    sessionType === "in-person" ||
-                                    sessionType === "pet-parent-in-person"
-                                  ) {
-                                    // In-person sessions: only Saturdays (day 6)
-                                    return dayOfWeek !== 6;
-                                  } else {
-                                    // Online sessions: Monday-Friday (1-5) and Saturday (6)
-                                    return dayOfWeek === 0; // Only disable Sunday (already handled above, but for clarity)
-                                  }
-                                }}
-                                className="w-full"
-                                initialFocus
-                                fromDate={new Date()}
-                                toDate={addDays(new Date(), 90)}
-                                showOutsideDays={false}
-                              />
-                            </div>
+                      <div className="space-y-4">
+                        {slotNotice && (
+                          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                            {slotNotice}
                           </div>
-                          {selectedDate && (
-                            <div className="text-sm text-stone-600 bg-sage-50 p-3 rounded-lg">
-                              <strong>Selected:</strong>{" "}
-                              {format(selectedDate, "EEEE, MMMM d, yyyy")}
+                        )}
+                        <div className="grid lg:grid-cols-2 gap-8">
+                          <div className="space-y-4">
+                            <h3 className="text-lg font-semibold text-stone-800">
+                              Select Date
+                            </h3>
+                            <div className="border border-stone-200 rounded-lg bg-white p-4">
+                              <div className="calendar-wrapper">
+                                <Calendar
+                                  mode="single"
+                                  selected={selectedDate}
+                                  onSelect={handleDateSelect}
+                                  // Only days with at least one free time can be picked.
+                                  disabled={(date) =>
+                                    !localDays[format(date, "yyyy-MM-dd")]?.length
+                                  }
+                                  className="w-full"
+                                  initialFocus
+                                  fromDate={new Date()}
+                                  toDate={addDays(new Date(), 120)}
+                                  showOutsideDays={false}
+                                />
+                              </div>
                             </div>
-                          )}
-                          <div className="text-xs text-stone-500 bg-blue-50 p-2 rounded">
-                            <strong>Note:</strong>
-                            {sessionType === "in-person" ||
-                            sessionType === "pet-parent-in-person"
-                              ? " In-person sessions are only available on Saturdays (8:00 AM - 6:30 PM). Sundays are closed."
-                              : " Distance healing sessions are available Monday-Saturday. Saturday hours: 8:00 AM - 6:30 PM. Sundays are closed."}
-                          </div>
-                        </div>
-
-                        <div className="space-y-4">
-                          <h3 className="text-lg font-semibold text-stone-800">
-                            Available Times
                             {selectedDate && (
-                              <span className="text-sm font-normal text-stone-600 ml-2">
-                                for {format(selectedDate, "MMM d")}
-                              </span>
+                              <div className="text-sm text-stone-600 bg-sage-50 p-3 rounded-lg">
+                                <strong>Selected:</strong>{" "}
+                                {format(selectedDate, "EEEE, MMMM d, yyyy")}
+                              </div>
                             )}
-                          </h3>
-                          {selectedDate ? (
-                            <div className="space-y-3">
-                              {sessionType === "distance" ? (
-                                <div className="grid grid-cols-2 gap-3 max-h-80 overflow-y-auto p-4 border border-stone-200 rounded-lg bg-white">
-                                  {availableSlotsDistance.length > 0 ? (
-                                    availableSlotsDistance.map((time) => (
-                                      <Button
-                                        key={time}
-                                        variant={
-                                          selectedTime === time
-                                            ? "default"
-                                            : "outline"
-                                        }
-                                        size="sm"
-                                        className={`text-sm h-12 ${
-                                          selectedTime === time
-                                            ? "bg-sage-600 hover:bg-sage-700 text-white"
-                                            : "border-stone-300 hover:border-sage-300 hover:bg-sage-50"
-                                        }`}
-                                        onClick={() => setSelectedTime(time)}
-                                      >
-                                        <div className="text-center">
-                                          <div className="font-medium">
-                                            {time}
-                                          </div>
-                                          {/* <div className="text-xs opacity-75">
-                                          90 min
-                                        </div> */}
-                                        </div>
-                                      </Button>
-                                    ))
-                                  ) : (
-                                    <div className="col-span-2 text-center py-8 text-stone-500">
-                                      <Clock className="h-8 w-8 mx-auto mb-2 text-stone-400" />
-                                      <p>No available slots for this date</p>
-                                      <p className="text-xs mt-1">
-                                        Please select another date
-                                      </p>
-                                    </div>
-                                  )}
-                                </div>
-                              ) : (
-                                <div className="grid grid-cols-2 gap-3 max-h-80 overflow-y-auto p-4 border border-stone-200 rounded-lg bg-white">
-                                  {availableSlots.length > 0 ? (
-                                    availableSlots.map((time) => (
-                                      <Button
-                                        key={time}
-                                        variant={
-                                          selectedTime === time
-                                            ? "default"
-                                            : "outline"
-                                        }
-                                        size="sm"
-                                        className={`text-sm h-12 ${
-                                          selectedTime === time
-                                            ? "bg-sage-600 hover:bg-sage-700 text-white"
-                                            : "border-stone-300 hover:border-sage-300 hover:bg-sage-50"
-                                        }`}
-                                        onClick={() => setSelectedTime(time)}
-                                      >
-                                        <div className="text-center">
-                                          <div className="font-medium">
-                                            {time}
-                                          </div>
-                                          {/* <div className="text-xs opacity-75">
-                                          90 min
-                                        </div> */}
-                                        </div>
-                                      </Button>
-                                    ))
-                                  ) : (
-                                    <div className="col-span-2 text-center py-8 text-stone-500">
-                                      <Clock className="h-8 w-8 mx-auto mb-2 text-stone-400" />
-                                      <p>No available slots for this date</p>
-                                      <p className="text-xs mt-1">
-                                        Please select another date
-                                      </p>
-                                    </div>
-                                  )}
-                                </div>
-                              )}
-                              {selectedDate.getDay() === 6 && (
-                                // <p className="text-xs text-stone-500 bg-blue-50 p-2 rounded">
-                                //   <strong>Saturday hours:</strong> 9:00 AM -
-                                //   2:00 PM
-                                // </p>
-                                <></>
-                              )}
+                            <div className="text-xs text-stone-500 bg-blue-50 p-2 rounded">
+                              <strong>Note:</strong> All dates and times are shown in your own time zone
+                              ({visitorTimezone.replace(/_/g, " ")}).
                             </div>
-                          ) : (
-                            <div className="p-8 text-center text-stone-500 border border-stone-200 rounded-lg bg-stone-50">
-                              <CalendarIcon className="h-8 w-8 mx-auto mb-2 text-stone-400" />
-                              <p>Please select a date first</p>
-                              <p className="text-xs mt-1">
-                                Choose from available dates in the calendar
-                              </p>
-                            </div>
-                          )}
+                          </div>
+
+                          <div className="space-y-4">
+                            <h3 className="text-lg font-semibold text-stone-800">
+                              Available Times
+                              {selectedDate && (
+                                <span className="text-sm font-normal text-stone-600 ml-2">
+                                  for {format(selectedDate, "MMM d")}
+                                </span>
+                              )}
+                            </h3>
+                            {!availability && !availabilityError ? (
+                              <div className="p-8 text-center text-stone-500 border border-stone-200 rounded-lg bg-stone-50">
+                                <Loader2 className="h-8 w-8 mx-auto mb-2 animate-spin text-stone-400" />
+                                <p>Loading available times…</p>
+                              </div>
+                            ) : availabilityError ? (
+                              <div className="p-8 text-center text-stone-600 border border-red-200 rounded-lg bg-red-50">
+                                <p>We couldn&apos;t load the available times.</p>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="mt-3"
+                                  onClick={() => setReloadKey((k) => k + 1)}
+                                >
+                                  Try again
+                                </Button>
+                              </div>
+                            ) : Object.keys(availability!.days).length === 0 ? (
+                              <div className="p-8 text-center text-stone-500 border border-stone-200 rounded-lg bg-stone-50">
+                                <CalendarIcon className="h-8 w-8 mx-auto mb-2 text-stone-400" />
+                                <p>There are no free times for this kind of session at the moment.</p>
+                                <p className="text-xs mt-1">
+                                  Please <a href="/contact" className="text-sage-700 underline">contact Rangika</a> to arrange a time.
+                                </p>
+                              </div>
+                            ) : selectedDate ? (
+                              <div className="grid grid-cols-2 gap-3 max-h-80 overflow-y-auto p-4 border border-stone-200 rounded-lg bg-white">
+                                {daySlots.length > 0 ? (
+                                  daySlots.map((slot) => (
+                                    <Button
+                                      key={slot.startsAt}
+                                      variant={selectedTime === slot.startsAt ? "default" : "outline"}
+                                      size="sm"
+                                      className={`text-sm h-auto min-h-12 py-2 ${
+                                        selectedTime === slot.startsAt
+                                          ? "bg-sage-600 hover:bg-sage-700 text-white"
+                                          : "border-stone-300 hover:border-sage-300 hover:bg-sage-50"
+                                      }`}
+                                      onClick={() => {
+                                        setSelectedTime(slot.startsAt);
+                                        setSlotNotice(null);
+                                      }}
+                                    >
+                                      <div className="text-center">
+                                        <div className="font-medium">
+                                          {localTime(slot.startsAt)} – {localTime(slot.endsAt)}
+                                        </div>
+                                      </div>
+                                    </Button>
+                                  ))
+                                ) : (
+                                  <div className="col-span-2 text-center py-8 text-stone-500">
+                                    <Clock className="h-8 w-8 mx-auto mb-2 text-stone-400" />
+                                    <p>No available slots for this date</p>
+                                    <p className="text-xs mt-1">
+                                      Please select another date
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="p-8 text-center text-stone-500 border border-stone-200 rounded-lg bg-stone-50">
+                                <CalendarIcon className="h-8 w-8 mx-auto mb-2 text-stone-400" />
+                                <p>Please select a date first</p>
+                                <p className="text-xs mt-1">
+                                  Choose from available dates in the calendar
+                                </p>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ) : null}
@@ -1607,7 +1451,7 @@ export default function BookingPage() {
                                 {format(selectedDate, "EEEE, MMMM d, yyyy")}
                               </p>
                               <p>
-                                <strong>Time:</strong> {selectedTime}
+                                <strong>Time:</strong> {timeLabel}
                               </p>
                               <p>
                                 <strong>Type:</strong>{" "}
@@ -1878,7 +1722,7 @@ export default function BookingPage() {
                               format(selectedDate, "EEEE, MMMM d, yyyy")}
                           </p>
                           <p>
-                            <strong>Time:</strong> {selectedTime}
+                            <strong>Time:</strong> {timeLabel}
                           </p>
                           <p>
                             <strong>Type:</strong>{" "}
@@ -1913,11 +1757,12 @@ export default function BookingPage() {
                             title: getCurrentTitle(),
                             price: getCurrentPrice(),
                           }}
-                          selectedDate={selectedDate}
-                          selectedTime={selectedTime}
+                          slotDate={selectedSlot?.perthDate ?? ""}
+                          slot={selectedSlot}
                           sessionType={sessionType}
                           onPaymentSuccess={handlePaymentSuccess}
                           onPaymentError={handlePaymentError}
+                          onSlotTaken={handleSlotTaken}
                         />
                       </Elements>
                     </div>

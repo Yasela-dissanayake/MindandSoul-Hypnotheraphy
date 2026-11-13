@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Library, LogOut, Menu, Settings, Users, ClipboardList, UserCheck, GraduationCap } from "lucide-react";
+import { CalendarDays, LayoutDashboard, Library, LogOut, Menu, Settings, Users, ClipboardList, UserCheck, GraduationCap } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { SubmitButton } from "@/components/submit-button";
@@ -14,6 +14,7 @@ type Badges = { requests: number; questions: number };
 const items: { href: string; label: string; icon: typeof Users; also?: string[]; badge?: keyof Badges }[] = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard },
   { href: "/admin/clients", label: "All users", icon: Users },
+  { href: "/admin/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/admin/requests", label: "Access requests", icon: UserCheck, badge: "requests" },
   { href: "/admin/sessions", label: "Sessions", icon: ClipboardList, also: ["/admin/plans"], badge: "questions" },
   { href: "/admin/courses", label: "Courses", icon: GraduationCap },
@@ -44,8 +45,15 @@ function useBadges(initial: Badges, pathname: string) {
   useEffect(() => {
     let stop = false;
     const load = async () => {
+      if (stop) return;
       try {
         const res = await fetch("/api/admin/badges", { cache: "no-store" });
+        // Signed out (or signed in as a client in another tab): stop asking until the page reloads.
+        if (res.status === 404 || res.status === 401) {
+          stop = true;
+          clearInterval(timer);
+          return;
+        }
         if (!res.ok || stop) return;
         const j = await res.json();
         setCounts({ requests: j.requests ?? 0, questions: j.questions ?? 0 });

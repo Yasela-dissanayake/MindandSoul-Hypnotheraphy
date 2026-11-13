@@ -109,11 +109,11 @@ export default function ContactPage() {
             </div>
             <div className="relative ">
               <Image
-                src="rangika1.jpeg"
+                src="/rangika1.jpeg"
                 alt="Peaceful consultation room"
                 width={500}
                 height={500}
-                className="rounded-2xl shadow-2xl"
+                className="h-auto w-full rounded-2xl shadow-2xl"
               />
               <div className="absolute -bottom-6 -left-6 bg-white rounded-xl p-4 shadow-lg border border-stone-200">
                 <div className="flex items-center gap-3">

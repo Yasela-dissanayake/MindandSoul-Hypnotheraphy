@@ -53,13 +53,13 @@ export default function AboutPage() {
                 </div>
               </div>
             </div>
-            <div className="relative">
+            <div className="relative mx-auto h-[600px] w-full max-w-[500px] overflow-hidden rounded-2xl shadow-2xl">
               <Image
-                src="prof3.jpeg"
+                src="/prof3.jpeg"
                 alt="Professional hypnotherapist in peaceful setting"
-                width={500}
-                height={600}
-                className="rounded-2xl object-fill w-auto h-[600px] shadow-2xl"
+                fill
+                sizes="(min-width: 1024px) 500px, 100vw"
+                className="object-cover"
               />
             </div>
           </div>

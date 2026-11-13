@@ -179,13 +179,13 @@ export default function HomePage() {
               </div>
             </div>
             <div className="relative">
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+              <div className="relative h-[600px] rounded-2xl overflow-hidden shadow-2xl">
                 <Image
-                  src="rangika3.jpeg"
+                  src="/rangika3.jpeg"
                   alt="Peaceful meditation and hypnotherapy session"
-                  width={500}
-                  height={600}
-                  className="object-cover w-full h-[600px]"
+                  fill
+                  sizes="(min-width: 1024px) 50vw, 100vw"
+                  className="object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-stone-900/20 to-transparent" />
               </div>
@@ -263,13 +263,13 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-            <div className="relative">
+            <div className="relative h-[500px] overflow-hidden rounded-2xl shadow-lg">
               <Image
-                src="meditation group.jpeg"
+                src="/meditation group.jpeg"
                 alt="Rangika Mathew - Professional hypnotherapist and energy healer"
-                width={500}
-                height={500}
-                className="rounded-2xl object-cover w-full h-[500px] shadow-lg"
+                fill
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="object-cover"
               />
             </div>
           </div>

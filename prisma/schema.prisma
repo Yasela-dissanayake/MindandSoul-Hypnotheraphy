@@ -501,6 +501,89 @@ model Settings {
   inviteEmailText     String?
   reminderEmailText   String?
   lastDigestDate      String?
+
+  // Online booking (all times are Perth time)
+  bookingInPersonMinutes Int @default(90) // length of an in-person session
+  bookingInPersonBreak   Int @default(30) // break after an in-person session
+  bookingDistanceMinutes Int @default(60)
+  bookingDistanceBreak   Int @default(60)
+  bookingNoticeHours     Int @default(12) // the earliest someone can book, counted from now
+  bookingDaysAhead       Int @default(90) // how far ahead people can book
+}
+
+// ---------- Online booking calendar ----------
+
+enum BookingMode {
+  IN_PERSON
+  DISTANCE
+}
+
+enum BookingStatus {
+  HELD // card payment in progress; keeps the time for a few minutes
+  CONFIRMED
+  CANCELLED
+}
+
+enum CalendarChangeKind {
+  BLOCK // not available (whole day, or from-to)
+  EXTRA // extra hours on top of the weekly hours
+}
+
+/// Rangika's usual week. Several rows per day are allowed (e.g. a morning and an evening).
+model WorkingHours {
+  id      String      @id @default(cuid())
+  mode    BookingMode
+  weekday Int // 0 = Sunday … 6 = Saturday
+  start   String // "HH:MM" Perth time
+  end     String
+
+  @@index([mode, weekday])
+}
+
+/// One-off changes: blocked days/times and extra hours.
+model CalendarChange {
+  id        String             @id @default(cuid())
+  kind      CalendarChangeKind
+  fromDate  String // YYYY-MM-DD (Perth)
+  toDate    String // same as fromDate for a single day
+  start     String? // "HH:MM"; null = the whole day (blocks only)
+  end       String?
+  mode      BookingMode? // extra hours: which kind of session; null = both
+  note      String?
+  createdAt DateTime           @default(now())
+
+  @@index([toDate])
+}
+
+model Booking {
+  id                String        @id @default(cuid())
+  status            BookingStatus @default(HELD)
+  mode              BookingMode
+  sessionType       String // as chosen on the booking page, e.g. "pet-parent-distance"
+  service           String
+  date              String // YYYY-MM-DD (Perth)
+  start             String // "HH:MM" (Perth)
+  end               String
+  startsAt          DateTime
+  endsAt            DateTime
+  heldUntil         DateTime?
+  clientName        String
+  clientEmail       String
+  clientPhone       String?
+  clientTimezone    String? // the client's own time zone, so their email shows their time
+  concerns          String?
+  previousTherapy   String?
+  medicalConditions String?
+  amount            Int // cents
+  currency          String        @default("aud")
+  paymentIntentId   String?       @unique
+  emailedAt         DateTime?
+  cancelledAt       DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([date, status])
+  @@index([startsAt])
 }
 
 model ReminderLog {
