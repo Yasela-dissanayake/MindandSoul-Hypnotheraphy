@@ -65,6 +65,38 @@ export default async function CoursesPage() {
         </a>
       )}
 
+      <section id="content" className="scroll-mt-6 space-y-3 border-b border-stone-200 pb-10">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h2 className="font-serif text-2xl text-stone-800">Course content</h2>
+            <p className="text-sm text-stone-500">Upload each course once. Every enrolled student sees it, including anything you add later.</p>
+          </div>
+          <NewCourseDialog />
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {courses.map((c) => {
+            const active = c.enrollments.filter((e) => !e.completedAt).length;
+            return (
+              <Link key={c.id} href={`/admin/courses/${c.id}`} className="flex items-start gap-3 rounded-xl bg-white p-4 ring-1 ring-stone-200 transition hover:ring-sage-300">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sage-50 text-sage-600">
+                  <GraduationCap className="h-4 w-4" />
+                </div>
+                <div className="min-w-0 flex-1 space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="font-medium text-stone-800">{c.title}</p>
+                    {c.archived && <Badge variant="secondary">Hidden</Badge>}
+                  </div>
+                  <p className="text-xs text-stone-500">
+                    {c._count.modules} module{c._count.modules === 1 ? "" : "s"} · {c._count.items} item{c._count.items === 1 ? "" : "s"} · {active} current student
+                    {active === 1 ? "" : "s"}
+                  </p>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
       {shown.map((c) => {
         const rows = c.enrollments.filter((e) => !e.completedAt);
         const total = c._count.modules;
@@ -72,7 +104,7 @@ export default async function CoursesPage() {
           <section key={c.id} className="space-y-3">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="font-serif text-2xl text-stone-800">
-                {c.title} <span className="text-base text-stone-500">({rows.length})</span>
+                {c.title} Students <span className="text-base text-stone-500">({rows.length})</span>
               </h2>
               <Link href={`/admin/courses/${c.id}`} className="inline-flex items-center gap-1 text-sm text-sage-700 hover:underline">
                 <Pencil className="h-3.5 w-3.5" /> Edit course content
@@ -151,37 +183,6 @@ export default async function CoursesPage() {
         </details>
       )}
 
-      <section id="content" className="scroll-mt-6 space-y-3 border-t border-stone-200 pt-8">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h2 className="font-serif text-2xl text-stone-800">Course content</h2>
-            <p className="text-sm text-stone-500">Upload each course once. Every enrolled student sees it, including anything you add later.</p>
-          </div>
-          <NewCourseDialog />
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          {courses.map((c) => {
-            const active = c.enrollments.filter((e) => !e.completedAt).length;
-            return (
-              <Link key={c.id} href={`/admin/courses/${c.id}`} className="flex items-start gap-3 rounded-xl bg-white p-4 ring-1 ring-stone-200 transition hover:ring-sage-300">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sage-50 text-sage-600">
-                  <GraduationCap className="h-4 w-4" />
-                </div>
-                <div className="min-w-0 flex-1 space-y-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-medium text-stone-800">{c.title}</p>
-                    {c.archived && <Badge variant="secondary">Hidden</Badge>}
-                  </div>
-                  <p className="text-xs text-stone-500">
-                    {c._count.modules} module{c._count.modules === 1 ? "" : "s"} · {c._count.items} item{c._count.items === 1 ? "" : "s"} · {active} current student
-                    {active === 1 ? "" : "s"}
-                  </p>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
     </div>
   );
 }

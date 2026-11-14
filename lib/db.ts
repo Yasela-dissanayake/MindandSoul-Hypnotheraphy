@@ -2,11 +2,15 @@ import { Prisma, PrismaClient } from "@prisma/client";
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
-/** Supabase's connection pooler closes connections that sit idle; the next query on one fails once. */
+/**
+ * Worth one more try: Supabase's pooler closed an idle connection (P1017), or the network
+ * dropped for a moment and the server couldn't be reached (P1001).
+ */
 function isClosedConnection(e: unknown) {
   return (
-    (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P1017") ||
-    (e instanceof Error && /Server has closed the connection/i.test(e.message))
+    (e instanceof Prisma.PrismaClientKnownRequestError && (e.code === "P1017" || e.code === "P1001")) ||
+    (e instanceof Prisma.PrismaClientInitializationError && e.errorCode === "P1001") ||
+    (e instanceof Error && /Server has closed the connection|Can't reach database server/i.test(e.message))
   );
 }
 
@@ -20,6 +24,7 @@ function createClient(): PrismaClient {
           return await query(args);
         } catch (e) {
           if (!isClosedConnection(e)) throw e;
+          await new Promise((r) => setTimeout(r, 500));
           return query(args);
         }
       },
