@@ -29,6 +29,7 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect } from "react";
+import { Expandable } from "@/components/site/expandable";
 
 export default function DetailedServicesPage() {
   const services = [
@@ -697,14 +698,15 @@ export default function DetailedServicesPage() {
                   </div>
 
                   {/* Service Content */}
-                  <div className="p-8 lg:p-12 space-y-12">
+                  <div className="p-6 lg:p-12 space-y-4">
                     {/* Conditions/Benefits */}
                     {service.conditions && (
-                      <div>
-                        <h3 className="text-2xl font-serif text-stone-800 mb-6 flex items-center gap-3">
-                          <Target className="h-6 w-6 text-sage-600" />
-                          Conditions We Address
-                        </h3>
+                      <Expandable
+                        title="Conditions We Address"
+                        icon={<Target className="h-6 w-6" />}
+                        hint={<>{service.conditions.length} areas</>}
+                      >
+                        <div className="space-y-6">
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
                           {service.conditions.map((condition, idx) => (
                             <div
@@ -718,15 +720,16 @@ export default function DetailedServicesPage() {
                             </div>
                           ))}
                         </div>
-                      </div>
+                        </div>
+                      </Expandable>
                     )}
 
                     {service.benefits && (
-                      <div>
-                        <h3 className="text-2xl font-serif text-stone-800 mb-6 flex items-center gap-3">
-                          <Heart className="h-6 w-6 text-sage-600" />
-                          How This Service Helps You
-                        </h3>
+                      <Expandable
+                        title="How This Service Helps You"
+                        icon={<Heart className="h-6 w-6" />}
+                      >
+                        <div className="space-y-6">
                         <div className="grid md:grid-cols-2 gap-4">
                           {service.benefits.map((benefit, idx) => (
                             <div
@@ -738,16 +741,18 @@ export default function DetailedServicesPage() {
                             </div>
                           ))}
                         </div>
-                      </div>
+                        </div>
+                      </Expandable>
                     )}
 
                     {/* Process Steps */}
                     {service.process && Array.isArray(service.process) && (
-                      <div>
-                        <h3 className="text-2xl font-serif text-stone-800 mb-6 flex items-center gap-3">
-                          <Users className="h-6 w-6 text-sage-600" />
-                          What to Expect in Your Session
-                        </h3>
+                      <Expandable
+                        title="What to Expect in Your Session"
+                        icon={<Users className="h-6 w-6" />}
+                        hint={<>{service.process.length} steps</>}
+                      >
+                        <div className="space-y-6">
                         <div className="space-y-6">
                           {service.process.map((step, idx) => (
                             <div key={idx} className="flex gap-4">
@@ -765,15 +770,17 @@ export default function DetailedServicesPage() {
                             </div>
                           ))}
                         </div>
-                      </div>
+                        </div>
+                      </Expandable>
                     )}
 
                     {/* Reasons for PLR */}
                     {service.reasons && (
-                      <div>
-                        <h3 className="text-2xl font-serif text-stone-800 mb-6">
-                          Why People Seek Past Life Regression
-                        </h3>
+                      <Expandable
+                        title="Why People Seek Past Life Regression"
+                        icon={<Brain className="h-6 w-6" />}
+                      >
+                        <div className="space-y-6">
                         <div className="grid md:grid-cols-2 gap-6">
                           {service.reasons.map((reason, idx) => (
                             <Card key={idx} className="border-stone-200">
@@ -788,60 +795,70 @@ export default function DetailedServicesPage() {
                             </Card>
                           ))}
                         </div>
-                      </div>
+                        </div>
+                      </Expandable>
                     )}
 
                     {/* Experience/Process for specific services */}
                     {service.experience && (
-                      <div className="bg-sage-50 p-6 rounded-xl">
-                        <h3 className="text-xl font-semibold text-stone-800 mb-4">
-                          What to Expect
-                        </h3>
+                      <Expandable
+                        title="What to Expect"
+                        icon={<Users className="h-6 w-6" />}
+                      >
+                        <div className="space-y-6">
                         <p className="text-stone-600 leading-relaxed">
                           {service.experience}
                         </p>
-                      </div>
+                        </div>
+                      </Expandable>
                     )}
 
                     {service.processDescription && (
-                      <div className="bg-sage-50 p-6 rounded-xl">
-                        <h3 className="text-xl font-semibold text-stone-800 mb-4">
-                          The Process
-                        </h3>
+                      <Expandable
+                        title="The Process"
+                        icon={<Waves className="h-6 w-6" />}
+                      >
+                        <div className="space-y-6">
                         <p className="text-stone-600 leading-relaxed">
                           {service.processDescription}
                         </p>
-                      </div>
+                        </div>
+                      </Expandable>
                     )}
 
                     {service.whyChoose && (
-                      <div className="bg-stone-50 p-6 rounded-xl">
-                        <h3 className="text-xl font-semibold text-stone-800 mb-4">
-                          Why Choose Reiki?
-                        </h3>
+                      <Expandable
+                        title="Why Choose Reiki?"
+                        icon={<Heart className="h-6 w-6" />}
+                      >
+                        <div className="space-y-6">
                         <p className="text-stone-600 leading-relaxed">
                           {service.whyChoose}
                         </p>
-                      </div>
+                        </div>
+                      </Expandable>
                     )}
 
                     {/* Animal Reiki Specific Content */}
                     {service.animalReiki && (
-                      <div>
-                        <h3 className="text-2xl font-serif text-stone-800 mb-4">
-                          What Is Animal Reiki?
-                        </h3>
+                      <Expandable
+                        title="What Is Animal Reiki?"
+                        icon={<Leaf className="h-6 w-6" />}
+                      >
+                        <div className="space-y-6">
                         <p className="text-stone-600 leading-relaxed mb-6">
                           {service.animalReiki}
                         </p>
-                      </div>
+                        </div>
+                      </Expandable>
                     )}
 
                     {service.animalCommunication && (
-                      <div>
-                        <h3 className="text-2xl font-serif text-stone-800 mb-4">
-                          What's Animal Communication?
-                        </h3>
+                      <Expandable
+                        title="What's Animal Communication?"
+                        icon={<Heart className="h-6 w-6" />}
+                      >
+                        <div className="space-y-6">
                         <p className="text-stone-600 leading-relaxed mb-4">
                           {service.animalCommunication}
                         </p>
@@ -863,15 +880,17 @@ export default function DetailedServicesPage() {
                             </ul>
                           </div>
                         )}
-                      </div>
+                        </div>
+                      </Expandable>
                     )}
 
                     {/* Pet & Parent Healing */}
                     {service.petParentHealing && (
-                      <div className="space-y-6">
-                        <h3 className="text-2xl font-serif text-stone-800">
-                          Reiki Healing for Pets & Their Parents
-                        </h3>
+                      <Expandable
+                        title="Reiki Healing for Pets & Their Parents"
+                        icon={<Heart className="h-6 w-6" />}
+                      >
+                        <div className="space-y-6">
                         <p className="text-stone-600 leading-relaxed">
                           {service.petParentHealing.description}
                         </p>
@@ -934,15 +953,18 @@ export default function DetailedServicesPage() {
                             {service.petParentHealing.rainbowBridge}
                           </p>
                         </div>
-                      </div>
+                        </div>
+                      </Expandable>
                     )}
 
                     {/* Meditation Programs */}
                     {service.programs && (
-                      <div className="space-y-8">
-                        <h3 className="text-2xl font-serif text-stone-800">
-                          Meditation Offerings
-                        </h3>
+                      <Expandable
+                        title="Meditation Offerings"
+                        icon={<Waves className="h-6 w-6" />}
+                        hint={<>{service.programs.length} offerings</>}
+                      >
+                        <div className="space-y-6">
                         {service.programs.map((program, idx) => (
                           <Card key={idx} className="border-stone-200">
                             <CardContent className="p-6 space-y-4">
@@ -1069,15 +1091,18 @@ export default function DetailedServicesPage() {
                             </CardContent>
                           </Card>
                         ))}
-                      </div>
+                        </div>
+                      </Expandable>
                     )}
 
                     {/* Corporate Services */}
                     {service.services && (
-                      <div className="space-y-6">
-                        <h3 className="text-2xl font-serif text-stone-800">
-                          Our Wellness Service Packages Include:
-                        </h3>
+                      <Expandable
+                        title="Our Wellness Service Packages"
+                        icon={<Building className="h-6 w-6" />}
+                        hint={<>{service.services.length} packages</>}
+                      >
+                        <div className="space-y-6">
                         <div className="grid md:grid-cols-2 gap-6">
                           {service.services.map((corporateService, idx) => (
                             <Card key={idx} className="border-stone-200">
@@ -1099,15 +1124,17 @@ export default function DetailedServicesPage() {
                           ))}
                         </div>
 
-                      </div>
+                        </div>
+                      </Expandable>
                     )}
 
                     {/* Reiki Training Content */}
                     {service.whyLearn && (
-                      <div>
-                        <h3 className="text-2xl font-serif text-stone-800 mb-4">
-                          Why Learn Reiki?
-                        </h3>
+                      <Expandable
+                        title="Why Learn Reiki?"
+                        icon={<GraduationCap className="h-6 w-6" />}
+                      >
+                        <div className="space-y-6">
                         <p className="text-stone-600 mb-4">
                           Reiki is a gentle, natural energy healing method that
                           works holistically on the mind, body, emotions, and
@@ -1121,14 +1148,17 @@ export default function DetailedServicesPage() {
                             </li>
                           ))}
                         </ul>
-                      </div>
+                        </div>
+                      </Expandable>
                     )}
 
                     {service.courses && (
-                      <div>
-                        <h3 className="text-2xl font-serif text-stone-800 mb-6">
-                          Reiki Course Offerings
-                        </h3>
+                      <Expandable
+                        title="Reiki Course Offerings"
+                        icon={<GraduationCap className="h-6 w-6" />}
+                        hint={<>{service.courses.length} levels</>}
+                      >
+                        <div className="space-y-6">
                         <div className="space-y-6">
                           {service.courses.map((course, idx) => (
                             <Card key={idx} className="border-stone-200">
@@ -1156,14 +1186,16 @@ export default function DetailedServicesPage() {
                             </Card>
                           ))}
                         </div>
-                      </div>
+                        </div>
+                      </Expandable>
                     )}
 
                     {service.animalReikiTraining && (
-                      <div className="space-y-6">
-                        <h3 className="text-2xl font-serif text-stone-800">
-                          Learn Animal Reiki & Communication
-                        </h3>
+                      <Expandable
+                        title="Learn Animal Reiki & Communication"
+                        icon={<GraduationCap className="h-6 w-6" />}
+                      >
+                        <div className="space-y-6">
                         <p className="text-stone-600 leading-relaxed">
                           {service.animalReikiTraining.description}
                         </p>
@@ -1207,18 +1239,21 @@ export default function DetailedServicesPage() {
                             )}
                           </ul>
                         </div>
-                      </div>
+                        </div>
+                      </Expandable>
                     )}
 
                     {service.unique && (
-                      <div className="bg-sage-50 p-6 rounded-xl">
-                        <h4 className="text-xl font-semibold text-stone-800 mb-4">
-                          What Makes My Training Unique?
-                        </h4>
+                      <Expandable
+                        title="What Makes My Training Unique?"
+                        icon={<Award className="h-6 w-6" />}
+                      >
+                        <div className="space-y-6">
                         <p className="text-stone-600 leading-relaxed">
                           {service.unique}
                         </p>
-                      </div>
+                        </div>
+                      </Expandable>
                     )}
 
                     {service.note && (
@@ -1228,11 +1263,11 @@ export default function DetailedServicesPage() {
                     )}
 
                     {/* Pricing Section */}
-                    <div>
-                      <h3 className="text-2xl font-serif text-stone-800 mb-6 flex items-center gap-3">
-                        <Package className="h-6 w-6 text-sage-600" />
-                        Investment & Booking Options
-                      </h3>
+                    <Expandable
+                      title="Prices & Booking Options"
+                      icon={<Package className="h-6 w-6" />}
+                    >
+                      <div>
 
                       {/* Regular Pricing */}
                       {service.pricing?.single && (
@@ -1571,15 +1606,17 @@ export default function DetailedServicesPage() {
                           </Card>
                         </div>
                       )}
-                    </div>
+                      </div>
+                    </Expandable>
 
                     {/* Special Programs */}
                     {service.specialPrograms && (
-                      <div>
-                        <h3 className="text-2xl font-serif text-stone-800 mb-6 flex items-center gap-3">
-                          <Star className="h-6 w-6 text-sage-600" />
-                          Special Programs
-                        </h3>
+                      <Expandable
+                        title="Special Programs"
+                        icon={<Star className="h-6 w-6" />}
+                        hint={<>{service.specialPrograms.length} programs</>}
+                      >
+                        <div className="space-y-6">
                         <div className="space-y-8">
                           {service.specialPrograms.map((program, idx) => (
                             <Card
@@ -1666,11 +1703,12 @@ export default function DetailedServicesPage() {
                             </Card>
                           ))}
                         </div>
-                      </div>
+                        </div>
+                      </Expandable>
                     )}
 
                     {/* Contact CTA */}
-                    <div className="bg-sage-600 text-white rounded-xl p-8 text-center">
+                    <div className="!mt-10 bg-sage-600 text-white rounded-xl p-8 text-center">
                       <h3 className="text-2xl font-serif mb-4">
                         Ready to Begin Your Healing Journey?
                       </h3>

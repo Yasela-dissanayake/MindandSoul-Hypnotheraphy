@@ -21,6 +21,7 @@ import {
 import Link from "next/link";
 import { ServiceImageSlider } from "@/components/service-image-slider";
 import Image from "next/image";
+import { Expandable } from "@/components/site/expandable";
 
 export default function ServicesPage() {
   // Service images for the slider
@@ -573,10 +574,12 @@ export default function ServicesPage() {
                     service.id === "reiki-training" ? (
                       <></>
                     ) : (
-                      <div className="space-y-4 p-4 bg-sage-50 rounded-lg">
-                        <h4 className="font-semibold text-stone-800">
-                          Pricing & Booking Options
-                        </h4>
+                      <Expandable
+                        size="md"
+                        title="Pricing & Booking Options"
+                        className="bg-sage-50"
+                      >
+                      <div className="space-y-4">
 
                         {service.pricing.single && (
                           <div className="space-y-3">
@@ -1000,6 +1003,7 @@ export default function ServicesPage() {
                           </div>
                         )}
                       </div>
+                      </Expandable>
                     )}
                   </div>
 
@@ -1013,17 +1017,20 @@ export default function ServicesPage() {
                         className="rounded-md border-4 border-[#CDDBC2]"
                       />{" "}
                     </div>
-                    <h4 className="text-xl font-semibold text-stone-800">
-                      What You Can Expect
-                    </h4>
-                    <ul className="space-y-3">
-                      {service.benefits.map((benefit, index) => (
-                        <li key={index} className="flex items-start gap-3">
-                          <CheckCircle className="h-5 w-5 text-sage-600 mt-0.5 flex-shrink-0" />
-                          <span className="text-stone-600">{benefit}</span>
-                        </li>
-                      ))}
-                    </ul>
+                    <Expandable
+                      size="md"
+                      title="What You Can Expect"
+                      hint={<>{service.benefits.length} areas</>}
+                    >
+                      <ul className="space-y-3">
+                        {service.benefits.map((benefit, index) => (
+                          <li key={index} className="flex items-start gap-3">
+                            <CheckCircle className="h-5 w-5 text-sage-600 mt-0.5 flex-shrink-0" />
+                            <span className="text-stone-600">{benefit}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </Expandable>
 
                     <Link href={`/services/detailed#${service.id}`}>
                       <Button
