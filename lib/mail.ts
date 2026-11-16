@@ -222,3 +222,69 @@ export function reminderEmail(opts: { name?: string | null; tasks: string[]; use
     text: `${hello}\n\n${intro}\n\n${opts.tasks.map((t) => `- ${t}`).join("\n")}\n\n${url}\n\nTurn off reminders: ${unsub}`,
   };
 }
+
+// ---------- Independent learning packages ----------
+
+/** To the learner after buying: their login details (new account) or a "you're in" note (existing account). */
+export function packagePurchasedEmail(opts: { name: string; packageTitle: string; login?: { username: string; password: string } | null }) {
+  const hello = `Hello ${opts.name},`;
+  const intro = `Thank you for buying ${opts.packageTitle}. It's ready for you in your private space. Work through the lessons one by one, at your own pace.`;
+  const url = `${SITE_URL}/login`;
+  const details = opts.login
+    ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px;background:#f6f7f6;border-radius:8px;font-family:Arial,sans-serif;font-size:15px">
+<tr><td style="padding:12px 16px 4px;color:#78716c">Username</td><td style="padding:12px 16px 4px"><strong>${escapeHtml(opts.login.username)}</strong></td></tr>
+<tr><td style="padding:4px 16px 12px;color:#78716c">Password</td><td style="padding:4px 16px 12px"><strong>${escapeHtml(opts.login.password)}</strong></td></tr></table>`
+    : `<p style="margin:0 0 16px">Sign in with your usual username and password. You'll find it under <strong>My learning</strong>.</p>`;
+  return {
+    subject: `Your course is ready: ${opts.packageTitle}`,
+    html: layout(
+      `<p style="margin:0 0 16px">${escapeHtml(hello)}</p>${paragraphs(intro)}${details}${button(url, "Sign in and start")}${
+        opts.login ? `<p style="margin:0;color:#78716c;font-size:14px">You can change your password after signing in, under Profile.</p>` : ""
+      }`,
+    ),
+    text: `${hello}
+
+${intro}
+
+${opts.login ? `Username: ${opts.login.username}\nPassword: ${opts.login.password}` : "Sign in with your usual username and password. You'll find it under My learning."}
+
+Sign in: ${url}`,
+  };
+}
+
+/** To Rangika: someone bought a package. */
+export function packageSoldEmail(opts: { name: string; email: string; packageTitle: string; amount: string; userId: string }) {
+  const url = `${SITE_URL}/admin/learning`;
+  return {
+    subject: `New sale: ${opts.packageTitle}`,
+    html: layout(
+      `<p style="margin:0 0 16px"><strong>${escapeHtml(opts.name)}</strong> (${escapeHtml(opts.email)}) bought <strong>${escapeHtml(opts.packageTitle)}</strong> for ${escapeHtml(opts.amount)}.</p><p style="margin:0 0 16px">Their account and access were set up automatically.</p>${button(url, "Open Independent Learning")}`,
+    ),
+    text: `${opts.name} (${opts.email}) bought ${opts.packageTitle} for ${opts.amount}.\nTheir account and access were set up automatically.\n\n${url}`,
+  };
+}
+
+/** To Rangika: a learner finished every lesson and is waiting for their certificate. */
+export function packageFinishedEmail(opts: { name: string; packageTitle: string }) {
+  const url = `${SITE_URL}/admin/learning#finished`;
+  return {
+    subject: `${opts.name} finished ${opts.packageTitle}`,
+    html: layout(
+      `<p style="margin:0 0 16px"><strong>${escapeHtml(opts.name)}</strong> has finished every lesson in <strong>${escapeHtml(opts.packageTitle)}</strong>.</p><p style="margin:0 0 16px">They're waiting for their certificate.</p>${button(url, "Upload certificate")}`,
+    ),
+    text: `${opts.name} has finished every lesson in ${opts.packageTitle}. They're waiting for their certificate.\n\n${url}`,
+  };
+}
+
+/** To the learner: Rangika uploaded their certificate. */
+export function packageCertificateEmail(opts: { name?: string | null; packageTitle: string; packageId: string }) {
+  const hello = `Hello${opts.name ? ` ${opts.name}` : ""},`;
+  const url = `${SITE_URL}/portal/learning/${opts.packageId}`;
+  return {
+    subject: `Your certificate for ${opts.packageTitle}`,
+    html: layout(
+      `<p style="margin:0 0 16px">${escapeHtml(hello)}</p><p style="margin:0 0 16px">Congratulations on completing <strong>${escapeHtml(opts.packageTitle)}</strong>. Your certificate from Rangika is ready.</p>${button(url, "View certificate")}`,
+    ),
+    text: `${hello}\n\nCongratulations on completing ${opts.packageTitle}. Your certificate from Rangika is ready.\n\n${url}`,
+  };
+}

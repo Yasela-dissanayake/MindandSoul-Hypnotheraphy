@@ -10,18 +10,20 @@ import { TaskList } from "@/components/portal/task-list";
 import { Progress } from "@/components/ui/progress";
 import { AskQuestion } from "@/components/portal/ask-question";
 import { db } from "@/lib/db";
+import { getLearnerPackages } from "@/lib/learning";
 
 export default async function TodayPage() {
   const user = await requireClientPage();
-  const [{ today, tasks, trackers, prompt, tonightAudio, upcoming, hasPlans }, courses, enc, newAnswers] = await Promise.all([
+  const [{ today, tasks, trackers, prompt, tonightAudio, upcoming, hasPlans }, courses, enc, newAnswers, learning] = await Promise.all([
     getToday(user.id, user.timezone),
     getStudentCourses(user.id),
     getEncouragements(),
     db.question.count({ where: { userId: user.id, answeredAt: { not: null }, answerSeenAt: null } }),
+    getLearnerPackages(user.id),
   ]);
   const done = tasks.filter((t) => t.done).length;
   const firstName = user.name?.split(" ")[0];
-  const nothing = !hasPlans && courses.length === 0;
+  const nothing = !hasPlans && courses.length === 0 && learning.length === 0;
 
   return (
     <div className="space-y-6">
@@ -52,6 +54,23 @@ export default async function TodayPage() {
           <p className="mt-2 text-sm text-stone-500">Your sessions work or course material will appear here soon.</p>
         </div>
       )}
+
+      {learning.map((p) => (
+        <Link
+          key={p.id}
+          href={`/portal/learning/${p.id}`}
+          className="block space-y-2 rounded-2xl bg-white p-5 ring-1 ring-stone-200 transition hover:ring-sage-300"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <p className="font-serif text-lg text-stone-800">{p.title}</p>
+            <span className="shrink-0 text-sm text-sage-700">{p.completedAt ? "Finished ✓" : p.done ? "Continue →" : "Start →"}</span>
+          </div>
+          <Progress value={p.total ? (p.done / p.total) * 100 : 0} className="h-2 bg-sage-100 [&>div]:bg-sage-500" />
+          <p className="text-xs text-stone-500">
+            {p.done} of {p.total} lessons done
+          </p>
+        </Link>
+      ))}
 
       {upcoming.map((u) => (
         <p key={u.title + u.startDate} className="rounded-2xl bg-sage-50 p-4 text-stone-700 ring-1 ring-sage-200">

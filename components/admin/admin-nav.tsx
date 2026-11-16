@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDays, LayoutDashboard, Library, LogOut, Menu, Settings, Users, ClipboardList, UserCheck, GraduationCap } from "lucide-react";
+import { BookOpen, CalendarDays, LayoutDashboard, Library, LogOut, Menu, Settings, Users, ClipboardList, UserCheck, GraduationCap } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { SubmitButton } from "@/components/submit-button";
@@ -18,6 +18,7 @@ const items: { href: string; label: string; icon: typeof Users; also?: string[];
   { href: "/admin/requests", label: "Access requests", icon: UserCheck, badge: "requests" },
   { href: "/admin/sessions", label: "Sessions", icon: ClipboardList, also: ["/admin/plans"], badge: "questions" },
   { href: "/admin/courses", label: "Courses", icon: GraduationCap },
+  { href: "/admin/learning", label: "Independent Learning", icon: BookOpen },
   { href: "/admin/library", label: "Library", icon: Library },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];

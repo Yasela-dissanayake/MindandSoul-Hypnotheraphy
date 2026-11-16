@@ -104,6 +104,7 @@ model User {
   sessions       Session[]
   plans          Plan[]
   enrollments    Enrollment[]
+  learningEnrollments PackageEnrollment[]
   completions    TaskCompletion[]
   trackerEntries TrackerEntry[]
   submissions    Submission[]
@@ -169,6 +170,7 @@ model Resource {
   personalFor User?        @relation(fields: [personalForUserId], references: [id], onDelete: Cascade)
   planItems   PlanItem[]
   courseItems CourseItem[]
+  lessons     Lesson[]
   tasks       Task[]
 }
 
@@ -595,4 +597,112 @@ model ReminderLog {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, forDate])
+}
+
+// ---------- Independent learning packages (self-paced, bought on the website) ----------
+
+enum PurchaseStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+/// A ready-made, self-paced course that people buy on the website and work through on their own.
+model LearningPackage {
+  id          String   @id @default(cuid())
+  slug        String   @unique // web address: /learn/<slug>
+  title       String
+  summary     String? // one line shown on the list
+  description String? // "what you'll learn", shown on the package page
+  price       Int // cents
+  currency    String   @default("aud")
+  published   Boolean  @default(false) // false = draft, not on the website
+  archived    Boolean  @default(false)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  sections    LessonSection[]
+  lessons     Lesson[]
+  enrollments PackageEnrollment[]
+  purchases   PackagePurchase[]
+}
+
+model LessonSection {
+  id        String @id @default(cuid())
+  packageId String
+  title     String
+  order     Int    @default(0)
+
+  package LearningPackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  lessons Lesson[]
+
+  @@index([packageId])
+}
+
+model Lesson {
+  id         String   @id @default(cuid())
+  packageId  String
+  sectionId  String?
+  title      String
+  body       String? // the lesson text / instructions
+  resourceId String? // optional Library item: video, audio, PDF…
+  order      Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  package  LearningPackage  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  section  LessonSection?   @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+  resource Resource?        @relation(fields: [resourceId], references: [id], onDelete: SetNull)
+  progress LessonProgress[]
+
+  @@index([packageId])
+}
+
+model PackageEnrollment {
+  id              String    @id @default(cuid())
+  userId          String
+  packageId       String
+  startedAt       DateTime  @default(now())
+  completedAt     DateTime? // every lesson done
+  certificateKey  String? // uploaded by Rangika (R2 object key)
+  certificateName String?
+  certificateType String?
+  certificateAt   DateTime?
+
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  package  LearningPackage  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  progress LessonProgress[]
+
+  @@unique([userId, packageId])
+}
+
+model LessonProgress {
+  id           String   @id @default(cuid())
+  enrollmentId String
+  lessonId     String
+  completedAt  DateTime @default(now())
+
+  enrollment PackageEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  lesson     Lesson            @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([enrollmentId, lessonId])
+}
+
+model PackagePurchase {
+  id              String         @id @default(cuid())
+  packageId       String
+  name            String
+  email           String
+  amount          Int // cents, taken from the package when the payment started
+  currency        String
+  status          PurchaseStatus @default(PENDING)
+  paymentIntentId String?        @unique
+  userId          String? // the account that got access
+  newAccount      Boolean        @default(false)
+  paidAt          DateTime?
+  createdAt       DateTime       @default(now())
+
+  package LearningPackage @relation(fields: [packageId], references: [id], onDelete: Restrict)
+
+  @@index([status, createdAt])
 }

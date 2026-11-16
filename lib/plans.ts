@@ -90,10 +90,14 @@ export async function getToday(userId: string, timezone: string) {
   return { today, tasks, trackers, prompt, tonightAudio, upcoming, hasPlans: plans.length > 0 };
 }
 
-/** What a person has: session plans and/or course enrolments (for navigation). */
+/** What a person has: session plans, course enrolments and/or online courses (for navigation). */
 export async function getAreas(userId: string) {
-  const [plans, courses] = await Promise.all([db.plan.count({ where: { userId } }), db.enrollment.count({ where: { userId } })]);
-  return { hasSessions: plans > 0, hasCourses: courses > 0 };
+  const [plans, courses, learning] = await Promise.all([
+    db.plan.count({ where: { userId } }),
+    db.enrollment.count({ where: { userId } }),
+    db.packageEnrollment.count({ where: { userId, package: { archived: false } } }),
+  ]);
+  return { hasSessions: plans > 0, hasCourses: courses > 0, hasLearning: learning > 0 };
 }
 
 /** Can this person open this library item? Their personal file, a session plan item/task, or a course they're enrolled in. */
@@ -101,12 +105,14 @@ export async function clientCanAccessResource(userId: string, resourceId: string
   const resource = await db.resource.findUnique({ where: { id: resourceId }, select: { personalForUserId: true } });
   if (!resource) return false;
   if (resource.personalForUserId === userId) return true;
-  const [viaPlan, viaTask, viaCourse] = await Promise.all([
+  const [viaPlan, viaTask, viaCourse, viaLesson] = await Promise.all([
     db.planItem.findFirst({ where: { resourceId, plan: { userId } }, select: { id: true } }),
     db.task.findFirst({ where: { resourceId, plan: { userId } }, select: { id: true } }),
     db.courseItem.findFirst({ where: { resourceId, course: { enrollments: { some: { userId } } } }, select: { id: true } }),
+    // A lesson in an online course they bought.
+    db.lesson.findFirst({ where: { resourceId, package: { enrollments: { some: { userId } } } }, select: { id: true } }),
   ]);
-  return Boolean(viaPlan || viaTask || viaCourse);
+  return Boolean(viaPlan || viaTask || viaCourse || viaLesson);
 }
 
 /** Copy a ready-made session package to a client, including weeks, material, tasks, prompts and trackers. */

@@ -39,6 +39,12 @@ export default function SiteLayout({
                 Services
               </Link>
               <Link
+                href="/learn"
+                className="text-stone-600 hover:text-sage-600 transition-colors"
+              >
+                Online Learning
+              </Link>
+              <Link
                 href="/testimonials"
                 className="text-stone-600 hover:text-sage-600 transition-colors"
               >

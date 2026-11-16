@@ -2,17 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { GraduationCap, Home, NotebookPen, Sparkles, User } from "lucide-react";
+import { BookOpen, GraduationCap, Home, NotebookPen, Sparkles, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function PortalNav({
   hasSessions,
   hasCourses,
+  hasLearning = false,
   newAnswers = 0,
   variant,
 }: {
   hasSessions: boolean;
   hasCourses: boolean;
+  hasLearning?: boolean;
   newAnswers?: number;
   variant: "top" | "bottom";
 }) {
@@ -21,6 +23,7 @@ export function PortalNav({
     { href: "/portal", label: "Today", icon: Home },
     ...(hasSessions ? [{ href: "/portal/sessions", label: "My sessions", icon: Sparkles, dot: newAnswers > 0 }] : []),
     ...(hasCourses ? [{ href: "/portal/courses", label: "My courses", icon: GraduationCap }] : []),
+    ...(hasLearning ? [{ href: "/portal/learning", label: "My learning", icon: BookOpen }] : []),
     { href: "/portal/journal", label: "Journal", icon: NotebookPen },
     { href: "/portal/profile", label: "Profile", icon: User },
   ];

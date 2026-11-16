@@ -11,6 +11,7 @@ import { clientCanAccessResource } from "@/lib/plans";
 //   /api/files/voice/:id        encouragement voice clip (any signed-in user)
 //   /api/files/submission/:id   work a client sent (owner or admin)
 //   /api/files/certificate/:id  enrolment certificate (the student or admin)
+//   /api/files/learning-certificate/:id  online course certificate (the learner or admin)
 
 const EXT: Record<string, string> = {
   "application/pdf": ".pdf",
@@ -67,6 +68,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ type
     if (!isAdmin && e.userId !== session.user.id) return notFound();
     key = e.certificateKey;
     if (wantsDownload) downloadName = withExt(`Certificate - ${e.course.title}`, e.certificateType);
+  } else if (type === "learning-certificate") {
+    const e = await db.packageEnrollment.findUnique({ where: { id }, include: { package: { select: { title: true } } } });
+    if (!e?.certificateKey) return notFound();
+    if (!isAdmin && e.userId !== session.user.id) return notFound();
+    key = e.certificateKey;
+    if (wantsDownload) downloadName = withExt(`Certificate - ${e.package.title}`, e.certificateType);
   } else {
     return notFound();
   }
