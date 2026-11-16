@@ -477,6 +477,14 @@ model AccessRequest {
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
   decidedAt DateTime?
+
+  // What they asked for on the "Request access" form (null = sent before the form existed)
+  wants         String? // "SESSIONS" | "COURSE" | "UNSURE"
+  wantsService  String? // for sessions: HYPNOTHERAPY | REIKI_HEALING | ANIMAL_REIKI
+  wantsCourseId String? // for a course
+  message       String?
+  phone         String?
+  detailsAt     DateTime? // when they sent the form; Rangika is emailed then
 }
 
 model VoiceClip {

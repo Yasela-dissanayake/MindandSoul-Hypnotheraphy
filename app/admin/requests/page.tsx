@@ -1,36 +1,59 @@
 import { requireAdminPage } from "@/lib/authz";
 import { db } from "@/lib/db";
-import { getSettings } from "@/lib/settings";
 import { loadAccessOptions } from "@/lib/admin-data";
+import { describeWants } from "@/lib/access-requests";
+import { MODE_LABEL, time12 } from "@/lib/booking";
+import { formatDate } from "@/lib/dates";
 import { AccessRequestRow } from "@/components/admin/access-request-row";
 import { viewerTimezone } from "@/lib/viewer-tz";
 
 export default async function RequestsPage() {
-  const tz = await viewerTimezone();
   await requireAdminPage();
-  const [pending, decided, { packages, courses }, settings] = await Promise.all([
+  const [tz, pending, decided, { packages, courses }] = await Promise.all([
+    viewerTimezone(),
     db.accessRequest.findMany({ where: { status: "PENDING" }, orderBy: { createdAt: "desc" } }), // newest first
     db.accessRequest.findMany({ where: { status: { not: "PENDING" } }, orderBy: { decidedAt: "desc" }, take: 20 }),
     loadAccessOptions(),
-    getSettings(),
   ]);
+
+  // Paid bookings from the same email help Rangika recognise the person.
+  const bookings = pending.length
+    ? await db.booking.findMany({
+        where: { status: "CONFIRMED", clientEmail: { in: pending.map((r) => r.email.toLowerCase()) } },
+        orderBy: { startsAt: "desc" },
+        select: { clientEmail: true, date: true, start: true, service: true, mode: true },
+      })
+    : [];
+  const courseTitle = (id: string | null) => courses.find((c) => c.id === id)?.title ?? null;
   const when = (d: Date) => d.toLocaleString("en-AU", { timeZone: tz, day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
-  const row = (r: (typeof pending)[number]) => ({
-    id: r.id,
-    email: r.email,
-    name: r.name,
-    image: r.image,
-    status: r.status,
-    attempts: r.attempts,
-    when: when(r.decidedAt ?? r.createdAt),
-  });
+
+  const row = (r: (typeof pending)[number]) => {
+    const b = bookings.find((x) => x.clientEmail === r.email.toLowerCase());
+    return {
+      id: r.id,
+      email: r.email,
+      name: r.name,
+      image: r.image,
+      status: r.status,
+      attempts: r.attempts,
+      when: when(r.decidedAt ?? r.createdAt),
+      wants: r.wants as "SESSIONS" | "COURSE" | "UNSURE" | null,
+      wantsService: r.wantsService,
+      wantsCourseId: r.wantsCourseId,
+      wantsLabel: describeWants(r, courseTitle(r.wantsCourseId)),
+      message: r.message,
+      phone: r.phone,
+      sentForm: Boolean(r.detailsAt),
+      booking: b ? `${formatDate(b.date, { weekday: "short", day: "numeric", month: "short" })}, ${time12(b.start)} (Perth) · ${b.service} · ${MODE_LABEL[b.mode]}` : null,
+    };
+  };
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="font-serif text-3xl text-stone-800">Access requests</h1>
         <p className="text-stone-500">
-          People who signed in with Google but don&apos;t have an account yet. They can&apos;t see anything until you approve them.
+          People who signed in with Google but don&apos;t have an account yet. Each request shows what they asked for, so you can approve with one click.
         </p>
       </div>
 

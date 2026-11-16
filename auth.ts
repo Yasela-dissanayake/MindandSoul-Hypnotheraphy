@@ -4,9 +4,10 @@ import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import type { Role, UserStatus } from "@prisma/client";
 import { db } from "@/lib/db";
+import { makeRequestToken } from "@/lib/request-token";
 import { getUserRow } from "@/lib/request-cache";
 import { verifyPassword } from "@/lib/passwords";
-import { accessRequestEmail, PRACTITIONER_EMAIL, sendMail, welcomeEmail } from "@/lib/mail";
+import { sendMail, welcomeEmail } from "@/lib/mail";
 
 // Sign-in rules
 // 1. Username (or email) + password: accounts the admin created. 5 wrong tries locks the account for 15 minutes.
@@ -124,20 +125,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       const existing = await db.user.findUnique({ where: { email } });
       if (existing) return existing.status === "FINISHED" ? "/login?error=AccountClosed" : true;
 
-      // Unknown Google account: record an access request for Rangika.
+      // Unknown Google account: they tell Rangika what they're here for, then the request is sent.
       const request = await db.accessRequest.findUnique({ where: { email } });
       if (request?.status === "DECLINED") return "/login?error=RequestDeclined";
-      if (request?.status === "PENDING") {
+      if (request?.status === "PENDING" && request.detailsAt) {
         await db.accessRequest.update({ where: { email }, data: { attempts: { increment: 1 }, name: user.name, image: user.image } });
         return "/login?error=RequestPending";
       }
       await db.accessRequest.upsert({
         where: { email },
-        update: { status: "PENDING", attempts: 1, name: user.name, image: user.image, decidedAt: null },
+        update: { status: "PENDING", name: user.name, image: user.image, decidedAt: null },
         create: { email, name: user.name, image: user.image, provider: "google" },
       });
-      await sendMail({ to: PRACTITIONER_EMAIL, ...accessRequestEmail({ name: user.name, email }) });
-      return "/login?error=RequestSent";
+      return `/request-access?t=${encodeURIComponent(makeRequestToken(email))}`;
     },
 
     async jwt({ token: rawToken, user }) {

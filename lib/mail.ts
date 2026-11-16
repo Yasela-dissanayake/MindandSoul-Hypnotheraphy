@@ -106,15 +106,23 @@ You can change your password after signing in, under Profile.`,
 }
 
 /** To Rangika: someone signed in with Google and is waiting for approval. */
-export function accessRequestEmail(opts: { name?: string | null; email: string }) {
+export function accessRequestEmail(opts: { name?: string | null; email: string; wants?: string | null; message?: string | null; phone?: string | null }) {
   const who = opts.name ? `${opts.name} (${opts.email})` : opts.email;
   const url = `${SITE_URL}/admin/requests`;
+  const rows = [
+    opts.wants ? `<p style="margin:0 0 8px"><strong>Asking for:</strong> ${escapeHtml(opts.wants)}</p>` : "",
+    opts.phone ? `<p style="margin:0 0 8px"><strong>Phone:</strong> ${escapeHtml(opts.phone)}</p>` : "",
+    opts.message ? `<p style="margin:0 0 8px"><strong>Message:</strong></p>${quote(opts.message)}` : "",
+  ].join("");
   return {
-    subject: `Access request: ${opts.name || opts.email}`,
+    subject: `Access request: ${opts.name || opts.email}${opts.wants ? ` (${opts.wants})` : ""}`,
     html: layout(
-      `<p style="margin:0 0 16px"><strong>${escapeHtml(who)}</strong> signed in with Google and is asking for access to your client area.</p><p style="margin:0 0 16px">They can't see anything until you approve them and choose their sessions or courses.</p>${button(url, "Review request")}`,
+      `<p style="margin:0 0 16px"><strong>${escapeHtml(who)}</strong> is asking for access to your client area.</p>${rows}<p style="margin:16px 0">Approve or decline with one click. What they asked for is already selected.</p>${button(url, "Review request")}`,
     ),
-    text: `${who} signed in with Google and is asking for access.
+    text: `${who} is asking for access.${opts.wants ? `
+Asking for: ${opts.wants}` : ""}${opts.phone ? `
+Phone: ${opts.phone}` : ""}${opts.message ? `
+Message: ${opts.message}` : ""}
 Review: ${url}`,
   };
 }
