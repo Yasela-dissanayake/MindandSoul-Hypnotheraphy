@@ -6,10 +6,12 @@ import { getSettings } from "@/lib/settings";
 import { countWaitingQuestions } from "@/lib/questions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { viewerTimezone } from "@/lib/viewer-tz";
 
 const DAY = 86400000;
 
 export default async function AdminOverview() {
+  const tz = await viewerTimezone();
   await requireAdminPage();
   const since = new Date(Date.now() - DAY);
   // All at once: one database trip instead of three in a row.
@@ -39,7 +41,7 @@ export default async function AdminOverview() {
 
   const [sessionClients, students, newUploads] = counts;
   const time = (d: Date) =>
-    d.toLocaleString("en-AU", { timeZone: settings.adminTimezone, weekday: "short", hour: "numeric", minute: "2-digit" });
+    d.toLocaleString("en-AU", { timeZone: tz, weekday: "short", hour: "numeric", minute: "2-digit" });
   const display = (u: { name: string | null; email: string }) => u.name || u.email;
 
   return (

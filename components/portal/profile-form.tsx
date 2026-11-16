@@ -10,7 +10,6 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { updateProfile } from "@/app/portal/actions";
 import { formatHour } from "@/lib/dates";
-import { TimezoneSelect } from "./timezone-select";
 
 type Profile = { name: string; timezone: string; reminderHour: number; remindersOn: boolean; voiceOn: boolean };
 
@@ -27,7 +26,9 @@ export function ProfileForm({ initial }: { initial: Profile }) {
       </div>
       <div className="space-y-2">
         <Label>Time zone</Label>
-        <TimezoneSelect value={p.timezone} onChange={(v) => set("timezone", v)} />
+        <p className="rounded-md bg-stone-50 px-3 py-2 text-sm text-stone-700 ring-1 ring-stone-200">
+          {p.timezone.replace(/_/g, " ")} <span className="text-stone-500">· set automatically from your device</span>
+        </p>
       </div>
       <div className="flex items-center justify-between gap-4">
         <div>

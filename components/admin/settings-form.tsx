@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { TimezoneSelect } from "@/components/portal/timezone-select";
 import { updateSettings } from "@/app/admin/_actions/settings";
 import { formatHour } from "@/lib/dates";
 import { useAction } from "./use-action";
@@ -60,7 +59,10 @@ export function SettingsForm({ initial }: { initial: S }) {
         </label>
         <div className="space-y-2 sm:col-span-2">
           <Label>Your time zone</Label>
-          <TimezoneSelect value={s.adminTimezone} onChange={(adminTimezone) => setS({ ...s, adminTimezone })} />
+          <p className="rounded-md bg-stone-50 px-3 py-2 text-sm text-stone-700 ring-1 ring-stone-200">
+            {s.adminTimezone.replace(/_/g, " ")}{" "}
+            <span className="text-stone-500">· set automatically from your device. Times in the dashboard and your daily summary email follow it.</span>
+          </p>
         </div>
       </div>
       <div className="space-y-2">

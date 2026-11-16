@@ -13,11 +13,13 @@ import { ExistingClientSessions } from "@/components/admin/existing-client-sessi
 import { NewTemplateDialog } from "@/components/admin/new-template-dialog";
 import { QuestionsList } from "@/components/admin/questions-list";
 import { StatusBadge } from "@/components/admin/status-badge";
+import { viewerTimezone } from "@/lib/viewer-tz";
 
 // One-to-one sessions, client by client: who is with Rangika for which service,
 // what each of them has, and the questions waiting for an answer.
 
 export default async function SessionsPage() {
+  const tz = await viewerTimezone();
   await requireAdminPage();
   const [plans, waitingQuestions, answeredQuestions, templates, { packages, courses }, settings, everyone] = await Promise.all([
     db.plan.findMany({
@@ -65,7 +67,7 @@ export default async function SessionsPage() {
   const used = await db.plan.groupBy({ by: ["templateId"], where: { templateId: { not: null } }, _count: true });
   const usedCount = (id: string) => used.find((u) => u.templateId === id)?._count ?? 0;
 
-  const lastActive = (d: Date | null) => (d ? d.toLocaleDateString("en-AU", { timeZone: settings.adminTimezone, day: "numeric", month: "short" }) : "not yet");
+  const lastActive = (d: Date | null) => (d ? d.toLocaleDateString("en-AU", { timeZone: tz, day: "numeric", month: "short" }) : "not yet");
   const active = plans.filter((p) => !p.completedAt);
   const finished = plans.filter((p) => p.completedAt);
 
@@ -91,12 +93,12 @@ export default async function SessionsPage() {
             <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-red-600 px-2 text-xs font-semibold text-white">{waitingQuestions.length}</span>
           )}
         </div>
-        <QuestionsList items={waitingQuestions} timezone={settings.adminTimezone} showClient empty="No questions waiting. When a client asks something, it shows here and you get an email." />
+        <QuestionsList items={waitingQuestions} timezone={tz} showClient empty="No questions waiting. When a client asks something, it shows here and you get an email." />
         {answeredQuestions.length > 0 && (
           <details className="group rounded-xl bg-white p-4 ring-1 ring-stone-200">
             <summary className="cursor-pointer text-sm font-medium text-stone-700">Recently answered ({answeredQuestions.length})</summary>
             <div className="mt-3">
-              <QuestionsList items={answeredQuestions} timezone={settings.adminTimezone} showClient />
+              <QuestionsList items={answeredQuestions} timezone={tz} showClient />
             </div>
           </details>
         )}

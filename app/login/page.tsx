@@ -8,6 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/auth/password-input";
 import { SubmitButton } from "@/components/submit-button";
+import { RequestStatusDialog, type RequestStatus } from "@/components/auth/request-status-dialog";
+import { AlertCircle, Info } from "lucide-react";
+
+// Google access-request outcomes are shown as a pop-up instead of a line of text.
+const REQUEST_STATUSES: RequestStatus[] = ["RequestSent", "RequestPending", "RequestDeclined"];
 
 export const metadata: Metadata = { title: "Sign in · Heal With Rangika", robots: { index: false } };
 
@@ -35,7 +40,9 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   if (session?.user) redirect(session.user.role === "ADMIN" ? "/admin" : "/portal");
 
   const key = sp.code ?? sp.error;
-  const message = key ? (MESSAGES[key] ?? { tone: "error" as const, text: "Something went wrong signing in. Please try again." }) : null;
+  const requestStatus = REQUEST_STATUSES.find((s) => s === key);
+  const message =
+    key && !requestStatus ? (MESSAGES[key] ?? { tone: "error" as const, text: "Something went wrong signing in. Please try again." }) : null;
 
   async function google() {
     "use server";
@@ -66,12 +73,17 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <p className="mt-1 text-sm text-stone-500">Sign in to your private space</p>
         </div>
 
+        {requestStatus && <RequestStatusDialog status={requestStatus} />}
+
         {message && (
           <p
             role="alert"
-            className={`mb-4 rounded-lg p-3 text-sm ${message.tone === "info" ? "bg-sage-50 text-sage-800" : "bg-amber-50 text-amber-800"}`}
+            className={`mb-4 flex items-start gap-2 rounded-lg p-3 text-sm font-medium ring-1 ${
+              message.tone === "info" ? "bg-sage-50 text-sage-900 ring-sage-200" : "bg-red-50 text-red-800 ring-red-200"
+            }`}
           >
-            {message.text}
+            {message.tone === "info" ? <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden /> : <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />}
+            <span>{message.text}</span>
           </p>
         )}
 

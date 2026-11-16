@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/authz";
 import { Toaster } from "@/components/ui/sonner";
 import { PortalNav } from "@/components/portal/portal-nav";
+import { TimezoneSync } from "@/components/timezone-sync";
 import { getAreas } from "@/lib/plans";
 import { db } from "@/lib/db";
 
@@ -42,6 +43,7 @@ export default async function PortalLayout({ children }: { children: React.React
           )}
         </div>
       </header>
+      <TimezoneSync saved={session.user.timezone} />
       <main className="mx-auto max-w-3xl px-4 py-6">{children}</main>
       {showNav && (
         <Suspense fallback={null}>

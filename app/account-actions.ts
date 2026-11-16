@@ -3,6 +3,11 @@
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/authz";
 import { hashPassword, passwordProblem, verifyPassword } from "@/lib/passwords";
+import { cookies } from "next/headers";
+import { auth } from "@/lib/authz";
+import { isValidTimezone } from "@/lib/dates";
+import { forgetSettings } from "@/lib/settings";
+import { TZ_COOKIE } from "@/lib/viewer-tz";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -30,4 +35,30 @@ export async function changeMyPassword(input: { current: string; next: string; c
     },
   });
   return { ok: true };
+}
+
+/**
+ * The browser reports its own time zone. Remembered for showing times on pages, and saved on
+ * the signed-in person so "today", reminders and Rangika's daily summary follow where they are.
+ */
+export async function syncMyTimezone(timezone: string): Promise<{ changed: boolean }> {
+  if (!isValidTimezone(timezone)) return { changed: false };
+  const jar = await cookies();
+  let changed = jar.get(TZ_COOKIE)?.value !== timezone;
+  if (changed) jar.set(TZ_COOKIE, timezone, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax", httpOnly: false });
+
+  const session = await auth();
+  const me = session?.user;
+  if (me?.id) {
+    const res = await db.user.updateMany({ where: { id: me.id, NOT: { timezone } }, data: { timezone } });
+    if (res.count) changed = true;
+    if (me.role === "ADMIN") {
+      const s = await db.settings.updateMany({ where: { id: 1, NOT: { adminTimezone: timezone } }, data: { adminTimezone: timezone } });
+      if (s.count) {
+        forgetSettings();
+        changed = true;
+      }
+    }
+  }
+  return { changed };
 }

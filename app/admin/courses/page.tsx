@@ -11,11 +11,13 @@ import { AddPersonDialog } from "@/components/admin/add-person-dialog";
 import { EnrolExistingPerson } from "@/components/admin/enrol-existing-person";
 import { NewCourseDialog } from "@/components/admin/new-course-dialog";
 import { StatusBadge } from "@/components/admin/status-badge";
+import { viewerTimezone } from "@/lib/viewer-tz";
 
 // Courses, student by student (same layout as the Sessions page):
 // who is studying which course and how far they are, then the shared course content at the bottom.
 
 export default async function CoursesPage() {
+  const tz = await viewerTimezone();
   await requireAdminPage();
   const [courses, { packages, courses: courseOptions }, settings, everyone] = await Promise.all([
     db.course.findMany({
@@ -37,8 +39,8 @@ export default async function CoursesPage() {
     db.user.findMany({ where: { role: "CLIENT", status: { not: "FINISHED" } }, select: { id: true, name: true, email: true }, orderBy: { name: "asc" } }),
   ]);
 
-  const lastActive = (d: Date | null) => (d ? d.toLocaleDateString("en-AU", { timeZone: settings.adminTimezone, day: "numeric", month: "short" }) : "not yet");
-  const date = (d: Date) => d.toLocaleDateString("en-AU", { timeZone: settings.adminTimezone, day: "numeric", month: "short", year: "numeric" });
+  const lastActive = (d: Date | null) => (d ? d.toLocaleDateString("en-AU", { timeZone: tz, day: "numeric", month: "short" }) : "not yet");
+  const date = (d: Date) => d.toLocaleDateString("en-AU", { timeZone: tz, day: "numeric", month: "short", year: "numeric" });
   const shown = courses.filter((c) => !c.archived);
   const finished = courses.flatMap((c) => c.enrollments.filter((e) => e.completedAt).map((e) => ({ ...e, courseTitle: c.title })));
   const needCertificate = finished.filter((e) => !e.certificateKey).length;

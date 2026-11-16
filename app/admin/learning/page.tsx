@@ -7,8 +7,10 @@ import { getSettings } from "@/lib/settings";
 import { Progress } from "@/components/ui/progress";
 import { LearningCertificateUpload, NewPackageDialog } from "@/components/admin/learning-editor";
 import { cn } from "@/lib/utils";
+import { viewerTimezone } from "@/lib/viewer-tz";
 
 export default async function LearningAdminPage() {
+  const tz = await viewerTimezone();
   await requireAdminPage();
   const [packages, settings, sales] = await Promise.all([
     db.learningPackage.findMany({
@@ -24,7 +26,7 @@ export default async function LearningAdminPage() {
     getSettings(),
     db.packagePurchase.findMany({ where: { status: "PAID" }, orderBy: { paidAt: "desc" }, take: 10, include: { package: { select: { title: true } } } }),
   ]);
-  const when = (d: Date) => d.toLocaleDateString("en-AU", { timeZone: settings.adminTimezone, day: "numeric", month: "short", year: "numeric" });
+  const when = (d: Date) => d.toLocaleDateString("en-AU", { timeZone: tz, day: "numeric", month: "short", year: "numeric" });
   const waiting = packages.flatMap((p) => p.enrollments.filter((e) => e.completedAt && !e.certificateKey).map((e) => ({ ...e, title: p.title })));
 
   return (

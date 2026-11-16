@@ -9,7 +9,6 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { TimezoneSelect } from "@/components/portal/timezone-select";
 import { giveConsent } from "../actions";
 
 export function WelcomeForm({ currentTimezone }: { currentTimezone: string }) {
@@ -37,8 +36,8 @@ export function WelcomeForm({ currentTimezone }: { currentTimezone: string }) {
     <div className="space-y-6 rounded-2xl bg-white p-5 ring-1 ring-stone-200">
       <div className="space-y-2">
         <Label>Your time zone</Label>
-        <TimezoneSelect value={timezone} onChange={setTimezone} />
-        <p className="text-xs text-stone-500">Your daily tasks and reminders follow your local day.</p>
+        <p className="rounded-md bg-stone-50 px-3 py-2 text-sm text-stone-700 ring-1 ring-stone-200">{timezone.replace(/_/g, " ")}</p>
+        <p className="text-xs text-stone-500">Taken from your device. Your daily tasks and reminders follow your local day, even when you travel.</p>
       </div>
       <label className="flex items-start gap-3 text-sm leading-relaxed text-stone-700">
         <Checkbox checked={agreed} onCheckedChange={(v) => setAgreed(v === true)} className="mt-0.5" />

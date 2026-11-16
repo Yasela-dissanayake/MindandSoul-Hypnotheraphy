@@ -3,16 +3,18 @@ import { db } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { loadAccessOptions } from "@/lib/admin-data";
 import { AccessRequestRow } from "@/components/admin/access-request-row";
+import { viewerTimezone } from "@/lib/viewer-tz";
 
 export default async function RequestsPage() {
+  const tz = await viewerTimezone();
   await requireAdminPage();
   const [pending, decided, { packages, courses }, settings] = await Promise.all([
-    db.accessRequest.findMany({ where: { status: "PENDING" }, orderBy: { createdAt: "asc" } }),
+    db.accessRequest.findMany({ where: { status: "PENDING" }, orderBy: { createdAt: "desc" } }), // newest first
     db.accessRequest.findMany({ where: { status: { not: "PENDING" } }, orderBy: { decidedAt: "desc" }, take: 20 }),
     loadAccessOptions(),
     getSettings(),
   ]);
-  const when = (d: Date) => d.toLocaleString("en-AU", { timeZone: settings.adminTimezone, day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+  const when = (d: Date) => d.toLocaleString("en-AU", { timeZone: tz, day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
   const row = (r: (typeof pending)[number]) => ({
     id: r.id,
     email: r.email,

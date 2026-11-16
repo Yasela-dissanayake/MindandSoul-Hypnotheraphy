@@ -17,7 +17,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { TimezoneSelect } from "@/components/portal/timezone-select";
 import { deleteClient, setClientFinished, updateClient } from "@/app/admin/_actions/clients";
 import { formatHour } from "@/lib/dates";
 import { useAction } from "./use-action";
@@ -61,7 +60,9 @@ export function ClientDetailsForm({ client }: { client: Client }) {
           </div>
           <div className="space-y-2">
             <Label>Time zone</Label>
-            <TimezoneSelect value={f.timezone} onChange={(timezone) => setF({ ...f, timezone })} />
+            <p className="rounded-md bg-stone-50 px-3 py-2 text-sm text-stone-700 ring-1 ring-stone-200">
+              {f.timezone.replace(/_/g, " ")} <span className="text-stone-500">· set automatically from their device when they sign in</span>
+            </p>
           </div>
           <div className="space-y-2">
             <Label>Reminder time</Label>

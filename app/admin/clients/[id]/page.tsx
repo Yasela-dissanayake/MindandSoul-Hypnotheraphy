@@ -27,6 +27,7 @@ import { MarkJournalRead } from "@/components/admin/mark-journal-read";
 import { formatDuration } from "@/lib/format";
 import { loadQuestions } from "@/lib/questions";
 import { QuestionsList } from "@/components/admin/questions-list";
+import { viewerTimezone } from "@/lib/viewer-tz";
 
 /** The person, loaded once per request and shared by the header and the open tab. */
 const getClient = cache((id: string) =>
@@ -156,11 +157,12 @@ async function DetailsTab({ clientId }: { clientId: string }) {
 }
 
 async function QuestionsTab({ clientId }: { clientId: string }) {
+  const tz = await viewerTimezone();
   const [items, settings] = await Promise.all([loadQuestions({ userId: clientId }, 200), getSettings()]);
   return (
     <div className="space-y-3">
       <p className="text-sm text-stone-500">Questions they typed about their work. When you answer, they get an email and see it on their page.</p>
-      <QuestionsList items={items} timezone={settings.adminTimezone} empty="No questions from them yet." />
+      <QuestionsList items={items} timezone={tz} empty="No questions from them yet." />
     </div>
   );
 }
@@ -254,9 +256,11 @@ async function TrackersTab({ clientId }: { clientId: string }) {
 }
 
 async function UploadsTab({ clientId }: { clientId: string }) {
-  const [{ timezone }, subs] = await Promise.all([
+  // Shown to the admin, so in the viewer's own time zone.
+  const [, subs, timezone] = await Promise.all([
     clientOr404(clientId),
     db.submission.findMany({ where: { userId: clientId }, orderBy: { createdAt: "desc" }, include: { plan: { select: { title: true } } } }),
+    viewerTimezone(),
   ]);
   return (
     <SubmissionsList
@@ -323,6 +327,7 @@ async function TasksTab({ clientId }: { clientId: string }) {
 }
 
 async function JournalTab({ clientId }: { clientId: string }) {
+  const tz = await viewerTimezone();
   const [entries, settings] = await Promise.all([
     db.journalEntry.findMany({ where: { userId: clientId }, orderBy: { createdAt: "desc" }, take: 200 }),
     getSettings(),
@@ -336,7 +341,7 @@ async function JournalTab({ clientId }: { clientId: string }) {
         <article key={e.id} className={cn("space-y-2 rounded-2xl bg-white p-4 ring-1", e.readAt ? "ring-stone-200" : "ring-2 ring-sage-400")}>
           <div className="flex items-center justify-between text-xs text-stone-500">
             <span>
-              {e.createdAt.toLocaleString("en-AU", { timeZone: settings.adminTimezone, weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}
+              {e.createdAt.toLocaleString("en-AU", { timeZone: tz, weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}
             </span>
             {!e.readAt && <span className="rounded-full bg-sage-100 px-2 py-0.5 font-medium text-sage-800">New</span>}
           </div>

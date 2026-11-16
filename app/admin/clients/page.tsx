@@ -9,10 +9,12 @@ import { addDays, dayNumber, formatDate, todayIn } from "@/lib/dates";
 import { AddPersonDialog } from "@/components/admin/add-person-dialog";
 import { SITE_URL } from "@/lib/mail";
 import { UsersList, type UserRow } from "@/components/admin/users-list";
+import { viewerTimezone } from "@/lib/viewer-tz";
 
 type SP = { q?: string; area?: string; status?: string; add?: string };
 
 export default async function AllUsersPage({ searchParams }: { searchParams: Promise<SP> }) {
+  const tz = await viewerTimezone();
   await requireAdminPage();
   const sp = await searchParams;
   const area = sp.area === "sessions" || sp.area === "courses" ? sp.area : "";
@@ -93,7 +95,7 @@ export default async function AllUsersPage({ searchParams }: { searchParams: Pro
       status: c.status,
       what: [...services, ...c.enrollments.map((e) => e.course.title)].join(" · ") || "—",
       started: started ? formatDate(started) : "—",
-      lastActive: c.lastActiveAt ? c.lastActiveAt.toLocaleDateString("en-AU", { timeZone: settings.adminTimezone, day: "numeric", month: "short" }) : "—",
+      lastActive: c.lastActiveAt ? c.lastActiveAt.toLocaleDateString("en-AU", { timeZone: tz, day: "numeric", month: "short" }) : "—",
       today,
       newUploads: c._count.submissions,
       newJournal: c._count.journal,
