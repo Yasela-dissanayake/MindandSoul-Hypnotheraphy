@@ -4,15 +4,16 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, CalendarDays, LayoutDashboard, Library, LogOut, Menu, Settings, Users, ClipboardList, UserCheck, GraduationCap } from "lucide-react";
+import { BookOpen, CalendarDays, LayoutDashboard, Library, LogOut, Menu, Settings, Users, ClipboardList, UserCheck, GraduationCap, ShoppingBag } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { SubmitButton } from "@/components/submit-button";
 
-type Badges = { requests: number; questions: number };
+type Badges = { requests: number; questions: number; sales: number };
 
 const items: { href: string; label: string; icon: typeof Users; also?: string[]; badge?: keyof Badges }[] = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard },
+  { href: "/admin/bookings", label: "Bookings & sales", icon: ShoppingBag, badge: "sales" },
   { href: "/admin/clients", label: "All users", icon: Users },
   { href: "/admin/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/admin/requests", label: "Access requests", icon: UserCheck, badge: "requests" },
@@ -24,7 +25,11 @@ const items: { href: string; label: string; icon: typeof Users; also?: string[];
 ];
 
 const badgeLabel = (key: keyof Badges, n: number) =>
-  key === "requests" ? `${n} access request${n === 1 ? "" : "s"} waiting` : `${n} question${n === 1 ? "" : "s"} waiting for an answer`;
+  key === "requests"
+    ? `${n} access request${n === 1 ? "" : "s"} waiting`
+    : key === "sales"
+      ? `${n} new booking${n === 1 ? "" : "s"} or enrolment${n === 1 ? "" : "s"}`
+      : `${n} question${n === 1 ? "" : "s"} waiting for an answer`;
 
 /** Red circle with a number. Nothing at all when the count is 0. */
 function CountBadge({ count, label }: { count: number; label: string }) {
@@ -42,7 +47,7 @@ function CountBadge({ count, label }: { count: number; label: string }) {
 /** Keeps the badge numbers fresh: every 30 s, on page change, and when the tab is shown again. */
 function useBadges(initial: Badges, pathname: string) {
   const [counts, setCounts] = useState(initial);
-  useEffect(() => setCounts(initial), [initial.requests, initial.questions]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => setCounts(initial), [initial.requests, initial.questions, initial.sales]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     let stop = false;
     const load = async () => {
@@ -57,7 +62,7 @@ function useBadges(initial: Badges, pathname: string) {
         }
         if (!res.ok || stop) return;
         const j = await res.json();
-        setCounts({ requests: j.requests ?? 0, questions: j.questions ?? 0 });
+        setCounts({ requests: j.requests ?? 0, questions: j.questions ?? 0, sales: j.sales ?? 0 });
       } catch {}
     };
     void load();
@@ -73,11 +78,11 @@ function useBadges(initial: Badges, pathname: string) {
   return counts;
 }
 
-export function AdminNav({ name, logout, badges = { requests: 0, questions: 0 } }: { name: string; logout: () => Promise<void>; badges?: Badges }) {
+export function AdminNav({ name, logout, badges = { requests: 0, questions: 0, sales: 0 } }: { name: string; logout: () => Promise<void>; badges?: Badges }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const counts = useBadges(badges, pathname);
-  const waiting = counts.requests + counts.questions;
+  const waiting = counts.requests + counts.questions + counts.sales;
   const active = (i: (typeof items)[number]) =>
     i.href === "/admin" ? pathname === i.href : [i.href, ...(i.also ?? [])].some((h) => pathname.startsWith(h));
 

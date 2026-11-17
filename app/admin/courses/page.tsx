@@ -13,6 +13,9 @@ import { NewCourseDialog } from "@/components/admin/new-course-dialog";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { viewerTimezone } from "@/lib/viewer-tz";
 import { money } from "@/lib/learning";
+import { newPurchaseWhere } from "@/lib/sales";
+import { MarkSeenButton } from "@/components/admin/mark-seen-button";
+import { cn } from "@/lib/utils";
 
 // Courses, student by student (same layout as the Sessions page):
 // who is studying which course and how far they are, then the shared course content at the bottom.
@@ -20,7 +23,7 @@ import { money } from "@/lib/learning";
 export default async function CoursesPage() {
   const tz = await viewerTimezone();
   await requireAdminPage();
-  const [courses, { packages, courses: courseOptions }, settings, everyone] = await Promise.all([
+  const [courses, { packages, courses: courseOptions }, settings, everyone, newSales] = await Promise.all([
     db.course.findMany({
       orderBy: [{ archived: "asc" }, { order: "asc" }, { title: "asc" }],
       include: {
@@ -38,7 +41,15 @@ export default async function CoursesPage() {
     loadAccessOptions(),
     getSettings(),
     db.user.findMany({ where: { role: "CLIENT", status: { not: "FINISHED" } }, select: { id: true, name: true, email: true }, orderBy: { name: "asc" } }),
+    db.coursePurchase.findMany({
+      where: newPurchaseWhere,
+      orderBy: { paidAt: "desc" },
+      select: { id: true, name: true, userId: true, courseId: true, paidAt: true, course: { select: { title: true } } },
+    }),
   ]);
+  // Students who enrolled on the website and Rangika hasn't seen yet.
+  const isNewStudent = (courseId: string, userId: string) => newSales.some((s) => s.courseId === courseId && s.userId === userId);
+  const newPerCourse = (courseId: string) => newSales.filter((s) => s.courseId === courseId).length;
 
   const lastActive = (d: Date | null) => (d ? d.toLocaleDateString("en-AU", { timeZone: tz, day: "numeric", month: "short" }) : "not yet");
   const date = (d: Date) => d.toLocaleDateString("en-AU", { timeZone: tz, day: "numeric", month: "short", year: "numeric" });
@@ -58,6 +69,37 @@ export default async function CoursesPage() {
         </div>
         <EnrolExistingPerson people={everyone.map((u) => ({ id: u.id, name: u.name ? `${u.name} (${u.email})` : u.email }))} courses={courseOptions} />
       </div>
+
+      {newSales.length > 0 && (
+        <div className="space-y-2 rounded-xl bg-sage-50 p-4 ring-1 ring-sage-200">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="font-medium text-stone-800">
+              {newSales.length} new enrolment{newSales.length === 1 ? "" : "s"} from the website
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Link href="/admin/bookings?tab=courses" className="inline-flex h-9 items-center rounded-md px-3 text-sm font-medium text-sage-800 hover:bg-sage-100">
+                See details →
+              </Link>
+              <MarkSeenButton kind="courses" />
+            </div>
+          </div>
+          <ul className="space-y-1 text-sm text-stone-700">
+            {newSales.map((s) => (
+              <li key={s.id}>
+                {s.userId ? (
+                  <Link href={`/admin/clients/${s.userId}?tab=courses`} className="font-medium underline-offset-2 hover:underline">
+                    {s.name}
+                  </Link>
+                ) : (
+                  <strong>{s.name}</strong>
+                )}{" "}
+                enrolled on <strong>{s.course.title}</strong>
+                {s.paidAt && <span className="text-stone-500"> · {date(s.paidAt)}</span>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {needCertificate > 0 && (
         <a href="#finished" className="flex items-center justify-between gap-3 rounded-xl bg-amber-50 p-4 ring-1 ring-amber-200 hover:bg-amber-100">
@@ -89,6 +131,9 @@ export default async function CoursesPage() {
                 <div className="min-w-0 flex-1 space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="font-medium text-stone-800">{c.title}</p>
+                    {newPerCourse(c.id) > 0 && (
+                      <span className="rounded bg-sage-600 px-1.5 py-0.5 text-[11px] font-semibold text-white">{newPerCourse(c.id)} new</span>
+                    )}
                     {c.archived && <Badge variant="secondary">Hidden</Badge>}
                     {c.published && !c.archived ? (
                       <Badge className="bg-sage-100 font-normal text-sage-800 hover:bg-sage-100">
@@ -134,15 +179,22 @@ export default async function CoursesPage() {
                 {rows.map((e) => {
                   const done = Math.min(e._count.progress, total);
                   const allDone = total > 0 && done >= total;
+                  const fresh = isNewStudent(c.id, e.user.id);
                   return (
                     <Link
                       key={e.id}
                       href={`/admin/clients/${e.user.id}?tab=courses`}
-                      className="space-y-3 rounded-2xl bg-white p-4 ring-1 ring-stone-200 transition hover:ring-sage-300"
+                      className={cn(
+                        "space-y-3 rounded-2xl p-4 ring-1 transition",
+                        fresh ? "bg-sage-50 ring-sage-300 hover:ring-sage-400" : "bg-white ring-stone-200 hover:ring-sage-300",
+                      )}
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
-                          <p className="truncate font-medium text-stone-800">{e.user.name || e.user.email}</p>
+                          <p className="flex items-center gap-2 font-medium text-stone-800">
+                            {fresh && <span className="rounded bg-sage-600 px-1.5 py-0.5 text-[11px] font-semibold text-white">New</span>}
+                            <span className="truncate">{e.user.name || e.user.email}</span>
+                          </p>
                           <p className="truncate text-sm text-stone-500">Started {date(e.startedAt)}</p>
                         </div>
                         <StatusBadge status={e.user.status} />

@@ -22,7 +22,7 @@ export default async function MyLearningPage() {
           </Link>
         </p>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {packages.map((p) => (
             <Link key={p.id} href={`/portal/learning/${p.id}`} className="space-y-3 rounded-2xl bg-white p-5 ring-1 ring-stone-200 transition hover:ring-sage-300">
               <div className="flex items-start gap-3">

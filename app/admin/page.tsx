@@ -4,6 +4,7 @@ import { requireAdminPage } from "@/lib/authz";
 import { db } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { countWaitingQuestions } from "@/lib/questions";
+import { countNewSales } from "@/lib/sales";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { viewerTimezone } from "@/lib/viewer-tz";
@@ -15,7 +16,7 @@ export default async function AdminOverview() {
   await requireAdminPage();
   const since = new Date(Date.now() - DAY);
   // All at once: one database trip instead of three in a row.
-  const [settings, pendingRequests, waitingQuestions, counts, recent, unread, unreadCount] = await Promise.all([
+  const [settings, pendingRequests, waitingQuestions, counts, recent, unread, unreadCount, sales] = await Promise.all([
     getSettings(),
     db.accessRequest.count({ where: { status: "PENDING" } }),
     countWaitingQuestions(),
@@ -37,6 +38,7 @@ export default async function AdminOverview() {
       include: { user: { select: { id: true, name: true, email: true } } },
     }),
     db.journalEntry.count({ where: { readAt: null } }),
+    countNewSales(),
   ]);
 
   const [sessionClients, students, newUploads] = counts;
@@ -64,6 +66,27 @@ export default async function AdminOverview() {
           </Button>
         </div>
       </div>
+
+      {sales.total > 0 && (
+        <Link
+          href={`/admin/bookings${sales.sessions > 0 ? "" : sales.courses > 0 ? "?tab=courses" : "?tab=learning"}`}
+          className="flex items-center justify-between gap-3 rounded-xl bg-sage-50 p-4 ring-1 ring-sage-200 hover:bg-sage-100"
+        >
+          <span className="text-stone-800">
+            <span>
+              <strong>New on the website:</strong>{" "}
+              {[
+                sales.sessions && `${sales.sessions} session booking${sales.sessions === 1 ? "" : "s"}`,
+                sales.courses && `${sales.courses} course enrolment${sales.courses === 1 ? "" : "s"}`,
+                sales.learning && `${sales.learning} online-learning purchase${sales.learning === 1 ? "" : "s"}`,
+              ]
+                .filter(Boolean)
+                .join(", ")}
+            </span>
+          </span>
+          <span className="shrink-0 text-sm font-medium text-sage-800">See them →</span>
+        </Link>
+      )}
 
       {waitingQuestions > 0 && (
         <Link href="/admin/sessions#questions" className="flex items-center justify-between gap-3 rounded-xl bg-red-50 p-4 ring-1 ring-red-200 hover:bg-red-100">

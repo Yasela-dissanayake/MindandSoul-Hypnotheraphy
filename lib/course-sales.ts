@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { PRACTITIONER_EMAIL, courseEnrolledEmail, courseSoldEmail, sendMail } from "@/lib/mail";
 import { stripe } from "@/lib/booking-payments";
-import { PurchaseError, accountForBuyer, money, slugify } from "@/lib/learning";
+import { PurchaseError, accountForBuyer, money, settleOpenPayments, slugify } from "@/lib/learning";
 
 // Taught courses (Reiki Level 1, 2, 3 ...) sold on the website at /courses.
 // Paying enrols the person on the course straight away; Rangika then teaches the class.
@@ -28,6 +28,12 @@ export async function startCoursePurchase(input: { itemId: string; name: string;
 
   const existing = await db.user.findUnique({ where: { email }, select: { enrollments: { where: { courseId: course.id, completedAt: null }, select: { id: true } } } });
   if (existing?.enrollments.length) throw new PurchaseError("You're already enrolled in this course. Please sign in to see it.");
+  await settleOpenPayments(
+    await db.coursePurchase.findMany({ where: { courseId: course.id, email, status: "PENDING" }, select: { id: true, paymentIntentId: true } }),
+    fulfilCoursePurchase,
+    (id) => db.coursePurchase.updateMany({ where: { id, status: "PENDING" }, data: { status: "FAILED" } }),
+    "You've already paid for this course and your place is booked. Please sign in to see it (your login details were emailed to you).",
+  );
 
   const purchase = await db.coursePurchase.create({
     data: { courseId: course.id, name: input.name.trim(), email, phone: input.phone?.trim() || null, amount: course.price, currency: course.currency },

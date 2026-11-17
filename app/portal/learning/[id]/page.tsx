@@ -73,7 +73,7 @@ export default async function LearningPackagePage({ params, searchParams }: { pa
       {total === 0 ? (
         <p className="rounded-2xl bg-white p-6 text-stone-500 ring-1 ring-stone-200">The lessons are being prepared. Check back soon.</p>
       ) : (
-        <div className="grid gap-6 lg:grid-cols-[1fr_18rem]">
+        <div className="grid gap-6 lg:grid-cols-[1fr_22rem] xl:gap-10">
           {/* The lesson */}
           {current ? (
             <article className="order-1 space-y-4 rounded-2xl bg-white p-5 ring-1 ring-stone-200 sm:p-6">

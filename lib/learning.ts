@@ -95,6 +95,41 @@ export async function getLearnerPackages(userId: string) {
 
 export class PurchaseError extends Error {}
 
+/**
+ * Before a new payment starts, look at this person's earlier unfinished payments for the same item:
+ * - already paid (but the setup never finished, e.g. the page was closed): finish the setup now and
+ *   tell them they already have it, so they are never charged twice;
+ * - still going through: ask them to wait;
+ * - not paid: cancel it, so an old checkout left open in another tab can't be paid as well.
+ */
+export async function settleOpenPayments(open: { id: string; paymentIntentId: string | null }[], fulfil: (paymentIntentId: string) => Promise<unknown>, markFailed: (id: string) => Promise<unknown>, alreadyMessage: string) {
+  for (const p of open) {
+    if (!p.paymentIntentId) {
+      await markFailed(p.id);
+      continue;
+    }
+    const pi = await stripe().paymentIntents.retrieve(p.paymentIntentId);
+    if (pi.status === "succeeded") {
+      await fulfil(pi.id);
+      throw new PurchaseError(alreadyMessage);
+    }
+    if (pi.status === "processing") throw new PurchaseError("Your earlier payment is still going through. Please wait a minute, then sign in or check your email.");
+    if (pi.status !== "canceled") {
+      try {
+        await stripe().paymentIntents.cancel(pi.id);
+      } catch {
+        // It was paid at this very moment: check once more.
+        const again = await stripe().paymentIntents.retrieve(pi.id);
+        if (again.status === "succeeded" || again.status === "processing") {
+          if (again.status === "succeeded") await fulfil(pi.id);
+          throw new PurchaseError(alreadyMessage);
+        }
+      }
+    }
+    await markFailed(p.id);
+  }
+}
+
 /** Starts a card payment. The price always comes from the database, never from the browser. */
 export async function startPurchase(input: { packageId: string; name: string; email: string }) {
   const pkg = await db.learningPackage.findFirst({ where: { id: input.packageId, published: true, archived: false } });
@@ -105,6 +140,12 @@ export async function startPurchase(input: { packageId: string; name: string; em
   // Already has it: no need to pay twice.
   const existing = await db.user.findUnique({ where: { email }, select: { learningEnrollments: { where: { packageId: pkg.id }, select: { id: true } } } });
   if (existing?.learningEnrollments.length) throw new PurchaseError("You already have this course. Please sign in to continue it.");
+  await settleOpenPayments(
+    await db.packagePurchase.findMany({ where: { packageId: pkg.id, email, status: "PENDING" }, select: { id: true, paymentIntentId: true } }),
+    fulfilPurchase,
+    (id) => db.packagePurchase.updateMany({ where: { id, status: "PENDING" }, data: { status: "FAILED" } }),
+    "You've already paid for this course. Please sign in to continue it (your login details were emailed to you).",
+  );
 
   const purchase = await db.packagePurchase.create({
     data: { packageId: pkg.id, name: input.name.trim(), email, amount: pkg.price, currency: pkg.currency },

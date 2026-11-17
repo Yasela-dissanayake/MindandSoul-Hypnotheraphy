@@ -38,6 +38,7 @@ import {
   useElements,
 } from "@stripe/react-stripe-js";
 import { useSearchParams } from "next/navigation";
+import { PaymentDialog, type PaymentState } from "@/components/payment-dialog";
 
 // Initialize Stripe
 const stripePromise = loadStripe(
@@ -94,8 +95,20 @@ function PaymentForm({
 }) {
   const stripe = useStripe();
   const elements = useElements();
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [paymentError, setPaymentError] = useState<string | null>(null);
+  // The popup shows the progress, the error or the success of the payment.
+  const [dialog, setDialog] = useState<PaymentState>(null);
+  const [paid, setPaid] = useState<any>(null);
+  const isProcessing = dialog?.status === "processing";
+  const setIsProcessing = (on: boolean) => {
+    if (on) setDialog({ status: "processing" });
+    else setDialog((d) => (d?.status === "processing" ? null : d));
+  };
+  const setPaymentError = (message: string | null) =>
+    setDialog(message ? { status: "error", message } : null);
+  const closeDialog = () => {
+    setDialog(null);
+    if (paid) onPaymentSuccess(paid);
+  };
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [cancellationAccepted, setCancellationAccepted] = useState(false);
 
@@ -195,11 +208,26 @@ function PaymentForm({
           console.error("Error confirming booking:", confirmError);
         }
 
-        onPaymentSuccess(paymentIntent);
+        setPaid(paymentIntent);
+        setDialog({
+          status: "success",
+          title: "Payment successful. Your session is booked!",
+          body: (
+            <>
+              <p className="font-medium text-stone-800">{selectedServiceData?.title}</p>
+              <p className="mt-1">
+                {slot ? `${format(new Date(slot.startsAt), "EEEE d MMMM yyyy")}, ${localTime(slot.startsAt)} – ${localTime(slot.endsAt)} (your time)` : ""}
+              </p>
+              <p className="mt-2">A confirmation email is on its way to {bookingData.email}.</p>
+            </>
+          ),
+        });
+        return;
       }
     } catch (error) {
-      setPaymentError("An unexpected error occurred");
+      setPaymentError("An unexpected error occurred. Please try again.");
       onPaymentError("An unexpected error occurred");
+      return;
     }
 
     setIsProcessing(false);
@@ -272,13 +300,6 @@ function PaymentForm({
         </div>
       </div>
 
-      {/* Error Display */}
-      {paymentError && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-sm text-red-700">{paymentError}</p>
-        </div>
-      )}
-
       {/* Submit Button */}
       <Button
         type="submit"
@@ -287,15 +308,9 @@ function PaymentForm({
         }
         className="w-full bg-sage-600 hover:bg-sage-700 text-white py-3"
       >
-        {isProcessing ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Processing Payment...
-          </>
-        ) : (
-          `Complete Booking - AUD ${selectedServiceData?.price}`
-        )}
+        {`Complete Booking - AUD ${selectedServiceData?.price}`}
       </Button>
+      <PaymentDialog state={dialog} onClose={closeDialog} />
     </form>
   );
 }

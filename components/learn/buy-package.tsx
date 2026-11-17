@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, Loader2, Lock } from "lucide-react";
+import { CheckCircle2, Lock } from "lucide-react";
 import { loadStripe } from "@stripe/stripe-js";
 import { CardElement, Elements, useElements, useStripe } from "@stripe/react-stripe-js";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PaymentDialog, type PaymentState } from "@/components/payment-dialog";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "");
 
@@ -16,6 +17,16 @@ type Kind = "package" | "course";
 
 const API: Record<Kind, string> = { package: "/api/learn", course: "/api/courses" };
 
+function doneMessage(kind: Kind, done: Done) {
+  return kind === "course"
+    ? done.newAccount
+      ? `Your place is booked. We've emailed your login details to ${done.email}. Rangika will be in touch with the class details.`
+      : "Your place is booked and the course is in your account under My courses. Rangika will be in touch with the class details."
+    : done.newAccount
+      ? `We've emailed your login details to ${done.email}. Sign in to start your first lesson.`
+      : "The course has been added to your account. Sign in and open My learning.";
+}
+
 function BuyForm({ packageId, title, priceLabel, kind, onDone }: { packageId: string; title: string; priceLabel: string; kind: Kind; onDone: (d: Done) => void }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -23,16 +34,21 @@ function BuyForm({ packageId, title, priceLabel, kind, onDone }: { packageId: st
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [agreed, setAgreed] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [dialog, setDialog] = useState<PaymentState>(null);
+  const [paid, setPaid] = useState<Done | null>(null);
+  const busy = dialog?.status === "processing";
+
+  const closeDialog = () => {
+    setDialog(null);
+    if (paid) onDone(paid);
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!stripe || !elements) return;
     const card = elements.getElement(CardElement);
     if (!card) return;
-    setBusy(true);
-    setError(null);
+    setDialog({ status: "processing" });
     try {
       // 1. Start the payment (the server sets the price).
       const res = await fetch(`${API[kind]}/checkout`, {
@@ -62,11 +78,25 @@ function BuyForm({ packageId, title, priceLabel, kind, onDone }: { packageId: st
       } catch {
         // The Stripe webhook finishes the setup as well, so the purchase isn't lost.
       }
-      onDone({ newAccount, email });
+      const done = { newAccount, email };
+      setPaid(done);
+      setDialog({
+        status: "success",
+        title: kind === "course" ? "Payment successful. You're enrolled!" : "Payment successful. You're in!",
+        body: (
+          <>
+            <p className="font-medium text-stone-800">{title}</p>
+            <p className="mt-2">{doneMessage(kind, done)}</p>
+          </>
+        ),
+        action: (
+          <Button asChild className="w-full bg-sage-600 hover:bg-sage-700">
+            <Link href="/login">Sign in</Link>
+          </Button>
+        ),
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
-    } finally {
-      setBusy(false);
+      setDialog({ status: "error", message: err instanceof Error ? err.message : "Something went wrong. Please try again." });
     }
   };
 
@@ -108,19 +138,13 @@ function BuyForm({ packageId, title, priceLabel, kind, onDone }: { packageId: st
           .
         </span>
       </label>
-      {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700 ring-1 ring-red-200">{error}</p>}
       <Button type="submit" disabled={!stripe || busy || !agreed} className="w-full bg-sage-600 py-3 hover:bg-sage-700">
-        {busy ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing…
-          </>
-        ) : (
-          `${kind === "course" ? "Enrol" : "Buy"} · ${priceLabel}`
-        )}
+        {`${kind === "course" ? "Enrol" : "Buy"} · ${priceLabel}`}
       </Button>
       <p className="flex items-center justify-center gap-1 text-xs text-stone-500">
         <Lock className="h-3 w-3" /> Secure card payment by Stripe
       </p>
+      <PaymentDialog state={dialog} onClose={closeDialog} />
     </form>
   );
 }
@@ -134,15 +158,7 @@ export function BuyPackage({ kind = "package", ...props }: { packageId: string; 
         <p className="flex items-center gap-2 font-medium text-sage-900">
           <CheckCircle2 className="h-5 w-5" /> Thank you! You&apos;re in.
         </p>
-        <p className="text-sm">
-          {kind === "course"
-            ? done.newAccount
-              ? `Your place is booked. We've emailed your login details to ${done.email}. Rangika will be in touch with the class details.`
-              : "Your place is booked and the course is in your account under My courses. Rangika will be in touch with the class details."
-            : done.newAccount
-              ? `We've emailed your login details to ${done.email}. Sign in to start your first lesson.`
-              : "The course has been added to your account. Sign in and open My learning."}
-        </p>
+        <p className="text-sm">{doneMessage(kind, done)}</p>
         <Button asChild className="w-full bg-sage-600 hover:bg-sage-700">
           <Link href="/login">Sign in</Link>
         </Button>

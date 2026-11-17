@@ -6,6 +6,8 @@ import { db } from "@/lib/db";
 import { loadCourseForEditor, loadLibraryOptions } from "@/lib/admin-plans";
 import { CourseDetails, CourseMaterialEditor, CourseModulesEditor, CourseStudents, CourseWebsiteForm } from "@/components/admin/course-editor";
 import { CoverUpload } from "@/components/admin/cover-upload";
+import { MarkSeenButton } from "@/components/admin/mark-seen-button";
+import { cn } from "@/lib/utils";
 import { money } from "@/lib/learning";
 import { viewerTimezone } from "@/lib/viewer-tz";
 
@@ -45,8 +47,9 @@ export default async function CourseAdminPage({ params }: { params: Promise<{ id
             <h3 className="font-medium text-stone-800">Paid on the website ({sales.length})</h3>
             <ul className="divide-y divide-stone-100 text-sm">
               {sales.map((p) => (
-                <li key={p.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                <li key={p.id} className={cn("flex flex-wrap items-center justify-between gap-2 py-2", !p.seenAt && "-mx-2 rounded-lg bg-sage-50 px-2")}>
                   <span>
+                    {!p.seenAt && <span className="mr-2 rounded bg-sage-600 px-1.5 py-0.5 text-[11px] font-semibold text-white">New</span>}
                     <span className="text-stone-800">{p.name}</span>
                     <span className="text-stone-500">
                       {" "}
@@ -54,8 +57,9 @@ export default async function CourseAdminPage({ params }: { params: Promise<{ id
                       {p.phone ? ` · ${p.phone}` : ""}
                     </span>
                   </span>
-                  <span className="text-stone-500">
+                  <span className="flex items-center gap-2 text-stone-500">
                     {money(p.amount, p.currency)} · {p.paidAt?.toLocaleDateString("en-AU", { timeZone: tz, day: "numeric", month: "short", year: "numeric" })}
+                    {!p.seenAt && <MarkSeenButton kind="courses" id={p.id} />}
                   </span>
                 </li>
               ))}

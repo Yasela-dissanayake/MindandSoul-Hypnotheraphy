@@ -31,7 +31,7 @@ export default async function PortalLayout({ children }: { children: React.React
   return (
     <div className="min-h-screen bg-stone-50 pb-24 md:pb-10">
       <header className="sticky top-0 z-40 border-b border-stone-200 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
           <Link href="/portal" className="flex items-center gap-2">
             <Image src="/logo.jpeg" alt="" width={36} height={36} className="rounded-full" />
             <span className="font-serif text-lg text-stone-800">Heal With Rangika</span>
@@ -44,7 +44,7 @@ export default async function PortalLayout({ children }: { children: React.React
         </div>
       </header>
       <TimezoneSync saved={session.user.timezone} />
-      <main className="mx-auto max-w-3xl px-4 py-6">{children}</main>
+      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{children}</main>
       {showNav && (
         <Suspense fallback={null}>
           <Nav userId={session.user.id} variant="bottom" />
