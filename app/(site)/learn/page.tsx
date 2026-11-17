@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { BookOpen, Clock, Infinity as Always } from "lucide-react";
 import { db } from "@/lib/db";
 import { money } from "@/lib/learning";
+import { coverUrl } from "@/lib/covers";
 
 export const metadata: Metadata = {
   title: "Online Learning · Heal With Rangika",
@@ -24,6 +25,12 @@ export default async function LearnPage() {
           <h1 className="font-serif text-4xl text-stone-800 md:text-5xl">Online Learning</h1>
           <p className="text-lg text-stone-600">
             Self-paced courses by Rangika. Learn at home, one lesson at a time, whenever it suits you.
+          </p>
+          <p className="text-sm text-stone-500">
+            Looking for a class taught in person or live?{" "}
+            <Link href="/courses" className="text-sage-700 underline">
+              See taught courses
+            </Link>
           </p>
           <div className="flex flex-wrap justify-center gap-4 pt-2 text-sm text-stone-600">
             <span className="flex items-center gap-1.5">
@@ -49,16 +56,21 @@ export default async function LearnPage() {
             with Rangika.
           </p>
         ) : (
-          <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mx-auto grid max-w-7xl gap-6 md:grid-cols-2 lg:grid-cols-3 xl:gap-8">
             {packages.map((p) => (
               <Link
                 key={p.id}
                 href={`/learn/${p.slug}`}
                 className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-stone-200 transition hover:shadow-md hover:ring-sage-300"
               >
-                <div className="flex h-32 items-center justify-center bg-gradient-to-br from-sage-100 to-sage-200">
-                  <BookOpen className="h-10 w-10 text-sage-700" />
-                </div>
+                {coverUrl("package", p) ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={coverUrl("package", p)!} alt="" className="h-48 w-full object-cover" />
+                ) : (
+                  <div className="flex h-48 items-center justify-center bg-gradient-to-br from-sage-100 to-sage-200">
+                    <BookOpen className="h-10 w-10 text-sage-700" />
+                  </div>
+                )}
                 <div className="flex flex-1 flex-col gap-2 p-5">
                   <h2 className="font-serif text-xl text-stone-800 group-hover:text-sage-800">{p.title}</h2>
                   {p.summary && <p className="text-sm text-stone-600">{p.summary}</p>}

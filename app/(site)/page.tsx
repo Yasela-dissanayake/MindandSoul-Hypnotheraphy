@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { WaysToWork } from "@/components/site/ways-to-work";
 
 export default function HomePage() {
   const [loading, setLoading] = useState(false);
@@ -1067,6 +1068,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <WaysToWork />
 
       {/* Testimonials Section */}
       <section id="testimonials" className="py-20 bg-stone-50">

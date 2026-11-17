@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/authz";
 import { deleteObject } from "@/lib/storage";
+import { isSiteImage } from "@/lib/covers";
 import { uniqueSlug } from "@/lib/learning";
 import { packageCertificateEmail, sendMail } from "@/lib/mail";
 import { blank, fail, type ActionResult } from "./common";
@@ -71,10 +72,23 @@ export async function setLearningPackageArchived(id: string, archived: boolean):
 
 export async function deleteLearningPackage(id: string): Promise<ActionResult> {
   await requireAdmin();
-  const p = await db.learningPackage.findUnique({ where: { id }, select: { _count: { select: { enrollments: true, purchases: true } } } });
+  const p = await db.learningPackage.findUnique({ where: { id }, select: { imageKey: true, _count: { select: { enrollments: true, purchases: true } } } });
   if (!p) return fail("Not found.");
   if (p._count.enrollments || p._count.purchases) return fail("People have bought this course, so it can't be deleted. Archive it instead.");
   await db.learningPackage.delete({ where: { id } });
+  if (p.imageKey && !isSiteImage(p.imageKey)) await deleteObject(p.imageKey);
+  refresh();
+  return { ok: true };
+}
+
+/** Sets (or removes, with null) the cover photo shown on the website. */
+export async function setLearningPackageCover(id: string, key: string | null): Promise<ActionResult> {
+  await requireAdmin();
+  if (key !== null && !/^covers\/[\w.\-\/]+$/.test(key)) return fail("Upload failed. Please try again.");
+  const p = await db.learningPackage.findUnique({ where: { id }, select: { imageKey: true } });
+  if (!p) return fail("Not found.");
+  await db.learningPackage.update({ where: { id }, data: { imageKey: key } });
+  if (p.imageKey && p.imageKey !== key && !isSiteImage(p.imageKey)) await deleteObject(p.imageKey);
   refresh();
   return { ok: true };
 }

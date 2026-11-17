@@ -14,6 +14,7 @@ export function MobileNav() {
     { href: "/", label: "Home" },
     { href: "/about", label: "About" },
     { href: "/services", label: "Services" },
+    { href: "/courses", label: "Courses" },
     { href: "/learn", label: "Online Learning" },
     { href: "/testimonials", label: "Testimonials" },
     { href: "/contact", label: "Contact" },
@@ -23,7 +24,7 @@ export function MobileNav() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" className="md:hidden p-2" size="sm">
+        <Button variant="ghost" className="lg:hidden p-2" size="sm">
           <Menu className="h-6 w-6 text-stone-600" />
           <span className="sr-only">Toggle menu</span>
         </Button>

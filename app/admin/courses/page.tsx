@@ -12,6 +12,7 @@ import { EnrolExistingPerson } from "@/components/admin/enrol-existing-person";
 import { NewCourseDialog } from "@/components/admin/new-course-dialog";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { viewerTimezone } from "@/lib/viewer-tz";
+import { money } from "@/lib/learning";
 
 // Courses, student by student (same layout as the Sessions page):
 // who is studying which course and how far they are, then the shared course content at the bottom.
@@ -71,7 +72,9 @@ export default async function CoursesPage() {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h2 className="font-serif text-2xl text-stone-800">Course content</h2>
-            <p className="text-sm text-stone-500">Upload each course once. Every enrolled student sees it, including anything you add later.</p>
+            <p className="text-sm text-stone-500">
+              Upload each course once. Every enrolled student sees it, including anything you add later. Open a course to set its price and put it on the website.
+            </p>
           </div>
           <NewCourseDialog />
         </div>
@@ -87,6 +90,18 @@ export default async function CoursesPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="font-medium text-stone-800">{c.title}</p>
                     {c.archived && <Badge variant="secondary">Hidden</Badge>}
+                    {c.published && !c.archived ? (
+                      <Badge className="bg-sage-100 font-normal text-sage-800 hover:bg-sage-100">
+                        On website · {money(c.price, c.currency)}
+                        {c.seats !== null ? ` · ${c.seats} place${c.seats === 1 ? "" : "s"} left` : ""}
+                      </Badge>
+                    ) : (
+                      !c.archived && (
+                        <Badge variant="outline" className="font-normal text-stone-500">
+                          Not on website
+                        </Badge>
+                      )
+                    )}
                   </div>
                   <p className="text-xs text-stone-500">
                     {c._count.modules} module{c._count.modules === 1 ? "" : "s"} · {c._count.items} item{c._count.items === 1 ? "" : "s"} · {active} current student

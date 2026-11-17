@@ -4,12 +4,16 @@ import { ArrowLeft } from "lucide-react";
 import { requireAdminPage } from "@/lib/authz";
 import { db } from "@/lib/db";
 import { loadCourseForEditor, loadLibraryOptions } from "@/lib/admin-plans";
-import { CourseDetails, CourseMaterialEditor, CourseModulesEditor, CourseStudents } from "@/components/admin/course-editor";
+import { CourseDetails, CourseMaterialEditor, CourseModulesEditor, CourseStudents, CourseWebsiteForm } from "@/components/admin/course-editor";
+import { CoverUpload } from "@/components/admin/cover-upload";
+import { money } from "@/lib/learning";
+import { viewerTimezone } from "@/lib/viewer-tz";
 
 export default async function CourseAdminPage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdminPage();
   const { id } = await params;
-  const [course, library, enrollments, clients] = await Promise.all([
+  const tz = await viewerTimezone();
+  const [course, library, enrollments, clients, sales] = await Promise.all([
     loadCourseForEditor(id),
     loadLibraryOptions(),
     db.enrollment.findMany({
@@ -18,6 +22,7 @@ export default async function CourseAdminPage({ params }: { params: Promise<{ id
       include: { user: { select: { id: true, name: true, email: true } }, _count: { select: { progress: true } } },
     }),
     db.user.findMany({ where: { role: "CLIENT", status: { not: "FINISHED" } }, select: { id: true, name: true, email: true }, orderBy: { name: "asc" } }),
+    db.coursePurchase.findMany({ where: { courseId: id, status: "PAID" }, orderBy: { paidAt: "desc" }, take: 50 }),
   ]);
   if (!course) notFound();
   const enrolledIds = new Set(enrollments.map((e) => e.userId));
@@ -31,6 +36,32 @@ export default async function CourseAdminPage({ params }: { params: Promise<{ id
         <CourseDetails course={course} />
         <CourseModulesEditor course={course} />
         <CourseMaterialEditor course={course} library={library} />
+      </section>
+      <section id="website" className="scroll-mt-6 space-y-5 rounded-2xl bg-white p-5 ring-1 ring-stone-200">
+        <CourseWebsiteForm course={course} />
+        <CoverUpload kind="course" id={course.id} url={course.coverUrl} />
+        {sales.length > 0 && (
+          <div className="space-y-2 border-t border-stone-100 pt-4">
+            <h3 className="font-medium text-stone-800">Paid on the website ({sales.length})</h3>
+            <ul className="divide-y divide-stone-100 text-sm">
+              {sales.map((p) => (
+                <li key={p.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                  <span>
+                    <span className="text-stone-800">{p.name}</span>
+                    <span className="text-stone-500">
+                      {" "}
+                      · {p.email}
+                      {p.phone ? ` · ${p.phone}` : ""}
+                    </span>
+                  </span>
+                  <span className="text-stone-500">
+                    {money(p.amount, p.currency)} · {p.paidAt?.toLocaleDateString("en-AU", { timeZone: tz, day: "numeric", month: "short", year: "numeric" })}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </section>
       <section className="rounded-2xl bg-white p-5 ring-1 ring-stone-200">
         <CourseStudents

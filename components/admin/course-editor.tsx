@@ -2,7 +2,8 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowDown, ArrowUp, Award, Pencil, Plus, Sparkles, Upload, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowDown, ArrowUp, Award, ExternalLink, Globe, Pencil, Plus, Sparkles, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,7 @@ import { KIND_LABEL } from "@/lib/catalog";
 import { uploadFile } from "@/lib/upload-client";
 import {
   addCourseItems,
+  deleteCourse,
   deleteCourseModule,
   enrollStudent,
   moveCourseItem,
@@ -28,6 +30,7 @@ import {
   unenrollStudent,
   updateCourse,
   updateCourseItem,
+  updateCourseWebsite,
 } from "@/app/admin/_actions/courses";
 import { useAction } from "./use-action";
 import { ConfirmButton } from "./confirm-button";
@@ -37,6 +40,7 @@ import { NoteButton, Section } from "./plan-editor";
 const selectCls = "h-10 w-full rounded-md border border-input bg-white px-3 text-sm";
 
 export function CourseDetails({ course }: { course: EditorCourse }) {
+  const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [f, setF] = useState({ title: course.title, description: course.description ?? "" });
   const { pending, run } = useAction();
@@ -55,6 +59,13 @@ export function CourseDetails({ course }: { course: EditorCourse }) {
             <Button size="sm" variant="outline" disabled={pending} onClick={() => run(() => setCourseArchived(course.id, !course.archived), course.archived ? "Course visible again" : "Course hidden")}>
               {course.archived ? "Show to students" : "Hide course"}
             </Button>
+            {course.canDelete && (
+              <ConfirmButton
+                title="Delete this course?"
+                description="Its modules and material list are deleted too. Library files stay in the Library."
+                onConfirm={() => run(() => deleteCourse(course.id), "Course deleted", (r) => r.ok && router.push("/admin/courses"))}
+              />
+            )}
           </div>
         </div>
         {course.description && <p className="whitespace-pre-line text-stone-600">{course.description}</p>}
@@ -416,6 +427,117 @@ export function PersonCourses({
           </Button>
         </div>
       )}
+    </div>
+  );
+}
+
+/** Price, dates and description for the public /courses page, and the publish switch. */
+export function CourseWebsiteForm({ course }: { course: EditorCourse }) {
+  const w = course.website;
+  const [f, setF] = useState({
+    summary: w.summary,
+    details: w.details,
+    format: w.format,
+    schedule: w.schedule,
+    price: w.price ? String(w.price / 100) : "",
+    seats: w.seats === null ? "" : String(w.seats),
+    published: w.published,
+  });
+  const [slug, setSlug] = useState(w.slug);
+  const { pending, run } = useAction();
+  const save = (published = f.published) =>
+    run(
+      () =>
+        updateCourseWebsite(course.id, {
+          summary: f.summary,
+          details: f.details,
+          format: f.format,
+          schedule: f.schedule,
+          price: Number(f.price || 0),
+          seats: f.seats.trim() === "" ? null : Math.max(0, Math.floor(Number(f.seats))),
+          published,
+        }),
+      published && !w.published ? "Published. People can enrol on the website now." : !published && w.published ? "Taken off the website" : "Saved",
+      (r) => {
+        if (r.ok) {
+          setF((x) => ({ ...x, published }));
+          setSlug((r.data as { slug?: string } | undefined)?.slug ?? slug);
+        }
+      },
+    );
+  const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setF({ ...f, [k]: e.target.value });
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="flex items-center gap-2 font-serif text-xl text-stone-800">
+            <Globe className="h-5 w-5 text-sage-600" /> On the website
+          </h2>
+          <p className="text-sm text-stone-500">People can read about this course on the Courses page, pay by card and be enrolled automatically.</p>
+        </div>
+        <span className={`rounded-full px-3 py-1 text-xs font-medium ${f.published ? "bg-sage-100 text-sage-800" : "bg-amber-100 text-amber-900"}`}>
+          {f.published ? "On the website" : "Not on the website"}
+        </span>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-[1fr_9rem_9rem]">
+        <div className="space-y-1.5">
+          <Label htmlFor="cw-summary">Short summary</Label>
+          <Input id="cw-summary" maxLength={200} placeholder="One line shown on the course list" value={f.summary} onChange={set("summary")} />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="cw-price">Price (AUD)</Label>
+          <Input id="cw-price" type="number" min={0} step={0.01} placeholder="e.g. 350" value={f.price} onChange={set("price")} />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="cw-seats">Places left</Label>
+          <Input id="cw-seats" type="number" min={0} step={1} placeholder="No limit" value={f.seats} onChange={set("seats")} />
+        </div>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <Label htmlFor="cw-format">Where and how long</Label>
+          <Input id="cw-format" maxLength={120} placeholder="e.g. In person in Perth · 2 days" value={f.format} onChange={set("format")} />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="cw-schedule">Next dates</Label>
+          <Input id="cw-schedule" maxLength={200} placeholder="e.g. Sat 14 & Sun 15 December, 9am–4pm" value={f.schedule} onChange={set("schedule")} />
+        </div>
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="cw-details">About this course (website)</Label>
+        <Textarea
+          id="cw-details"
+          rows={6}
+          maxLength={10000}
+          placeholder={"What people will learn, who it's for, what's included… Leave empty to use the course description."}
+          value={f.details}
+          onChange={set("details")}
+        />
+        <p className="text-xs text-stone-500">The module names are listed on the website too, under “What you’ll cover”. Places left goes down by one with each payment.</p>
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button disabled={pending} onClick={() => save()} className="bg-sage-600 hover:bg-sage-700">
+          {pending ? "Saving…" : "Save"}
+        </Button>
+        {!course.archived &&
+          (f.published ? (
+            <Button variant="outline" disabled={pending} onClick={() => save(false)}>
+              Take off the website
+            </Button>
+          ) : (
+            <Button variant="outline" disabled={pending} onClick={() => save(true)}>
+              Publish on website
+            </Button>
+          ))}
+        {f.published && slug && (
+          <Button variant="ghost" asChild>
+            <a href={`/courses/${slug}`} target="_blank" rel="noreferrer">
+              <ExternalLink className="mr-2 h-4 w-4" /> View on website
+            </a>
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

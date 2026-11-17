@@ -2,7 +2,7 @@
 
 // Uploads a file straight from the browser to private storage (R2), with progress.
 
-export type UploadPurpose = "library" | "voice" | "journal" | "certificate" | "submission";
+export type UploadPurpose = "library" | "voice" | "journal" | "certificate" | "submission" | "cover";
 
 export async function uploadFile(
   file: Blob,

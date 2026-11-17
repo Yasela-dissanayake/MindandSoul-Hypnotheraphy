@@ -663,14 +663,16 @@ export default function DetailedServicesPage() {
                         <div className="flex flex-col sm:flex-row gap-4">
                           <Link
                             href={
-                              service.id != "meditation"
+                              service.id === "reiki-training"
+                                ? "/courses"
+                                : service.id != "meditation"
                                 ? `/booking?service=${service.id}`
                                 : "/contact"
                             }
                           >
                             <Button className="bg-sage-600 hover:bg-sage-700 text-white">
                               <Calendar className="h-4 w-4 mr-2" />
-                              Book This Service
+                              {service.id === "reiki-training" ? "See Courses & Enrol" : "Book This Service"}
                             </Button>
                           </Link>
                           <Link href="/contact">
@@ -1263,6 +1265,18 @@ export default function DetailedServicesPage() {
                     )}
 
                     {/* Pricing Section */}
+                    {service.id === "reiki-training" && (
+                      <div className="flex flex-col items-start justify-between gap-4 rounded-xl bg-sage-50 p-5 ring-1 ring-sage-200 sm:flex-row sm:items-center">
+                        <div>
+                          <p className="font-serif text-xl text-stone-800">Course dates, prices &amp; enrolment</p>
+                          <p className="text-sm text-stone-600">See the next classes, places left and enrol online.</p>
+                        </div>
+                        <Link href="/courses">
+                          <Button className="bg-sage-600 hover:bg-sage-700 text-white">See Courses</Button>
+                        </Link>
+                      </div>
+                    )}
+                    {service.pricing && (
                     <Expandable
                       title="Prices & Booking Options"
                       icon={<Package className="h-6 w-6" />}
@@ -1608,6 +1622,7 @@ export default function DetailedServicesPage() {
                       )}
                       </div>
                     </Expandable>
+                    )}
 
                     {/* Special Programs */}
                     {service.specialPrograms && (
@@ -1717,13 +1732,13 @@ export default function DetailedServicesPage() {
                         session or free consultation today.
                       </p>
                       <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Link href={`/booking?service=${service.id}`}>
+                        <Link href={service.id === "reiki-training" ? "/courses" : `/booking?service=${service.id}`}>
                           <Button
                             size="lg"
                             className="bg-white text-sage-600 hover:bg-stone-50"
                           >
                             <Calendar className="h-5 w-5 mr-2" />
-                            Book This Service
+                            {service.id === "reiki-training" ? "See Courses & Enrol" : "Book This Service"}
                           </Button>
                         </Link>
                         <Link href="/contact">

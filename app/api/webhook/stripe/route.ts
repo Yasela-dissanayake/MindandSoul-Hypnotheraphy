@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import type Stripe from "stripe"
 import { confirmBookingPayment, releaseHold, stripe } from "@/lib/booking-payments"
 import { fulfilPurchase, markPurchaseFailed } from "@/lib/learning"
+import { fulfilCoursePurchase, markCoursePurchaseFailed } from "@/lib/course-sales"
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!
 
@@ -25,12 +26,14 @@ export async function POST(request: NextRequest) {
         // browser closed before it could (emails are only ever sent once).
         const paymentIntent = event.data.object as Stripe.PaymentIntent
         if (paymentIntent.metadata?.kind === "learning_package") await fulfilPurchase(paymentIntent.id)
+        else if (paymentIntent.metadata?.kind === "course") await fulfilCoursePurchase(paymentIntent.id)
         else await confirmBookingPayment(paymentIntent.id)
         break
       }
       case "payment_intent.payment_failed": {
         const failed = event.data.object as Stripe.PaymentIntent
         if (failed.metadata?.kind === "learning_package") await markPurchaseFailed(failed.id)
+        else if (failed.metadata?.kind === "course") await markCoursePurchaseFailed(failed.id)
         else await releaseHold(failed.id)
         break
       }

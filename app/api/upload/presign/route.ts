@@ -9,6 +9,7 @@ import { newKey, presignUpload } from "@/lib/storage";
 // - certificate: admin uploads a scanned, signed certificate (PDF or image)
 // - journal:     a client records a voice message for their journal
 // - submission:  a client sends their work (worksheet, recording, photo)
+// - cover:       admin uploads a cover photo for a course or online package (shown on the website)
 
 const MB = 1024 * 1024;
 const AUDIO = ["audio/mpeg", "audio/mp3", "audio/mp4", "audio/x-m4a", "audio/m4a", "audio/aac", "audio/wav", "audio/x-wav", "audio/webm", "audio/ogg"];
@@ -21,10 +22,11 @@ const RULES = {
   certificate: { admin: true, types: ["application/pdf", ...IMAGES], max: 20 * MB, folder: () => "certificates" },
   journal: { admin: false, types: AUDIO, max: 25 * MB, folder: (id: string) => `journal/${id}` },
   submission: { admin: false, types: [...AUDIO, ...DOCS, ...IMAGES], max: 50 * MB, folder: (id: string) => `submissions/${id}` },
+  cover: { admin: true, types: ["image/jpeg", "image/png", "image/webp"], max: 10 * MB, folder: () => "covers" },
 } as const;
 
 const schema = z.object({
-  purpose: z.enum(["library", "voice", "certificate", "journal", "submission"]),
+  purpose: z.enum(["library", "voice", "certificate", "journal", "submission", "cover"]),
   filename: z.string().min(1).max(200),
   contentType: z.string().max(150), // may be empty: some devices send no type for Word files
   size: z.number().int().positive(),
@@ -39,6 +41,7 @@ const EXT_TYPES: Record<string, string> = {
   jpg: "image/jpeg",
   jpeg: "image/jpeg",
   png: "image/png",
+  webp: "image/webp",
   heic: "image/heic",
 };
 

@@ -22,6 +22,7 @@ import Link from "next/link";
 import { ServiceImageSlider } from "@/components/service-image-slider";
 import Image from "next/image";
 import { Expandable } from "@/components/site/expandable";
+import { WaysToWork } from "@/components/site/ways-to-work";
 
 export default function ServicesPage() {
   // Service images for the slider
@@ -412,6 +413,8 @@ export default function ServicesPage() {
           </div>
         </div>
       </section>
+
+      <WaysToWork />
 
       {/* Core Services Overview */}
       {/* <section className="py-20 bg-white">
@@ -1041,7 +1044,13 @@ export default function ServicesPage() {
                       </Button>
                     </Link>
 
-                    {service.bookable ? (
+                    {service.id === "reiki-training" ? (
+                      <Link href="/courses">
+                        <Button className="w-full bg-sage-600 hover:bg-sage-700 text-white">
+                          See Course Dates & Enrol
+                        </Button>
+                      </Link>
+                    ) : service.bookable ? (
                       <>
                         {service.id === "past-regression" ? (
                           <Link

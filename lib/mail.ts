@@ -296,3 +296,54 @@ export function packageCertificateEmail(opts: { name?: string | null; packageTit
     text: `${hello}\n\nCongratulations on completing ${opts.packageTitle}. Your certificate from Rangika is ready.\n\n${url}`,
   };
 }
+
+// ---------- Taught courses bought on the website ----------
+
+/** To the student after paying for a place: their login details (new account) and what happens next. */
+export function courseEnrolledEmail(opts: {
+  name: string;
+  courseTitle: string;
+  schedule?: string | null;
+  format?: string | null;
+  login?: { username: string; password: string } | null;
+}) {
+  const hello = `Hello ${opts.name},`;
+  const intro = `Thank you for enrolling in ${opts.courseTitle}. Your place is booked, and Rangika will be in touch with everything you need before the class.`;
+  const when = [opts.schedule, opts.format].filter(Boolean).join(" · ");
+  const url = `${SITE_URL}/login`;
+  const details = opts.login
+    ? `<p style="margin:0 0 8px">Your private space, where your course notes and material will appear:</p>
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px;background:#f6f7f6;border-radius:8px;font-family:Arial,sans-serif;font-size:15px">
+<tr><td style="padding:12px 16px 4px;color:#78716c">Username</td><td style="padding:12px 16px 4px"><strong>${escapeHtml(opts.login.username)}</strong></td></tr>
+<tr><td style="padding:4px 16px 12px;color:#78716c">Password</td><td style="padding:4px 16px 12px"><strong>${escapeHtml(opts.login.password)}</strong></td></tr></table>`
+    : `<p style="margin:0 0 16px">Sign in with your usual username and password. You'll find the course under <strong>My courses</strong>.</p>`;
+  return {
+    subject: `You're enrolled: ${opts.courseTitle}`,
+    html: layout(
+      `<p style="margin:0 0 16px">${escapeHtml(hello)}</p>${paragraphs(intro)}${
+        when ? `<p style="margin:0 0 16px"><strong>When and where:</strong> ${escapeHtml(when)}</p>` : ""
+      }${details}${button(url, "Sign in")}`,
+    ),
+    text: `${hello}
+
+${intro}
+${when ? `\nWhen and where: ${when}\n` : ""}
+${opts.login ? `Username: ${opts.login.username}\nPassword: ${opts.login.password}` : "Sign in with your usual username and password. You'll find the course under My courses."}
+
+Sign in: ${url}`,
+  };
+}
+
+/** To Rangika: someone paid for a place on a course. */
+export function courseSoldEmail(opts: { name: string; email: string; phone?: string | null; courseTitle: string; amount: string; seatsLeft: number | null }) {
+  const url = `${SITE_URL}/admin/courses`;
+  const contact = [opts.email, opts.phone].filter(Boolean).join(" · ");
+  const seats = opts.seatsLeft === null ? "" : `${opts.seatsLeft} place${opts.seatsLeft === 1 ? "" : "s"} left.`;
+  return {
+    subject: `New enrolment: ${opts.courseTitle}`,
+    html: layout(
+      `<p style="margin:0 0 16px"><strong>${escapeHtml(opts.name)}</strong> (${escapeHtml(contact)}) paid ${escapeHtml(opts.amount)} for <strong>${escapeHtml(opts.courseTitle)}</strong>.</p><p style="margin:0 0 16px">They've been enrolled automatically. ${escapeHtml(seats)}</p>${button(url, "Open Courses")}`,
+    ),
+    text: `${opts.name} (${contact}) paid ${opts.amount} for ${opts.courseTitle}.\nThey've been enrolled automatically. ${seats}\n\n${url}`,
+  };
+}

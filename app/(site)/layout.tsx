@@ -25,7 +25,7 @@ export default function SiteLayout({
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-8">
+            <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
               <Link
                 href="/about"
                 className="text-stone-600 hover:text-sage-600 transition-colors"
@@ -37,6 +37,12 @@ export default function SiteLayout({
                 className="text-stone-600 hover:text-sage-600 transition-colors"
               >
                 Services
+              </Link>
+              <Link
+                href="/courses"
+                className="text-stone-600 hover:text-sage-600 transition-colors"
+              >
+                Courses
               </Link>
               <Link
                 href="/learn"

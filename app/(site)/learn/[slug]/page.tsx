@@ -5,6 +5,7 @@ import { ArrowLeft, Award, BookOpen, Lock, PlayCircle } from "lucide-react";
 import { db } from "@/lib/db";
 import { money, orderLessons } from "@/lib/learning";
 import { BuyPackage } from "@/components/learn/buy-package";
+import { coverUrl } from "@/lib/covers";
 
 export const dynamic = "force-dynamic";
 
@@ -32,13 +33,17 @@ export default async function LearnPackagePage({ params }: { params: Promise<{ s
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sage-50 to-white">
-      <div className="container mx-auto max-w-5xl px-4 py-10 md:py-14">
+      <div className="container mx-auto max-w-7xl px-4 py-10 md:py-14">
         <Link href="/learn" className="inline-flex items-center gap-1 text-sm text-stone-500 hover:text-stone-800">
           <ArrowLeft className="h-4 w-4" /> All online courses
         </Link>
 
-        <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_22rem]">
+        <div className="mt-6 grid gap-10 lg:grid-cols-[1fr_24rem] xl:gap-14">
           <div className="space-y-8">
+            {coverUrl("package", pkg) && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={coverUrl("package", pkg)!} alt="" className="h-56 w-full rounded-2xl object-cover sm:h-80 lg:h-96" />
+            )}
             <div className="space-y-3">
               <h1 className="font-serif text-4xl text-stone-800">{pkg.title}</h1>
               {pkg.summary && <p className="text-lg text-stone-600">{pkg.summary}</p>}

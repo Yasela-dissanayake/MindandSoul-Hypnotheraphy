@@ -1,9 +1,12 @@
 "use server";
 
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/authz";
 import { deleteObject } from "@/lib/storage";
+import { isSiteImage } from "@/lib/covers";
+import { uniqueCourseSlug } from "@/lib/course-sales";
 import { blank, fail, refreshAll, type ActionResult } from "./common";
 
 // Courses are shared: content added here is seen by every enrolled student.
@@ -37,6 +40,65 @@ export async function setCourseArchived(id: string, archived: boolean): Promise<
   await requireAdmin();
   await db.course.update({ where: { id }, data: { archived } });
   refreshAll();
+  return { ok: true };
+}
+
+// --- On the website ----------------------------------------------------------
+
+const websiteSchema = z.object({
+  summary: z.string().max(200).optional().nullable(),
+  details: z.string().max(10000).optional().nullable(),
+  format: z.string().max(120).optional().nullable(),
+  schedule: z.string().max(200).optional().nullable(),
+  price: z.number().min(0, "The price can't be negative.").max(100000),
+  seats: z.number().int().min(0).max(10000).nullable(),
+  published: z.boolean(),
+});
+
+/** Price, dates and text for the public /courses page, and whether it is on the website. */
+export async function updateCourseWebsite(id: string, input: z.input<typeof websiteSchema>): Promise<ActionResult<{ slug: string }>> {
+  await requireAdmin();
+  const parsed = websiteSchema.safeParse(input);
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Please check the details.");
+  const d = parsed.data;
+  const course = await db.course.findUnique({ where: { id }, select: { title: true, slug: true, archived: true } });
+  if (!course) return fail("Course not found.");
+  const price = Math.round(d.price * 100);
+  if (d.published && price < 50) return fail("Add a price before putting the course on the website.");
+  if (d.published && course.archived) return fail("This course is hidden. Show it to students again first.");
+  const slug = course.slug ?? (await uniqueCourseSlug(course.title, id));
+  await db.course.update({
+    where: { id },
+    data: { slug, summary: blank(d.summary), details: blank(d.details), format: blank(d.format), schedule: blank(d.schedule), price, seats: d.seats, published: d.published },
+  });
+  refreshAll();
+  revalidatePath("/courses", "layout");
+  return { ok: true, data: { slug } };
+}
+
+/** Only courses with no students and no payments can be deleted; others are hidden instead. */
+export async function deleteCourse(id: string): Promise<ActionResult> {
+  await requireAdmin();
+  const c = await db.course.findUnique({ where: { id }, select: { imageKey: true, _count: { select: { enrollments: true, purchases: true } } } });
+  if (!c) return fail("Course not found.");
+  if (c._count.enrollments || c._count.purchases) return fail("This course has students or payments, so it can't be deleted. Hide it instead.");
+  await db.course.delete({ where: { id } });
+  if (c.imageKey && !isSiteImage(c.imageKey)) await deleteObject(c.imageKey);
+  refreshAll();
+  revalidatePath("/courses", "layout");
+  return { ok: true };
+}
+
+/** Sets (or removes, with null) the cover photo shown on the website. */
+export async function setCourseCover(id: string, key: string | null): Promise<ActionResult> {
+  await requireAdmin();
+  if (key !== null && !/^covers\/[\w.\-\/]+$/.test(key)) return fail("Upload failed. Please try again.");
+  const c = await db.course.findUnique({ where: { id }, select: { imageKey: true } });
+  if (!c) return fail("Course not found.");
+  await db.course.update({ where: { id }, data: { imageKey: key } });
+  if (c.imageKey && c.imageKey !== key && !isSiteImage(c.imageKey)) await deleteObject(c.imageKey);
+  refreshAll();
+  revalidatePath("/courses", "layout");
   return { ok: true };
 }
 

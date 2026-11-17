@@ -127,31 +127,20 @@ export async function startPurchase(input: { packageId: string; name: string; em
 }
 
 /**
- * After Stripe says the payment went through: create the account if needed, give access,
- * and send the emails. Runs once per purchase, whether the browser or the Stripe webhook calls it.
+ * The account a website buyer gets access on: their existing account, or a new one with a
+ * generated password (returned so it can be emailed to them once).
  */
-export async function fulfilPurchase(paymentIntentId: string) {
-  const purchase = await db.packagePurchase.findUnique({ where: { paymentIntentId }, include: { package: true } });
-  if (!purchase) return null;
-  if (purchase.status === "PAID") return purchase;
-
-  const pi = await stripe().paymentIntents.retrieve(paymentIntentId);
-  if (pi.status !== "succeeded" || pi.amount_received < purchase.amount) return null;
-
-  // Only the first caller sets everything up.
-  const claimed = await db.packagePurchase.updateMany({ where: { id: purchase.id, status: "PENDING" }, data: { status: "PAID", paidAt: new Date() } });
-  if (claimed.count === 0) return db.packagePurchase.findUnique({ where: { id: purchase.id } });
-
-  let user = await db.user.findUnique({ where: { email: purchase.email } });
+export async function accountForBuyer(name: string, email: string) {
+  let user = await db.user.findUnique({ where: { email } });
   let login: { username: string; password: string } | null = null;
   if (!user) {
     const settings = await getSettings();
-    const username = await availableUsername(purchase.name || purchase.email.split("@")[0]);
+    const username = await availableUsername(name || email.split("@")[0]);
     const password = generatePassword();
     user = await db.user.create({
       data: {
-        email: purchase.email,
-        name: purchase.name,
+        email,
+        name,
         username,
         role: "CLIENT",
         status: "INVITED",
@@ -168,6 +157,26 @@ export async function fulfilPurchase(paymentIntentId: string) {
     // A past client buying again: open their account again.
     user = await db.user.update({ where: { id: user.id }, data: { status: "ACTIVE" } });
   }
+  return { user, login };
+}
+
+/**
+ * After Stripe says the payment went through: create the account if needed, give access,
+ * and send the emails. Runs once per purchase, whether the browser or the Stripe webhook calls it.
+ */
+export async function fulfilPurchase(paymentIntentId: string) {
+  const purchase = await db.packagePurchase.findUnique({ where: { paymentIntentId }, include: { package: true } });
+  if (!purchase) return null;
+  if (purchase.status === "PAID") return purchase;
+
+  const pi = await stripe().paymentIntents.retrieve(paymentIntentId);
+  if (pi.status !== "succeeded" || pi.amount_received < purchase.amount) return null;
+
+  // Only the first caller sets everything up.
+  const claimed = await db.packagePurchase.updateMany({ where: { id: purchase.id, status: "PENDING" }, data: { status: "PAID", paidAt: new Date() } });
+  if (claimed.count === 0) return db.packagePurchase.findUnique({ where: { id: purchase.id } });
+
+  const { user, login } = await accountForBuyer(purchase.name, purchase.email);
 
   await db.packageEnrollment.upsert({
     where: { userId_packageId: { userId: user.id, packageId: purchase.packageId } },

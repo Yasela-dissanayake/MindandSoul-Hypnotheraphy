@@ -6,6 +6,8 @@ import { db } from "@/lib/db";
 import { loadLibraryOptions } from "@/lib/admin-plans";
 import { orderLessons } from "@/lib/learning";
 import { LessonsEditor, PackageDetailsForm } from "@/components/admin/learning-editor";
+import { CoverUpload } from "@/components/admin/cover-upload";
+import { coverUrl } from "@/lib/covers";
 
 export default async function LearningPackageAdminPage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdminPage();
@@ -44,6 +46,9 @@ export default async function LearningPackageAdminPage({ params }: { params: Pro
           learners: pkg._count.enrollments,
         }}
       />
+      <section className="rounded-2xl bg-white p-5 ring-1 ring-stone-200">
+        <CoverUpload kind="package" id={pkg.id} url={coverUrl("package", pkg)} />
+      </section>
       <LessonsEditor
         packageId={pkg.id}
         sections={pkg.sections.map((s) => ({ id: s.id, title: s.title }))}

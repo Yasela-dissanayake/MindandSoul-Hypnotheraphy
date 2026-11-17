@@ -12,12 +12,16 @@ import { Label } from "@/components/ui/label";
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "");
 
 type Done = { newAccount: boolean; email: string };
+type Kind = "package" | "course";
 
-function BuyForm({ packageId, title, priceLabel, onDone }: { packageId: string; title: string; priceLabel: string; onDone: (d: Done) => void }) {
+const API: Record<Kind, string> = { package: "/api/learn", course: "/api/courses" };
+
+function BuyForm({ packageId, title, priceLabel, kind, onDone }: { packageId: string; title: string; priceLabel: string; kind: Kind; onDone: (d: Done) => void }) {
   const stripe = useStripe();
   const elements = useElements();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,10 +35,10 @@ function BuyForm({ packageId, title, priceLabel, onDone }: { packageId: string; 
     setError(null);
     try {
       // 1. Start the payment (the server sets the price).
-      const res = await fetch("/api/learn/checkout", {
+      const res = await fetch(`${API[kind]}/checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ packageId, name, email }),
+        body: JSON.stringify(kind === "course" ? { itemId: packageId, name, email, phone } : { packageId, name, email }),
       });
       const start = await res.json();
       if (!res.ok) throw new Error(start.error || "Something went wrong. Please try again.");
@@ -49,7 +53,7 @@ function BuyForm({ packageId, title, priceLabel, onDone }: { packageId: string; 
       // 3. Set up their account and access (the server checks with Stripe).
       let newAccount = true;
       try {
-        const c = await fetch("/api/learn/confirm", {
+        const c = await fetch(`${API[kind]}/confirm`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ paymentIntentId: paymentIntent.id }),
@@ -77,6 +81,13 @@ function BuyForm({ packageId, title, priceLabel, onDone }: { packageId: string; 
         <Input id="buy-email" required type="email" maxLength={200} autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         <p className="text-xs text-stone-500">Your login details are sent here.</p>
       </div>
+      {kind === "course" && (
+        <div className="space-y-1.5">
+          <Label htmlFor="buy-phone">Phone (optional)</Label>
+          <Input id="buy-phone" type="tel" maxLength={40} autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
+          <p className="text-xs text-stone-500">So Rangika can reach you about the class.</p>
+        </div>
+      )}
       <div className="space-y-1.5">
         <Label>Card</Label>
         <div className="rounded-md border border-input bg-white p-3">
@@ -104,7 +115,7 @@ function BuyForm({ packageId, title, priceLabel, onDone }: { packageId: string; 
             <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing…
           </>
         ) : (
-          `Buy ${title} · ${priceLabel}`
+          `${kind === "course" ? "Enrol" : "Buy"} · ${priceLabel}`
         )}
       </Button>
       <p className="flex items-center justify-center gap-1 text-xs text-stone-500">
@@ -114,7 +125,7 @@ function BuyForm({ packageId, title, priceLabel, onDone }: { packageId: string; 
   );
 }
 
-export function BuyPackage(props: { packageId: string; title: string; priceLabel: string }) {
+export function BuyPackage({ kind = "package", ...props }: { packageId: string; title: string; priceLabel: string; kind?: Kind }) {
   const [done, setDone] = useState<Done | null>(null);
 
   if (done) {
@@ -124,9 +135,13 @@ export function BuyPackage(props: { packageId: string; title: string; priceLabel
           <CheckCircle2 className="h-5 w-5" /> Thank you! You&apos;re in.
         </p>
         <p className="text-sm">
-          {done.newAccount
-            ? `We've emailed your login details to ${done.email}. Sign in to start your first lesson.`
-            : "The course has been added to your account. Sign in and open My learning."}
+          {kind === "course"
+            ? done.newAccount
+              ? `Your place is booked. We've emailed your login details to ${done.email}. Rangika will be in touch with the class details.`
+              : "Your place is booked and the course is in your account under My courses. Rangika will be in touch with the class details."
+            : done.newAccount
+              ? `We've emailed your login details to ${done.email}. Sign in to start your first lesson.`
+              : "The course has been added to your account. Sign in and open My learning."}
         </p>
         <Button asChild className="w-full bg-sage-600 hover:bg-sage-700">
           <Link href="/login">Sign in</Link>
@@ -136,7 +151,7 @@ export function BuyPackage(props: { packageId: string; title: string; priceLabel
   }
   return (
     <Elements stripe={stripePromise}>
-      <BuyForm {...props} onDone={setDone} />
+      <BuyForm {...props} kind={kind} onDone={setDone} />
     </Elements>
   );
 }
