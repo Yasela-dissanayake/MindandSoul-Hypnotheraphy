@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { countWaitingQuestions } from "@/lib/questions";
 import { countNewSales } from "@/lib/sales";
-import { countOpenEnquiries } from "@/lib/enquiries";
+import { countOpenEnquiries, countPendingRequests } from "@/lib/enquiries";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { viewerTimezone } from "@/lib/viewer-tz";
@@ -19,7 +19,7 @@ export default async function AdminOverview() {
   // All at once: one database trip instead of three in a row.
   const [settings, pendingRequests, waitingQuestions, counts, recent, unread, unreadCount, sales, openEnquiries] = await Promise.all([
     getSettings(),
-    db.accessRequest.count({ where: { status: "PENDING" } }),
+    countPendingRequests(), // shared with the menu badge
     countWaitingQuestions(),
     Promise.all([
       db.user.count({ where: { role: "CLIENT", status: { in: ["ACTIVE", "INVITED"] }, plans: { some: { completedAt: null } } } }),

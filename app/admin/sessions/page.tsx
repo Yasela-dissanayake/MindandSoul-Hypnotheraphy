@@ -21,7 +21,8 @@ import { viewerTimezone } from "@/lib/viewer-tz";
 export default async function SessionsPage() {
   const tz = await viewerTimezone();
   await requireAdminPage();
-  const [plans, waitingQuestions, answeredQuestions, templates, { packages, courses }, settings, everyone] = await Promise.all([
+  // Everything in one round: personal files and package use don't depend on the plans list.
+  const [plans, waitingQuestions, answeredQuestions, templates, { packages, courses }, settings, everyone, personal, used] = await Promise.all([
     db.plan.findMany({
       where: { userId: { not: null }, user: { status: { not: "FINISHED" } } },
       orderBy: [{ completedAt: { sort: "desc", nulls: "first" } }, { createdAt: "desc" }],
@@ -55,16 +56,12 @@ export default async function SessionsPage() {
     loadAccessOptions(),
     getSettings(),
     db.user.findMany({ where: { role: "CLIENT", status: { not: "FINISHED" } }, select: { id: true, name: true, email: true }, orderBy: { name: "asc" } }),
+    // Personal files made just for one client count as their materials too.
+    db.resource.groupBy({ by: ["personalForUserId"], where: { personalForUserId: { not: null } }, _count: true }),
+    db.plan.groupBy({ by: ["templateId"], where: { templateId: { not: null } }, _count: true }),
   ]);
 
-  // Personal files made just for one client count as their materials too.
-  const personal = await db.resource.groupBy({
-    by: ["personalForUserId"],
-    where: { personalForUserId: { in: [...new Set(plans.map((p) => p.userId!))] } },
-    _count: true,
-  });
   const personalCount = (userId: string) => personal.find((p) => p.personalForUserId === userId)?._count ?? 0;
-  const used = await db.plan.groupBy({ by: ["templateId"], where: { templateId: { not: null } }, _count: true });
   const usedCount = (id: string) => used.find((u) => u.templateId === id)?._count ?? 0;
 
   const lastActive = (d: Date | null) => (d ? d.toLocaleDateString("en-AU", { timeZone: tz, day: "numeric", month: "short" }) : "not yet");

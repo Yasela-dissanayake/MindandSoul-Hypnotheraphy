@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { db } from "@/lib/db";
 
 // Contact form messages (free consultation requests and questions).
@@ -5,6 +6,7 @@ import { db } from "@/lib/db";
 
 export const openEnquiryWhere = { handledAt: null };
 
-export function countOpenEnquiries() {
-  return db.enquiry.count({ where: openEnquiryWhere });
-}
+// Shared per page render (menu badge + Overview banner).
+export const countOpenEnquiries = cache(() => db.enquiry.count({ where: openEnquiryWhere }));
+
+export const countPendingRequests = cache(() => db.accessRequest.count({ where: { status: "PENDING" } }));

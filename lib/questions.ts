@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import type { QuestionRow } from "@/components/admin/questions-list";
@@ -26,4 +27,5 @@ export async function loadQuestions(where: Prisma.QuestionWhereInput, take = 100
     .sort((a, b) => Number(Boolean(a.answeredAt)) - Number(Boolean(b.answeredAt)));
 }
 
-export const countWaitingQuestions = () => db.question.count({ where: { answeredAt: null, user: { status: { not: "FINISHED" } } } });
+// Shared per page render (menu badge + Overview), like the other dashboard counts.
+export const countWaitingQuestions = cache(() => db.question.count({ where: { answeredAt: null, user: { status: { not: "FINISHED" } } } }));

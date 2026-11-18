@@ -56,11 +56,13 @@ function List({ children }: { children: ReactNode }) {
 
 export default async function BookingsPage({ searchParams }: { searchParams: Promise<SP> }) {
   await requireAdminPage();
-  const tz = await viewerTimezone();
-  const sp = await searchParams;
+  const [tz, sp] = await Promise.all([viewerTimezone(), searchParams]);
   const tab: Tab = sp.tab === "courses" || sp.tab === "learning" ? sp.tab : "sessions";
   const q = (sp.q ?? "").trim().slice(0, 100);
-  const counts = await countNewSales();
+  // Started now, awaited where the tabs are drawn: runs alongside the tab's own queries.
+  // (Same request as the menu badge, so it's usually already answered.)
+  const countsPromise = countNewSales();
+  countsPromise.catch(() => {}); // a failure is reported where it's awaited, not as an "unhandled" error
 
   const paidOn = (d: Date | null) =>
     d ? d.toLocaleString("en-AU", { timeZone: tz, day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" }) : "";
@@ -262,6 +264,7 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
       );
   }
 
+  const counts = await countsPromise;
   const newHere = counts[tab];
 
   return (
