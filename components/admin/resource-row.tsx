@@ -14,6 +14,7 @@ import { uploadFile } from "@/lib/upload-client";
 import { formatBytes } from "@/lib/format";
 import { ACCEPT_FILES, KIND_LABEL, type KindId } from "@/lib/catalog";
 import { AudioPlayer } from "@/components/portal/audio-player";
+import { VideoPlayer } from "@/components/portal/video-player";
 import { useAction } from "./use-action";
 import { ConfirmButton } from "./confirm-button";
 import { KIND_ICON } from "./library-picker";
@@ -85,9 +86,9 @@ export function ResourceRow({ r, tags = [] }: { r: R; tags?: string[] }) {
             </span>
           </div>
         </div>
-        {r.kind === "AUDIO" && (
+        {(r.kind === "AUDIO" || r.kind === "VIDEO_FILE") && (
           <Button size="sm" variant="ghost" onClick={() => setPreview(!preview)}>
-            {preview ? "Hide" : "Listen"}
+            {preview ? "Hide" : r.kind === "AUDIO" ? "Listen" : "Watch"}
           </Button>
         )}
         {(r.kind === "PDF" || r.kind === "IMAGE") && (
@@ -124,6 +125,11 @@ export function ResourceRow({ r, tags = [] }: { r: R; tags?: string[] }) {
       {preview && r.kind === "AUDIO" && (
         <div className="mt-3">
           <AudioPlayer resourceId={r.id} title={r.title} compact rememberPosition={false} />
+        </div>
+      )}
+      {preview && r.kind === "VIDEO_FILE" && (
+        <div className="mt-3">
+          <VideoPlayer src={file} title={r.title} />
         </div>
       )}
       <Dialog open={open} onOpenChange={setOpen}>

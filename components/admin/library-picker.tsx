@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { ExternalLink, FileText, FileType2, Headphones, ImageIcon, Link2, PlayCircle, Upload } from "lucide-react";
+import { ExternalLink, FileText, FileType2, Film, Headphones, ImageIcon, Link2, PlayCircle, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -19,6 +19,7 @@ export const KIND_ICON: Record<KindId, typeof FileText> = {
   PDF: FileText,
   DOCUMENT: FileType2,
   IMAGE: ImageIcon,
+  VIDEO_FILE: Film,
   VIDEO: PlayCircle,
   LINK: ExternalLink,
 };
@@ -227,7 +228,7 @@ export function LibraryPicker(props: {
               className="flex w-full flex-col items-center gap-2 rounded-xl border-2 border-dashed border-stone-300 p-6 text-stone-600 hover:bg-stone-50"
             >
               <Upload className="h-6 w-6 text-sage-600" />
-              <span className="text-sm">{files.length ? `${files.length} file${files.length === 1 ? "" : "s"} chosen` : "Choose recordings, PDFs, Word documents or images"}</span>
+              <span className="text-sm">{files.length ? `${files.length} file${files.length === 1 ? "" : "s"} chosen` : "Choose recordings, videos, PDFs, Word documents or images"}</span>
               <input ref={fileRef} type="file" multiple accept={ACCEPT_FILES} className="hidden" onChange={(e) => setFiles(Array.from(e.target.files ?? []))} />
             </button>
             {files.length > 0 && (

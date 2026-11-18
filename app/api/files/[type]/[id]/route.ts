@@ -21,6 +21,9 @@ const EXT: Record<string, string> = {
   "image/png": ".png",
   "audio/mpeg": ".mp3",
   "audio/mp4": ".m4a",
+  "video/mp4": ".mp4",
+  "video/quicktime": ".mov",
+  "video/webm": ".webm",
 };
 const withExt = (name: string, type: string | null | undefined) => {
   const ext = (type && EXT[type]) || "";
@@ -36,14 +39,16 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ type
   const wantsDownload = req.nextUrl.searchParams.get("download") === "1";
   let key: string | null = null;
   let downloadName: string | undefined;
+  let isVideo = false;
 
   if (type === "resource") {
     const r = await db.resource.findUnique({ where: { id } });
     if (!r?.storageKey) return notFound();
     if (!isAdmin && !(await clientCanAccessResource(session.user.id, id))) return notFound();
     key = r.storageKey;
-    // Recordings are listen-only for clients; documents and images can be saved.
-    if (wantsDownload && (r.kind !== "AUDIO" || isAdmin)) downloadName = withExt(r.title, r.contentType);
+    isVideo = r.kind === "VIDEO_FILE";
+    // Recordings and videos are play-only for clients; documents and images can be saved.
+    if (wantsDownload && ((r.kind !== "AUDIO" && !isVideo) || isAdmin)) downloadName = withExt(r.title, r.contentType);
     // Word documents can't be shown in the browser, so always download them.
     if (r.kind === "DOCUMENT") downloadName = withExt(r.title, r.contentType);
   } else if (type === "journal") {
@@ -60,6 +65,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ type
     if (!s) return notFound();
     if (!isAdmin && s.userId !== session.user.id) return notFound();
     key = s.storageKey;
+    isVideo = s.contentType.startsWith("video/");
     if (wantsDownload || s.contentType.includes("word") || s.contentType === "application/msword") downloadName = s.originalName;
     if (isAdmin && !s.seenAt) await db.submission.update({ where: { id }, data: { seenAt: new Date() } });
   } else if (type === "certificate") {
@@ -78,7 +84,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ type
     return notFound();
   }
 
-  const url = await presignDownload(key, { download: downloadName });
+  // A video keeps loading while it plays: give it 4 hours instead of 10 minutes.
+  const url = await presignDownload(key, { download: downloadName, seconds: isVideo && !downloadName ? 4 * 3600 : undefined });
   const res = NextResponse.redirect(new URL(url, req.nextUrl.origin), 302);
   res.headers.set("Cache-Control", "private, no-store");
   return res;

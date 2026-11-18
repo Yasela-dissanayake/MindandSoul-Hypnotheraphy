@@ -44,6 +44,7 @@ enum ResourceKind {
   DOCUMENT // Word document
   IMAGE
   VIDEO // YouTube link (shown as a player)
+  VIDEO_FILE // uploaded video file (played in the app)
   LINK // any other web link
 }
 

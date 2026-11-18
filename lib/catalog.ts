@@ -10,13 +10,14 @@ export const SERVICES: { id: ServiceId; label: string; short: string }[] = [
 
 export const serviceLabel = (s: string | null | undefined) => SERVICES.find((x) => x.id === s)?.label ?? "Sessions";
 
-export type KindId = "AUDIO" | "PDF" | "DOCUMENT" | "IMAGE" | "VIDEO" | "LINK";
+export type KindId = "AUDIO" | "PDF" | "DOCUMENT" | "IMAGE" | "VIDEO_FILE" | "VIDEO" | "LINK";
 
 export const KIND_LABEL: Record<KindId, string> = {
   AUDIO: "Recording",
   PDF: "PDF",
   DOCUMENT: "Word document",
   IMAGE: "Image",
+  VIDEO_FILE: "Video",
   VIDEO: "YouTube video",
   LINK: "Link",
 };
@@ -26,6 +27,7 @@ export function kindForFile(contentType: string, filename: string): Exclude<Kind
   const t = contentType.toLowerCase();
   const ext = filename.toLowerCase().split(".").pop() ?? "";
   if (t === "application/pdf" || ext === "pdf") return "PDF";
+  if (t.startsWith("video/") || ["mp4", "mov", "m4v"].includes(ext)) return "VIDEO_FILE";
   if (t.startsWith("audio/") || ["mp3", "m4a", "wav", "aac", "ogg", "webm"].includes(ext)) return "AUDIO";
   if (t.startsWith("image/") || ["jpg", "jpeg", "png", "webp", "heic"].includes(ext)) return "IMAGE";
   if (
@@ -37,7 +39,10 @@ export function kindForFile(contentType: string, filename: string): Exclude<Kind
   return null;
 }
 
-export const ACCEPT_FILES = "audio/*,.mp3,.m4a,.pdf,application/pdf,.doc,.docx,image/*,.jpg,.jpeg,.png";
+export const ACCEPT_FILES = "audio/*,.mp3,.m4a,video/*,.mp4,.mov,.m4v,.webm,.pdf,application/pdf,.doc,.docx,image/*,.jpg,.jpeg,.png";
+
+/** Video files the admin can upload (Library and lessons). Clients can watch them but not upload. */
+export const VIDEO_TYPES = ["video/mp4", "video/quicktime", "video/webm", "video/x-m4v"];
 
 /** Tracker form fields */
 export const TRACKER_FIELD_TYPES = ["number", "scale", "yesno", "time", "text"] as const;

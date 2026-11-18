@@ -47,7 +47,7 @@ export function TaskList({ tasks, encourage }: { tasks: Task[]; encourage: Encou
       <Celebration show={celebrate > 0} key={celebrate} />
       <ul className="space-y-3">
         {optimistic.map((t) => {
-          const Icon = t.resource?.kind === "AUDIO" ? Headphones : t.resource?.kind === "VIDEO" ? PlayCircle : FileText;
+          const Icon = t.resource?.kind === "AUDIO" ? Headphones : t.resource?.kind === "VIDEO" || t.resource?.kind === "VIDEO_FILE" ? PlayCircle : FileText;
           const expanded = open === t.id;
           return (
             <li key={t.id} className={cn("rounded-2xl bg-white ring-1 transition", t.done ? "ring-sage-200" : "ring-stone-200")}>
@@ -72,7 +72,7 @@ export function TaskList({ tasks, encourage }: { tasks: Task[]; encourage: Encou
                       className="mt-2 inline-flex items-center gap-1.5 text-sm text-sage-700 hover:underline"
                     >
                       <Icon className="h-4 w-4" />
-                      {expanded ? "Hide" : t.resource.kind === "AUDIO" ? "Listen" : t.resource.kind === "VIDEO" ? "Watch" : "Open"}:{" "}
+                      {expanded ? "Hide" : t.resource.kind === "AUDIO" ? "Listen" : t.resource.kind === "VIDEO" || t.resource.kind === "VIDEO_FILE" ? "Watch" : "Open"}:{" "}
                       {t.resource.title}
                     </button>
                   )}

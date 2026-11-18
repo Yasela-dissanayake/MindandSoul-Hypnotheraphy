@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Download, FileText, FileType2, Headphones, ImageIcon } from "lucide-react";
+import { Download, FileText, FileType2, Film, Headphones, ImageIcon } from "lucide-react";
+import { VideoPlayer } from "@/components/portal/video-player";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { deleteSubmission, markSubmissionsSeen } from "@/app/admin/_actions/courses";
@@ -22,7 +23,7 @@ type Item = {
 };
 
 const iconFor = (t: string) =>
-  t.startsWith("audio/") ? Headphones : t.startsWith("image/") ? ImageIcon : t.includes("word") || t === "application/msword" ? FileType2 : FileText;
+  t.startsWith("audio/") ? Headphones : t.startsWith("video/") ? Film : t.startsWith("image/") ? ImageIcon : t.includes("word") || t === "application/msword" ? FileType2 : FileText;
 
 /** Work a client sent: worksheets, recordings, photos. Opening the tab marks them as seen. */
 export function SubmissionsList({ clientId, items, timezone }: { clientId: string; items: Item[]; timezone: string }) {
@@ -69,6 +70,7 @@ export function SubmissionsList({ clientId, items, timezone }: { clientId: strin
             </div>
             {s.note && <p className="whitespace-pre-line rounded-lg bg-stone-50 p-3 text-sm text-stone-700">{s.note}</p>}
             {s.contentType.startsWith("audio/") && <audio src={url} controls preload="none" className="h-10 w-full" />}
+            {s.contentType.startsWith("video/") && <VideoPlayer src={url} title={s.title} />}
             {s.contentType.startsWith("image/") && (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={url} alt={s.title} loading="lazy" className="max-h-72 rounded-xl" />

@@ -73,15 +73,19 @@ export async function presignUpload(key: string, contentType: string): Promise<s
   });
 }
 
-/** Short-lived URL to open or play a private file. */
-export async function presignDownload(key: string, opts: { download?: string } = {}): Promise<string> {
+/**
+ * Short-lived URL to open or play a private file. Links last 10 minutes; pass `seconds` for
+ * videos, which keep loading while they play, so a long video doesn't stop halfway.
+ */
+export async function presignDownload(key: string, opts: { download?: string; seconds?: number } = {}): Promise<string> {
   assertStorageConfigured();
+  const seconds = opts.seconds ?? 600;
   const disposition = opts.download ? `attachment; filename="${safeName(opts.download)}"` : "inline";
-  if (!usingR2) return devUrl(key, "get", 600, opts.download ? `&dl=${encodeURIComponent(safeName(opts.download))}` : "");
+  if (!usingR2) return devUrl(key, "get", seconds, opts.download ? `&dl=${encodeURIComponent(safeName(opts.download))}` : "");
   return getSignedUrl(
     s3(),
     new GetObjectCommand({ Bucket: R2.bucket, Key: key, ResponseContentDisposition: disposition }),
-    { expiresIn: 600 },
+    { expiresIn: seconds },
   );
 }
 

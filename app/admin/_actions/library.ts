@@ -32,7 +32,7 @@ const common = (d: { title: string; description?: string | null; tag?: string | 
   personalForUserId: d.personalForUserId || null,
 });
 
-/** A file uploaded to storage: recording, PDF, Word document or image. Returns the new library item id. */
+/** A file uploaded to storage: recording, video, PDF, Word document or image. Returns the new library item id. */
 export async function createFileResource(input: z.input<typeof fileSchema>): Promise<ActionResult<{ id: string }>> {
   await requireAdmin();
   const parsed = fileSchema.safeParse(input);

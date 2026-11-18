@@ -1,12 +1,13 @@
 import { Download, ExternalLink, FileText, FileType2, ImageIcon } from "lucide-react";
 import { AudioPlayer } from "./audio-player";
 import { YouTubeEmbed } from "./youtube";
+import { VideoPlayer } from "./video-player";
 
 export type ResourceView = {
   id: string;
   title: string;
   description: string | null;
-  kind: "AUDIO" | "PDF" | "DOCUMENT" | "IMAGE" | "VIDEO" | "LINK";
+  kind: "AUDIO" | "PDF" | "DOCUMENT" | "IMAGE" | "VIDEO_FILE" | "VIDEO" | "LINK";
   url: string | null;
 };
 
@@ -42,6 +43,14 @@ export function ResourceItem({ r, note }: { r: ResourceView; note?: string | nul
   switch (r.kind) {
     case "AUDIO":
       return <AudioPlayer resourceId={r.id} title={r.title} subtitle={sub || undefined} compact />;
+    case "VIDEO_FILE":
+      return (
+        <div className="space-y-2 rounded-2xl bg-white p-3 ring-1 ring-stone-200">
+          <p className="font-medium text-stone-800">{r.title}</p>
+          {sub && <p className="text-sm text-stone-500">{sub}</p>}
+          <VideoPlayer src={file} title={r.title} />
+        </div>
+      );
     case "VIDEO":
       return (
         <div className="space-y-2 rounded-2xl bg-white p-3 ring-1 ring-stone-200">
