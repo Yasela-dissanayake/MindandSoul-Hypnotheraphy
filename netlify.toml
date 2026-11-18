@@ -1,0 +1,13 @@
+# Netlify build settings (the build command and publish folder are set in the Netlify UI).
+
+[build.environment]
+  # Netlify's secrets scan fails the build if any environment variable's value appears in the
+  # built files. These values are public on purpose, so they're allowed to appear:
+  #   NEXT_PUBLIC_*          sent to the browser by design (Stripe's publishable key, the site URL)
+  #   SMTP_USER, SMTP_FROM   Rangika's business email, shown on the website's contact details
+  #   EMAIL_FROM             the "from" name/address on emails (also a default in lib/mail.ts)
+  #   SMTP_HOST              smtp.gmail.com, also listed inside the email library itself
+  #   PRACTITIONER_EMAIL, ADMIN_EMAILS   business email addresses, not passwords
+  # Real secrets (SMTP_PASS, STRIPE_SECRET_KEY, AUTH_SECRET, AUTH_GOOGLE_SECRET, DATABASE_URL,
+  # DIRECT_URL, R2_SECRET_ACCESS_KEY, RESEND_API_KEY ...) are still scanned and must never be listed here.
+  SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,NEXT_PUBLIC_SITE_URL,SMTP_USER,SMTP_FROM,EMAIL_FROM,SMTP_HOST,PRACTITIONER_EMAIL,ADMIN_EMAILS"

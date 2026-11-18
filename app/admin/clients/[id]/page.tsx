@@ -185,13 +185,6 @@ async function SessionsTab({ clientId, addPlan }: { clientId: string; addPlan: b
       )}
       {plans.map((plan) => (
         <section key={plan.id} className="space-y-5 rounded-2xl bg-white p-5 ring-1 ring-stone-200">
-          {plan.startDate && !plan.completed && plan.startDate > todayIn(timezone) && (
-            <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900 ring-1 ring-amber-200">
-              Week 1 starts on <strong>{formatDate(plan.startDate, { weekday: "long", day: "numeric", month: "long" })}</strong> (their time). Until then {name} sees
-              a &quot;starts on…&quot; message instead of their daily tasks, check-ins and journal prompts. Materials and the Zoom link show straight away. To start now,
-              click <strong>Edit details</strong> and set &quot;Week 1 starts on&quot; to today.
-            </p>
-          )}
           <PlanDetails plan={plan} />
           <ModulesEditor plan={plan} />
           <MaterialsEditor plan={plan} library={library} />
