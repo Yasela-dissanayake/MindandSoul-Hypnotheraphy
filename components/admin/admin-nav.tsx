@@ -4,22 +4,32 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, CalendarDays, LayoutDashboard, Library, LogOut, Menu, Settings, Users, ClipboardList, UserCheck, GraduationCap, ShoppingBag } from "lucide-react";
+import { BookOpen, CalendarDays, LayoutDashboard, Library, LogOut, Menu, Settings, Users, ClipboardList, UserCheck, GraduationCap, ShoppingBag, Inbox, Layers, ChevronDown } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { SubmitButton } from "@/components/submit-button";
 
-type Badges = { requests: number; questions: number; sales: number };
+type Badges = { requests: number; questions: number; sales: number; enquiries: number };
 
-const items: { href: string; label: string; icon: typeof Users; also?: string[]; badge?: keyof Badges }[] = [
+type Item = { href: string; label: string; icon: typeof Users; also?: string[]; badge?: keyof Badges };
+type Group = { group: string; icon: typeof Users; children: Item[] };
+
+const items: (Item | Group)[] = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard },
-  { href: "/admin/bookings", label: "Bookings & sales", icon: ShoppingBag, badge: "sales" },
   { href: "/admin/clients", label: "All users", icon: Users },
-  { href: "/admin/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/admin/requests", label: "Access requests", icon: UserCheck, badge: "requests" },
-  { href: "/admin/sessions", label: "Sessions", icon: ClipboardList, also: ["/admin/plans"], badge: "questions" },
-  { href: "/admin/courses", label: "Courses", icon: GraduationCap },
-  { href: "/admin/learning", label: "Independent Learning", icon: BookOpen },
+  {
+    group: "Services",
+    icon: Layers,
+    children: [
+      { href: "/admin/sessions", label: "Sessions", icon: ClipboardList, also: ["/admin/plans"], badge: "questions" },
+      { href: "/admin/classes", label: "Classes", icon: GraduationCap },
+      { href: "/admin/courses", label: "Courses", icon: BookOpen },
+    ],
+  },
+  { href: "/admin/enquiries", label: "Enquiries", icon: Inbox, badge: "enquiries" },
+  { href: "/admin/bookings", label: "Bookings & sales", icon: ShoppingBag, badge: "sales" },
+  { href: "/admin/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/admin/library", label: "Library", icon: Library },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
@@ -29,6 +39,8 @@ const badgeLabel = (key: keyof Badges, n: number) =>
     ? `${n} access request${n === 1 ? "" : "s"} waiting`
     : key === "sales"
       ? `${n} new booking${n === 1 ? "" : "s"} or enrolment${n === 1 ? "" : "s"}`
+      : key === "enquiries"
+        ? `${n} enquir${n === 1 ? "y" : "ies"} waiting for a reply`
       : `${n} question${n === 1 ? "" : "s"} waiting for an answer`;
 
 /** Red circle with a number. Nothing at all when the count is 0. */
@@ -47,7 +59,7 @@ function CountBadge({ count, label }: { count: number; label: string }) {
 /** Keeps the badge numbers fresh: every 30 s, on page change, and when the tab is shown again. */
 function useBadges(initial: Badges, pathname: string) {
   const [counts, setCounts] = useState(initial);
-  useEffect(() => setCounts(initial), [initial.requests, initial.questions, initial.sales]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => setCounts(initial), [initial.requests, initial.questions, initial.sales, initial.enquiries]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     let stop = false;
     const load = async () => {
@@ -62,7 +74,7 @@ function useBadges(initial: Badges, pathname: string) {
         }
         if (!res.ok || stop) return;
         const j = await res.json();
-        setCounts({ requests: j.requests ?? 0, questions: j.questions ?? 0, sales: j.sales ?? 0 });
+        setCounts({ requests: j.requests ?? 0, questions: j.questions ?? 0, sales: j.sales ?? 0, enquiries: j.enquiries ?? 0 });
       } catch {}
     };
     void load();
@@ -78,31 +90,73 @@ function useBadges(initial: Badges, pathname: string) {
   return counts;
 }
 
-export function AdminNav({ name, logout, badges = { requests: 0, questions: 0, sales: 0 } }: { name: string; logout: () => Promise<void>; badges?: Badges }) {
+export function AdminNav({ name, logout, badges = { requests: 0, questions: 0, sales: 0, enquiries: 0 } }: { name: string; logout: () => Promise<void>; badges?: Badges }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const counts = useBadges(badges, pathname);
-  const waiting = counts.requests + counts.questions + counts.sales;
-  const active = (i: (typeof items)[number]) =>
+  const waiting = counts.requests + counts.questions + counts.sales + counts.enquiries;
+  const active = (i: Item) =>
     i.href === "/admin" ? pathname === i.href : [i.href, ...(i.also ?? [])].some((h) => pathname.startsWith(h));
+  // Groups start open; one you're inside always stays open. Closing one is remembered on this device.
+  const [closed, setClosed] = useState<string[]>([]);
+  useEffect(() => {
+    try {
+      setClosed(JSON.parse(localStorage.getItem("admin-nav-closed") ?? "[]"));
+    } catch {}
+  }, []);
+  const toggle = (g: string) =>
+    setClosed((c) => {
+      const next = c.includes(g) ? c.filter((x) => x !== g) : [...c, g];
+      try {
+        localStorage.setItem("admin-nav-closed", JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+
+  const link = (i: Item, nested = false) => (
+    <Link
+      key={i.href}
+      href={i.href}
+      onClick={() => setOpen(false)}
+      className={cn(
+        "flex items-center gap-3 rounded-lg py-2.5 pr-3 text-sm transition-colors",
+        nested ? "pl-9" : "pl-3",
+        active(i) ? "bg-sage-100 font-medium text-sage-800" : "text-stone-600 hover:bg-stone-100",
+      )}
+    >
+      <i.icon className="h-4 w-4" />
+      <span className="flex-1">{i.label}</span>
+      {i.badge && <CountBadge count={counts[i.badge]} label={badgeLabel(i.badge, counts[i.badge])} />}
+    </Link>
+  );
 
   const links = (
     <nav className="flex flex-col gap-1">
-      {items.map((i) => (
-        <Link
-          key={i.href}
-          href={i.href}
-          onClick={() => setOpen(false)}
-          className={cn(
-            "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors",
-            active(i) ? "bg-sage-100 font-medium text-sage-800" : "text-stone-600 hover:bg-stone-100",
-          )}
-        >
-          <i.icon className="h-4 w-4" />
-          <span className="flex-1">{i.label}</span>
-          {i.badge && <CountBadge count={counts[i.badge]} label={badgeLabel(i.badge, counts[i.badge])} />}
-        </Link>
-      ))}
+      {items.map((i) => {
+        if (!("group" in i)) return link(i);
+        const inside = i.children.some(active);
+        const isOpen = inside || !closed.includes(i.group);
+        const hidden = i.children.reduce((n, c) => n + (c.badge ? counts[c.badge] : 0), 0);
+        return (
+          <div key={i.group}>
+            <button
+              type="button"
+              onClick={() => !inside && toggle(i.group)}
+              aria-expanded={isOpen}
+              className={cn(
+                "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-stone-100",
+                inside ? "font-medium text-sage-800" : "text-stone-600",
+              )}
+            >
+              <i.icon className="h-4 w-4" />
+              <span className="flex-1 text-left">{i.group}</span>
+              {!isOpen && <CountBadge count={hidden} label={`${hidden} waiting in ${i.group}`} />}
+              <ChevronDown className={cn("h-4 w-4 text-stone-400 transition-transform", isOpen && "rotate-180")} />
+            </button>
+            {isOpen && <div className="mt-1 flex flex-col gap-1">{i.children.map((c) => link(c, true))}</div>}
+          </div>
+        );
+      })}
     </nav>
   );
 

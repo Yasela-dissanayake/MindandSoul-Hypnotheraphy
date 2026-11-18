@@ -22,8 +22,8 @@ export function PortalNav({
   const items: { href: string; label: string; icon: typeof Home; dot?: boolean }[] = [
     { href: "/portal", label: "Today", icon: Home },
     ...(hasSessions ? [{ href: "/portal/sessions", label: "My sessions", icon: Sparkles, dot: newAnswers > 0 }] : []),
-    ...(hasCourses ? [{ href: "/portal/courses", label: "My courses", icon: GraduationCap }] : []),
-    ...(hasLearning ? [{ href: "/portal/learning", label: "My learning", icon: BookOpen }] : []),
+    ...(hasCourses ? [{ href: "/portal/classes", label: "My classes", icon: GraduationCap }] : []),
+    ...(hasLearning ? [{ href: "/portal/courses", label: "My courses", icon: BookOpen }] : []),
     { href: "/portal/journal", label: "Journal", icon: NotebookPen },
     { href: "/portal/profile", label: "Profile", icon: User },
   ];

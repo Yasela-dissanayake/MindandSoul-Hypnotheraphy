@@ -35,6 +35,6 @@ export async function completeLesson(packageId: string, lessonId: string): Promi
     }
   }
   revalidatePath("/portal", "layout");
-  revalidatePath("/admin/learning");
+  revalidatePath("/admin/courses");
   return { ok: true, data: { nextLessonId: after?.nextLessonId ?? null, finished } };
 }

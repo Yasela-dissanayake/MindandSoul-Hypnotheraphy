@@ -21,16 +21,16 @@ export function NewCourseDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline">
-          <Plus className="mr-2 h-4 w-4" /> New course
+          <Plus className="mr-2 h-4 w-4" /> New class
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="font-serif text-2xl font-normal">New course</DialogTitle>
+          <DialogTitle className="font-serif text-2xl font-normal">New class</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label>Course name</Label>
+            <Label>Class name</Label>
             <Input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} placeholder="e.g. Reiki Master Teacher" />
           </div>
           <div className="space-y-2">
@@ -43,15 +43,15 @@ export function NewCourseDialog() {
             onClick={() =>
               run(
                 () => createCourse(f),
-                "Course created",
+                "Class created",
                 (r) => {
                   const id = r.ok ? (r.data as { id: string } | undefined)?.id : undefined;
-                  if (id) navigateTo(router, `/admin/courses/${id}`);
+                  if (id) navigateTo(router, `/admin/classes/${id}`);
                 },
               )
             }
           >
-            Create course
+            Create class
           </Button>
         </div>
       </DialogContent>

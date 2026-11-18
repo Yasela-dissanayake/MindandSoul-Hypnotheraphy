@@ -21,10 +21,10 @@ function doneMessage(kind: Kind, done: Done) {
   return kind === "course"
     ? done.newAccount
       ? `Your place is booked. We've emailed your login details to ${done.email}. Rangika will be in touch with the class details.`
-      : "Your place is booked and the course is in your account under My courses. Rangika will be in touch with the class details."
+      : "Your place is booked and the class is in your account under My classes. Rangika will be in touch with the class details."
     : done.newAccount
       ? `We've emailed your login details to ${done.email}. Sign in to start your first lesson.`
-      : "The course has been added to your account. Sign in and open My learning.";
+      : "The course has been added to your account. Sign in and open My courses.";
 }
 
 function BuyForm({ packageId, title, priceLabel, kind, onDone }: { packageId: string; title: string; priceLabel: string; kind: Kind; onDone: (d: Done) => void }) {

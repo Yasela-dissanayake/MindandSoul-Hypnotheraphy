@@ -113,8 +113,8 @@ export function AccessPicker({
       </div>
 
       <div className={`space-y-2 rounded-xl border p-3 ${value.courseIds.length ? "border-sage-400 bg-sage-50/50" : "border-stone-200"}`}>
-        <p className="font-medium text-stone-800">Courses</p>
-        {courses.length === 0 && <p className="text-sm text-stone-500">No courses yet.</p>}
+        <p className="font-medium text-stone-800">Classes</p>
+        {courses.length === 0 && <p className="text-sm text-stone-500">No classes yet.</p>}
         <div className="grid gap-2 sm:grid-cols-2">
           {courses.map((c) => (
             <label key={c.id} className="flex items-center gap-3 text-sm">

@@ -17,7 +17,7 @@ const schema = z
     phone: z.string().trim().max(40).optional().default(""),
   })
   .refine((d) => d.wants !== "SESSIONS" || d.service, { message: "Please choose which sessions." })
-  .refine((d) => d.wants !== "COURSE" || d.courseId, { message: "Please choose a course." });
+  .refine((d) => d.wants !== "COURSE" || d.courseId, { message: "Please choose a class." });
 
 export type RequestFormResult = { ok: false; error: string };
 
@@ -35,7 +35,7 @@ export async function sendAccessRequest(token: string, input: z.input<typeof sch
   let courseTitle: string | null = null;
   if (d.wants === "COURSE") {
     const course = await db.course.findFirst({ where: { id: d.courseId!, archived: false }, select: { title: true } });
-    if (!course) return { ok: false, error: "Please choose a course from the list." };
+    if (!course) return { ok: false, error: "Please choose a class from the list." };
     courseTitle = course.title;
   }
 

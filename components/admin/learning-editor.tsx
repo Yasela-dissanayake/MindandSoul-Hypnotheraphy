@@ -35,7 +35,7 @@ import { cn } from "@/lib/utils";
 
 const selectCls = "h-10 w-full rounded-md border border-input bg-white px-3 text-sm";
 
-// ---------- New package ----------
+// ---------- New course ----------
 
 export function NewPackageDialog() {
   const router = useRouter();
@@ -47,12 +47,12 @@ export function NewPackageDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="bg-sage-600 hover:bg-sage-700">
-          <Plus className="mr-2 h-4 w-4" /> New package
+          <Plus className="mr-2 h-4 w-4" /> New course
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>New learning package</DialogTitle>
+          <DialogTitle>New course</DialogTitle>
           <DialogDescription>Give it a name and price. Next you&apos;ll add the lessons. It stays hidden from the website until you publish it.</DialogDescription>
         </DialogHeader>
         <form
@@ -61,11 +61,11 @@ export function NewPackageDialog() {
             e.preventDefault();
             run(
               () => createLearningPackage({ title, price: Number(price) }),
-              "Package created",
+              "Course created",
               (r) => {
                 if (!r.ok) return;
                 setOpen(false);
-                router.push(`/admin/learning/${(r.data as { id: string }).id}`);
+                router.push(`/admin/courses/${(r.data as { id: string }).id}`);
               },
             );
           }}
@@ -156,7 +156,7 @@ export function PackageDetailsForm({ pkg }: { pkg: Details }) {
           ))}
         {f.published && !pkg.archived && (
           <Button variant="ghost" asChild>
-            <a href={`/learn/${pkg.slug}`} target="_blank" rel="noreferrer">
+            <a href={`/courses/${pkg.slug}`} target="_blank" rel="noreferrer">
               <ExternalLink className="mr-2 h-4 w-4" /> View on website
             </a>
           </Button>
@@ -173,9 +173,9 @@ export function PackageDetailsForm({ pkg }: { pkg: Details }) {
         </Button>
         {pkg.learners === 0 && (
           <ConfirmButton
-            title="Delete this package?"
+            title="Delete this course?"
             description="Its sections and lessons are deleted too. Library files stay in the Library."
-            onConfirm={() => run(() => deleteLearningPackage(pkg.id), "Package deleted", (r) => r.ok && router.push("/admin/learning"))}
+            onConfirm={() => run(() => deleteLearningPackage(pkg.id), "Course deleted", (r) => r.ok && router.push("/admin/courses"))}
           />
         )}
       </div>

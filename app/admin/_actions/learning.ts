@@ -11,8 +11,8 @@ import { packageCertificateEmail, sendMail } from "@/lib/mail";
 import { blank, fail, type ActionResult } from "./common";
 
 const refresh = () => {
-  revalidatePath("/admin/learning", "layout");
-  revalidatePath("/learn", "layout");
+  revalidatePath("/admin/courses", "layout");
+  revalidatePath("/courses", "layout");
   revalidatePath("/portal", "layout");
 };
 

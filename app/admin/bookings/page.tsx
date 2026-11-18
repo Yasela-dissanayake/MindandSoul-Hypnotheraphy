@@ -13,7 +13,7 @@ import { CancelBookingButton } from "@/components/admin/calendar-blocker";
 import { MarkSeenButton } from "@/components/admin/mark-seen-button";
 
 // Everything people have booked or bought on the website, in one place:
-// session bookings, taught-course enrolments and online-learning purchases.
+// session bookings, class enrolments and course purchases.
 // New ones are highlighted until Rangika marks them as seen.
 
 type Tab = "sessions" | "courses" | "learning";
@@ -21,8 +21,8 @@ type SP = { tab?: string; q?: string; show?: string };
 
 const TABS: { id: Tab; label: string; icon: typeof Sparkles }[] = [
   { id: "sessions", label: "Session bookings", icon: Sparkles },
-  { id: "courses", label: "Course enrolments", icon: GraduationCap },
-  { id: "learning", label: "Online learning", icon: BookOpen },
+  { id: "courses", label: "Class enrolments", icon: GraduationCap },
+  { id: "learning", label: "Courses", icon: BookOpen },
 ];
 
 const longDay = (d: string) => formatDate(d, { weekday: "short", day: "numeric", month: "short", year: "numeric" });
@@ -198,7 +198,7 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
     });
     body =
       purchases.length === 0 ? (
-        <Empty>{q ? `No course enrolments match "${q}".` : "No one has enrolled on a course through the website yet."}</Empty>
+        <Empty>{q ? `No class enrolments match "${q}".` : "No one has enrolled on a class through the website yet."}</Empty>
       ) : (
         <List>
           {purchases.map((p) => {
@@ -209,7 +209,7 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
                   <p className="flex flex-wrap items-center gap-2">
                     {isNew && <NewPill />}
                     <Name userId={p.userId} name={p.name} />
-                    <Link href={`/admin/courses/${p.course.id}`} className="text-stone-600 hover:underline">
+                    <Link href={`/admin/classes/${p.course.id}`} className="text-stone-600 hover:underline">
                       {p.course.title}
                     </Link>
                   </p>
@@ -235,7 +235,7 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
     });
     body =
       purchases.length === 0 ? (
-        <Empty>{q ? `No online-learning purchases match "${q}".` : "No one has bought an online course yet."}</Empty>
+        <Empty>{q ? `No course purchases match "${q}".` : "No one has bought a course yet."}</Empty>
       ) : (
         <List>
           {purchases.map((p) => {
@@ -246,7 +246,7 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
                   <p className="flex flex-wrap items-center gap-2">
                     {isNew && <NewPill />}
                     <Name userId={p.userId} name={p.name} />
-                    <Link href={`/admin/learning/${p.package.id}`} className="text-stone-600 hover:underline">
+                    <Link href={`/admin/courses/${p.package.id}`} className="text-stone-600 hover:underline">
                       {p.package.title}
                     </Link>
                   </p>
@@ -300,7 +300,7 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
             <input
               name="q"
               defaultValue={q}
-              placeholder={tab === "sessions" ? "Search by name, email or phone" : "Search by name, email or course"}
+              placeholder={tab === "sessions" ? "Search by name, email or phone" : tab === "courses" ? "Search by name, email or class" : "Search by name, email or course"}
               className="h-10 w-full rounded-lg border border-stone-200 bg-white pl-9 pr-3 text-sm outline-none focus:border-sage-400 focus:ring-2 focus:ring-sage-100"
             />
           </div>

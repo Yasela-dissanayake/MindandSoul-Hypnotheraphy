@@ -9,7 +9,7 @@ export default async function WelcomePage() {
   const settings = await getSettings();
   const note =
     settings.welcomeNote?.trim() ||
-    `I'm so glad you're here. This is your private space. You'll find your sessions work or course material here, along with a journal to share how you're feeling. Go gently, there's no rush. With warmth, Rangika`;
+    `I'm so glad you're here. This is your private space. You'll find your sessions work or class material here, along with a journal to share how you're feeling. Go gently, there's no rush. With warmth, Rangika`;
 
   return (
     <div className="mx-auto max-w-lg space-y-6">

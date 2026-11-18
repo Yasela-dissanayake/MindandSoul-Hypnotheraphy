@@ -89,7 +89,7 @@ export async function setModuleComplete(moduleId: string, done: boolean): Promis
   const mod = await db.courseModule.findUnique({ where: { id: moduleId } });
   if (!mod) return fail("Module not found.");
   const enrollment = await db.enrollment.findUnique({ where: { userId_courseId: { userId: user.id, courseId: mod.courseId } } });
-  if (!enrollment) return fail("You're not enrolled in this course.");
+  if (!enrollment) return fail("You're not enrolled in this class.");
   if (done) {
     await db.moduleProgress.upsert({
       where: { enrollmentId_moduleId: { enrollmentId: enrollment.id, moduleId } },

@@ -24,8 +24,8 @@ export function EnrolExistingPerson({ people, courses }: { people: { id: string;
           </option>
         ))}
       </select>
-      <select value={courseId} onChange={(e) => setCourseId(e.target.value)} className={selectCls} aria-label="Course">
-        <option value="">Choose a course…</option>
+      <select value={courseId} onChange={(e) => setCourseId(e.target.value)} className={selectCls} aria-label="Class">
+        <option value="">Choose a class…</option>
         {courses.map((c) => (
           <option key={c.id} value={c.id}>
             {c.title}

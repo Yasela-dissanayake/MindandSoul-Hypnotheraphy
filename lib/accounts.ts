@@ -42,7 +42,7 @@ export const accessSchema = z
       .optional(),
     courseIds: z.array(z.string()).max(20).default([]),
   })
-  .refine((a) => a.sessions || a.courseIds.length > 0, { message: "Choose sessions, a course, or both." });
+  .refine((a) => a.sessions || a.courseIds.length > 0, { message: "Choose sessions, a class, or both." });
 
 export type AccessInput = z.input<typeof accessSchema>;
 

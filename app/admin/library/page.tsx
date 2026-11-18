@@ -55,7 +55,7 @@ export default async function LibraryPage({ searchParams }: { searchParams: Prom
     <div className="space-y-6">
       <div>
         <h1 className="font-serif text-3xl text-stone-800">Library</h1>
-        <p className="text-stone-500">Every recording, worksheet, document, image and link you share. Add them to session plans and courses.</p>
+        <p className="text-stone-500">Every recording, worksheet, document, image and link you share. Add them to session plans, classes and courses.</p>
       </div>
 
       <section className={`space-y-2 rounded-2xl p-5 ring-1 ${warn ? "bg-amber-50 ring-amber-200" : "bg-white ring-stone-200"}`}>

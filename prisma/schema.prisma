@@ -367,7 +367,7 @@ model Course {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  // Selling the course on the website (/courses/<slug>)
+  // Selling the class on the website (/classes/<slug>)
   slug      String?  @unique
   summary   String? // one line shown on the course list
   details   String? // "about this course" on the website; falls back to description
@@ -633,7 +633,7 @@ enum PurchaseStatus {
 /// A ready-made, self-paced course that people buy on the website and work through on their own.
 model LearningPackage {
   id          String   @id @default(cuid())
-  slug        String   @unique // web address: /learn/<slug>
+  slug        String   @unique // web address: /courses/<slug>
   title       String
   summary     String? // one line shown on the list
   description String? // "what you'll learn", shown on the package page
@@ -752,4 +752,25 @@ model CoursePurchase {
   course Course @relation(fields: [courseId], references: [id], onDelete: Restrict)
 
   @@index([status, createdAt])
+}
+
+enum EnquiryKind {
+  CONSULTATION // "Book Your Free Consultation" form
+  QUESTION // "Ask a question" form
+}
+
+// Messages sent from the website's contact forms. Saved first, then emailed to Rangika.
+model Enquiry {
+  id            String      @id @default(cuid())
+  kind          EnquiryKind
+  name          String
+  email         String
+  phone         String?
+  contactMethod String? // how they'd like to be contacted (consultations)
+  topic         String? // what they'd like to work on, or the question's subject
+  message       String?
+  handledAt     DateTime? // Rangika has replied / contacted them
+  createdAt     DateTime    @default(now())
+
+  @@index([handledAt, createdAt])
 }

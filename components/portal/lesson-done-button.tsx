@@ -28,9 +28,9 @@ export function LessonDoneButton({ packageId, lessonId, done, isLast }: { packag
           if (!r.ok) return void toast.error(r.error);
           if (r.data?.finished) {
             toast.success("You've finished the course. Well done!");
-            router.push(`/portal/learning/${packageId}`);
+            router.push(`/portal/courses/${packageId}`);
           } else if (r.data?.nextLessonId) {
-            router.push(`/portal/learning/${packageId}?lesson=${r.data.nextLessonId}`);
+            router.push(`/portal/courses/${packageId}?lesson=${r.data.nextLessonId}`);
           }
           router.refresh();
         })

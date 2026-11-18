@@ -40,7 +40,7 @@ export default function ContactPage() {
     body.formType = type;
 
     try {
-      const res = await fetch("/api/send-email", {
+      const res = await fetch("/api/enquiries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -57,7 +57,7 @@ export default function ContactPage() {
       } else {
         toast({
           title: "❌ Failed",
-          description: "Please try again later.",
+          description: (await res.json().catch(() => ({}))).error || "Please try again later.",
           variant: "destructive",
         });
       }
@@ -118,10 +118,15 @@ export default function ContactPage() {
               <div className="absolute -bottom-6 -left-6 bg-white rounded-xl p-4 shadow-lg border border-stone-200">
                 <div className="flex items-center gap-3">
                   <div className="flex -space-x-2">
+                    {/* Placeholder portraits (AI-generated, not real people); swap for real client photos (with their permission). */}
                     {[1, 2, 3].map((i) => (
-                      <div
+                      <Image
                         key={i}
-                        className="w-8 h-8 rounded-full bg-sage-200 border-2 border-white"
+                        src={`/avatars/client-${i}.jpg`}
+                        alt=""
+                        width={32}
+                        height={32}
+                        className="w-8 h-8 rounded-full border-2 border-white bg-sage-200 object-cover"
                       />
                     ))}
                   </div>
@@ -265,6 +270,7 @@ export default function ContactPage() {
                         onSubmit={(e) => handleSubmit(e, "consultation")}
                         className="space-y-4"
                       >
+                        <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm font-medium text-stone-700 mb-2">
@@ -393,6 +399,7 @@ export default function ContactPage() {
                         onSubmit={(e) => handleSubmit(e, "question")}
                         className="space-y-4"
                       >
+                        <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm font-medium text-stone-700 mb-2">

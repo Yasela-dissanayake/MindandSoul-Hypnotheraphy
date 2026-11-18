@@ -4,6 +4,7 @@ import { requireAdminPage } from "@/lib/authz";
 import { db } from "@/lib/db";
 import { countWaitingQuestions } from "@/lib/questions";
 import { countNewSales } from "@/lib/sales";
+import { countOpenEnquiries } from "@/lib/enquiries";
 import { signOut } from "@/auth";
 import { Toaster } from "@/components/ui/sonner";
 import { AdminNav } from "@/components/admin/admin-nav";
@@ -18,8 +19,13 @@ async function logout() {
 
 /** The menu with its red badges. Streams in, so the page itself never waits for the counts. */
 async function NavWithBadges({ name }: { name: string }) {
-  const [requests, questions, sales] = await Promise.all([db.accessRequest.count({ where: { status: "PENDING" } }), countWaitingQuestions(), countNewSales()]);
-  return <AdminNav name={name} logout={logout} badges={{ requests, questions, sales: sales.total }} />;
+  const [requests, questions, sales, enquiries] = await Promise.all([
+    db.accessRequest.count({ where: { status: "PENDING" } }),
+    countWaitingQuestions(),
+    countNewSales(),
+    countOpenEnquiries(),
+  ]);
+  return <AdminNav name={name} logout={logout} badges={{ requests, questions, sales: sales.total, enquiries }} />;
 }
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

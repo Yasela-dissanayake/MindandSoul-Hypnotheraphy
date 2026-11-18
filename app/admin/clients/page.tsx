@@ -107,7 +107,7 @@ export default async function AllUsersPage({ searchParams }: { searchParams: Pro
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-serif text-3xl text-stone-800">All users</h1>
-          <p className="text-stone-500">Everyone with an account: session clients and course students.</p>
+          <p className="text-stone-500">Everyone with an account: session clients and class students.</p>
         </div>
         <AddPersonDialog packages={packages} courses={courses} siteUrl={SITE_URL} defaultOpen={sp.add === "1"} />
       </div>

@@ -13,9 +13,9 @@ export function MobileNav() {
   const navItems = [
     { href: "/", label: "Home" },
     { href: "/about", label: "About" },
-    { href: "/services", label: "Services" },
+    { href: "/sessions", label: "Sessions" },
+    { href: "/classes", label: "Classes" },
     { href: "/courses", label: "Courses" },
-    { href: "/learn", label: "Online Learning" },
     { href: "/testimonials", label: "Testimonials" },
     { href: "/contact", label: "Contact" },
     { href: "/login", label: "Client login" },

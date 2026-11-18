@@ -1,33 +1,40 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
-import { ArrowLeft, Award, BookOpen, CalendarDays, CheckCircle, MapPin, Users } from "lucide-react";
+import { ArrowLeft, Award, BookOpen, Lock, PlayCircle } from "lucide-react";
 import { db } from "@/lib/db";
-import { money } from "@/lib/learning";
-import { onSaleWhere } from "@/lib/course-sales";
+import { money, orderLessons } from "@/lib/learning";
 import { BuyPackage } from "@/components/learn/buy-package";
 import { coverUrl } from "@/lib/covers";
 
 export const dynamic = "force-dynamic";
 
 async function load(slug: string) {
-  return db.course.findFirst({
-    where: { ...onSaleWhere, slug },
-    include: { modules: { orderBy: [{ order: "asc" }, { title: "asc" }], select: { id: true, title: true, description: true } } },
+  return db.learningPackage.findFirst({
+    where: { slug, published: true, archived: false },
+    include: { sections: { orderBy: { order: "asc" } }, lessons: { select: { id: true, title: true, sectionId: true, order: true, createdAt: true } } },
   });
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const c = await load((await params).slug);
-  return c ? { title: `${c.title} · Courses · Heal With Rangika`, description: c.summary ?? undefined } : { title: "Course not found" };
+  const pkg = await load((await params).slug);
+  return pkg ? { title: `${pkg.title} · Courses · Heal With Rangika`, description: pkg.summary ?? undefined } : { title: "Course not found" };
 }
 
-export default async function CoursePage({ params }: { params: Promise<{ slug: string }> }) {
-  const c = await load((await params).slug);
-  if (!c) notFound();
-  const about = c.details || c.description;
-  const full = c.seats !== null && c.seats <= 0;
-  const price = money(c.price, c.currency);
+export default async function LearnPackagePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const pkg = await load(slug);
+  if (!pkg) {
+    // Classes used to live at /courses/<slug>: send old links there.
+    if (await db.course.findUnique({ where: { slug }, select: { id: true } })) redirect(`/classes/${slug}`);
+    notFound();
+  }
+  const lessons = orderLessons(pkg.sections, pkg.lessons);
+  const groups = [
+    ...pkg.sections.map((s) => ({ title: s.title, lessons: lessons.filter((l) => l.sectionId === s.id) })),
+    { title: pkg.sections.length ? "More lessons" : "", lessons: lessons.filter((l) => !l.sectionId || !pkg.sections.some((s) => s.id === l.sectionId)) },
+  ].filter((g) => g.lessons.length);
+  let n = 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sage-50 to-white">
@@ -38,77 +45,60 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
 
         <div className="mt-6 grid gap-10 lg:grid-cols-[1fr_24rem] xl:gap-14">
           <div className="space-y-8">
-            {coverUrl("course", c) && (
+            {coverUrl("package", pkg) && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={coverUrl("course", c)!} alt="" className="h-56 w-full rounded-2xl object-cover sm:h-80 lg:h-96" />
+              <img src={coverUrl("package", pkg)!} alt="" className="h-56 w-full rounded-2xl object-cover sm:h-80 lg:h-96" />
             )}
             <div className="space-y-3">
-              <h1 className="font-serif text-4xl text-stone-800">{c.title}</h1>
-              {c.summary && <p className="text-lg text-stone-600">{c.summary}</p>}
+              <h1 className="font-serif text-4xl text-stone-800">{pkg.title}</h1>
+              {pkg.summary && <p className="text-lg text-stone-600">{pkg.summary}</p>}
             </div>
 
-            {about && (
+            {pkg.description && (
               <section className="space-y-2">
                 <h2 className="font-serif text-2xl text-stone-800">About this course</h2>
-                <p className="whitespace-pre-line leading-relaxed text-stone-700">{about}</p>
+                <p className="whitespace-pre-line leading-relaxed text-stone-700">{pkg.description}</p>
               </section>
             )}
 
-            {c.modules.length > 0 && (
-              <section className="space-y-3">
-                <h2 className="font-serif text-2xl text-stone-800">What you&apos;ll cover</h2>
-                <ul className="divide-y divide-stone-100 rounded-2xl bg-white ring-1 ring-stone-200">
-                  {c.modules.map((m) => (
-                    <li key={m.id} className="flex gap-3 px-4 py-3 text-sm">
-                      <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-sage-600" />
-                      <div>
-                        <p className="text-stone-800">{m.title}</p>
-                        {m.description && <p className="text-stone-500">{m.description}</p>}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
+            <section className="space-y-3">
+              <h2 className="font-serif text-2xl text-stone-800">What&apos;s inside</h2>
+              <p className="text-sm text-stone-500">
+                {lessons.length} lesson{lessons.length === 1 ? "" : "s"}. Each one opens when you finish the one before.
+              </p>
+              <div className="space-y-4">
+                {groups.map((g) => (
+                  <div key={g.title || "lessons"} className="rounded-2xl bg-white ring-1 ring-stone-200">
+                    {g.title && <p className="border-b border-stone-100 px-4 py-3 font-medium text-stone-800">{g.title}</p>}
+                    <ul className="divide-y divide-stone-100">
+                      {g.lessons.map((l) => {
+                        n += 1;
+                        return (
+                          <li key={l.id} className="flex items-center gap-3 px-4 py-3 text-sm text-stone-700">
+                            {n === 1 ? <PlayCircle className="h-4 w-4 shrink-0 text-sage-600" /> : <Lock className="h-4 w-4 shrink-0 text-stone-400" />}
+                            <span className="text-stone-400">{n}.</span> {l.title}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </section>
           </div>
 
           <aside className="lg:sticky lg:top-24 lg:self-start">
             <div className="space-y-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-stone-200">
-              <p className="font-serif text-3xl text-stone-800">{price}</p>
+              <p className="font-serif text-3xl text-stone-800">{money(pkg.price, pkg.currency)}</p>
               <ul className="space-y-2 text-sm text-stone-600">
-                {c.format && (
-                  <li className="flex items-start gap-2">
-                    <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-sage-600" /> {c.format}
-                  </li>
-                )}
-                {c.schedule && (
-                  <li className="flex items-start gap-2">
-                    <CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-sage-600" /> {c.schedule}
-                  </li>
-                )}
-                {c.seats !== null && !full && (
-                  <li className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-sage-600" /> {c.seats} place{c.seats === 1 ? "" : "s"} left
-                  </li>
-                )}
                 <li className="flex items-center gap-2">
-                  <BookOpen className="h-4 w-4 text-sage-600" /> Course notes in your private space
+                  <BookOpen className="h-4 w-4 text-sage-600" /> {lessons.length} lessons, at your own pace
                 </li>
                 <li className="flex items-center gap-2">
-                  <Award className="h-4 w-4 text-sage-600" /> Certificate from Rangika
+                  <Award className="h-4 w-4 text-sage-600" /> Certificate from Rangika when you finish
                 </li>
               </ul>
-              {full ? (
-                <div className="space-y-3 rounded-xl bg-amber-50 p-4 text-sm text-amber-900 ring-1 ring-amber-200">
-                  <p className="font-medium">This course is fully booked.</p>
-                  <p>Contact Rangika to join the waiting list or hear about the next dates.</p>
-                  <Link href="/contact" className="inline-block font-medium underline">
-                    Contact Rangika
-                  </Link>
-                </div>
-              ) : (
-                <BuyPackage kind="course" packageId={c.id} title={c.title} priceLabel={price} />
-              )}
+              <BuyPackage packageId={pkg.id} title={pkg.title} priceLabel={money(pkg.price, pkg.currency)} />
             </div>
           </aside>
         </div>

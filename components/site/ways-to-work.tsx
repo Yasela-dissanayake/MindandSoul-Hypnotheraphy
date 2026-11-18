@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, BookOpen, GraduationCap, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const WAYS = [
   {
@@ -11,22 +12,25 @@ const WAYS = [
   },
   {
     icon: GraduationCap,
-    title: "Taught Courses",
-    text: "Reiki and Animal Reiki courses taught by Rangika, with practice, course notes and a certificate.",
-    href: "/courses",
-    cta: "See courses and dates",
+    title: "Classes",
+    text: "Reiki and Animal Reiki classes taught by Rangika, with practice, class notes and a certificate.",
+    href: "/classes",
+    cta: "See classes and dates",
   },
   {
     icon: BookOpen,
-    title: "Online Learning",
-    text: "Self-paced online courses. Learn at home, one lesson at a time, and receive a certificate when you finish.",
-    href: "/learn",
-    cta: "Browse online courses",
+    title: "Courses",
+    text: "Self-paced courses. Learn at home, one lesson at a time, and receive a certificate when you finish.",
+    href: "/courses",
+    cta: "Browse courses",
   },
 ];
 
-/** The three ways to work with Rangika: sessions, taught courses and self-paced online learning. */
-export function WaysToWork({ title = "Three Ways to Work with Rangika" }: { title?: string }) {
+/**
+ * The three ways to work with Rangika: sessions, classes and self-paced courses.
+ * `showAllServices` adds a "View All Services & Programs" button under the cards (home page).
+ */
+export function WaysToWork({ title = "Three Ways to Work with Rangika", showAllServices = false }: { title?: string; showAllServices?: boolean }) {
   return (
     <section className="bg-white py-16">
       <div className="container mx-auto px-4">
@@ -52,6 +56,13 @@ export function WaysToWork({ title = "Three Ways to Work with Rangika" }: { titl
             </Link>
           ))}
         </div>
+        {showAllServices && (
+          <div className="mt-12 text-center">
+            <Button asChild size="lg" className="bg-sage-600 text-white hover:bg-sage-700">
+              <Link href="/sessions">View All Services &amp; Programs</Link>
+            </Button>
+          </div>
+        )}
       </div>
     </section>
   );

@@ -20,7 +20,6 @@ import {
   CheckCircle,
   Quote,
   Users,
-  Zap,
   GraduationCap,
   Building,
   School,
@@ -49,7 +48,7 @@ export default function HomePage() {
 
     console.log("Form data:", body);
     try {
-      const res = await fetch("/api/send-email", {
+      const res = await fetch("/api/enquiries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -66,7 +65,7 @@ export default function HomePage() {
       } else {
         toast({
           title: "❌ Failed",
-          description: "Please try again later.",
+          description: (await res.json().catch(() => ({}))).error || "Please try again later.",
           variant: "destructive",
         });
       }
@@ -193,10 +192,15 @@ export default function HomePage() {
               <div className="absolute -bottom-6 -left-6 bg-white rounded-xl p-6 shadow-lg border border-stone-200">
                 <div className="flex items-center gap-3">
                   <div className="flex -space-x-2">
+                    {/* Placeholder portraits (AI-generated, not real people); swap for real client photos (with their permission). */}
                     {[1, 2, 3].map((i) => (
-                      <div
+                      <Image
                         key={i}
-                        className="w-8 h-8 rounded-full bg-sage-200 border-2 border-white"
+                        src={`/avatars/client-${i}.jpg`}
+                        alt=""
+                        width={32}
+                        height={32}
+                        className="w-8 h-8 rounded-full border-2 border-white bg-sage-200 object-cover"
                       />
                     ))}
                   </div>
@@ -349,727 +353,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Core Services Section */}
-      <section id="services" className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center space-y-4 mb-16">
-            <Badge className="bg-sage-100 text-sage-700">
-              Our Core Services
-            </Badge>
-            <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">
-              Holistic Healing for Mind, Body & Soul
-            </h2>
-            <p className="text-stone-600 max-w-2xl mx-auto">
-              Each service is tailored to your unique needs, helping you achieve
-              your goals through the transformative power of holistic healing.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Clinical Hypnotherapy */}
-            <Card className="border-stone-200 hover:shadow-lg transition-shadow">
-              <CardContent className="p-6 space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-sage-100 rounded-lg">
-                    <Brain className="h-6 w-6 text-sage-600" />
-                  </div>
-                  <h3 className="font-semibold text-stone-800">
-                    Clinical Hypnotherapy
-                  </h3>
-                </div>
-                <p className="text-stone-600 text-sm leading-relaxed">
-                  Empowering you through subconscious healing and
-                  transformation. Safe, effective therapeutic technique for
-                  lasting change.
-                </p>
-
-                {/* Main Service Options */}
-                <div className="space-y-3">
-                  <div className="border border-stone-100 rounded-lg p-3">
-                    <div className="flex justify-between items-center text-sm mb-2">
-                      <span className="font-medium text-stone-700">
-                        Single Session
-                      </span>
-                      <span className="font-semibold text-sage-600">
-                        AUD 140
-                      </span>
-                    </div>
-                    <div className="text-xs text-stone-500 mb-2">
-                      Duration: 60-90 minutes
-                    </div>
-                    <Link href="/booking?service=clinical-hypnotherapy&package=single">
-                      <Button
-                        size="sm"
-                        className="w-full bg-sage-600 hover:bg-sage-700 text-white"
-                      >
-                        Book Single Session
-                      </Button>
-                    </Link>
-                  </div>
-
-                  <div className="border border-stone-100 rounded-lg p-3">
-                    <div className="flex justify-between items-center text-sm mb-2">
-                      <span className="font-medium text-stone-700">
-                        3 Sessions Package
-                      </span>
-                      <span className="font-semibold text-sage-600">
-                        AUD 390
-                      </span>
-                    </div>
-                    <div className="text-xs text-stone-500 mb-2">
-                      Save AUD 30 • Duration: 60-90 minutes each
-                    </div>
-                    <Link href="/booking?service=clinical-hypnotherapy&package=3-sessions">
-                      <Button
-                        size="sm"
-                        className="w-full bg-sage-600 hover:bg-sage-700 text-white"
-                      >
-                        Book 3 Sessions
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  {[
-                    "Anxiety & stress relief",
-                    "Confidence building",
-                    "Habit change",
-                    "Emotional trauma healing",
-                  ].map((benefit, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center gap-2 text-xs text-stone-600"
-                    >
-                      <CheckCircle className="h-3 w-3 text-sage-600" />
-                      {benefit}
-                    </div>
-                  ))}
-                </div>
-
-                {/* Special Programs */}
-                <div className="border-t border-stone-100 pt-4 mt-4">
-                  <h4 className="text-sm font-medium text-stone-700 mb-3">
-                    Special Programs:
-                  </h4>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-stone-600">
-                        Age Regression Therapy
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sage-600 font-medium">
-                          AUD 190
-                        </span>
-                        <Link href="/booking?service=clinical-hypnotherapy&program=age-regression">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-6 px-2 text-xs bg-transparent"
-                          >
-                            Book
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-stone-600">
-                        Past Life Regression
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sage-600 font-medium">
-                          AUD 235
-                        </span>
-                        <Link href="/booking?service=clinical-hypnotherapy&program=past-life">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-6 px-2 text-xs bg-transparent"
-                          >
-                            Book
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-stone-600">
-                        Time to Loss Weight Program (12 weeks)
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sage-600 font-medium">
-                          AUD 1450
-                        </span>
-                        <Link href="/booking?service=clinical-hypnotherapy&program=weight-loss">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-6 px-2 text-xs bg-transparent"
-                          >
-                            Book
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-stone-600">
-                        Time to Sleep Program (12 weeks)
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sage-600 font-medium">
-                          AUD 1350
-                        </span>
-                        <Link href="/booking?service=clinical-hypnotherapy&program=sleep-program">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-6 px-2 text-xs bg-transparent"
-                          >
-                            Book
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-stone-600">
-                        IBS Freedom Program (12 weeks)
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sage-600 font-medium">
-                          AUD 1350
-                        </span>
-                        <Link href="/booking?service=clinical-hypnotherapy&program=ibs-program">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-6 px-2 text-xs bg-transparent"
-                          >
-                            Book
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Reiki Healing */}
-            <Card className="border-stone-200 hover:shadow-lg transition-shadow">
-              <CardContent className="p-6 space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-sage-100 rounded-lg">
-                    <Heart className="h-6 w-6 text-sage-600" />
-                  </div>
-                  <h3 className="font-semibold text-stone-800">
-                    Reiki Healing
-                  </h3>
-                </div>
-                <p className="text-stone-600 text-sm leading-relaxed">
-                  Restore balance, renew energy, reconnect with your inner peace
-                  through gentle energy healing.
-                </p>
-
-                {/* In-Person Sessions */}
-                <div className="space-y-3">
-                  <h4 className="text-sm font-medium text-stone-700">
-                    In-Person Sessions
-                  </h4>
-
-                  <div className="border border-stone-100 rounded-lg p-3">
-                    <div className="flex justify-between items-center text-sm mb-2">
-                      <span className="font-medium text-stone-700">
-                        Single Session
-                      </span>
-                      <span className="font-semibold text-sage-600">
-                        AUD 120
-                      </span>
-                    </div>
-                    <div className="text-xs text-stone-500 mb-2">
-                      Duration: 60 minutes
-                    </div>
-                    <Link href="/booking?service=reiki-healing&type=in-person&package=single">
-                      <Button
-                        size="sm"
-                        className="w-full bg-sage-600 hover:bg-sage-700 text-white"
-                      >
-                        Book In-Person Single
-                      </Button>
-                    </Link>
-                  </div>
-
-                  <div className="border border-stone-100 rounded-lg p-3">
-                    <div className="flex justify-between items-center text-sm mb-2">
-                      <span className="font-medium text-stone-700">
-                        3 Sessions Package
-                      </span>
-                      <span className="font-semibold text-sage-600">
-                        AUD 320
-                      </span>
-                    </div>
-                    <div className="text-xs text-stone-500 mb-2">
-                      Save AUD 40 • Duration: 60 minutes each
-                    </div>
-                    <Link href="/booking?service=reiki-healing&type=in-person&package=3-sessions">
-                      <Button
-                        size="sm"
-                        className="w-full bg-sage-600 hover:bg-sage-700 text-white"
-                      >
-                        Book In-Person 3 Sessions
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-
-                {/* Distance Sessions */}
-                <div className="space-y-3">
-                  <h4 className="text-sm font-medium text-stone-700">
-                    Distance Sessions
-                  </h4>
-
-                  <div className="border border-stone-100 rounded-lg p-3">
-                    <div className="flex justify-between items-center text-sm mb-2">
-                      <span className="font-medium text-stone-700">
-                        Single Session
-                      </span>
-                      <span className="font-semibold text-sage-600">
-                        AUD 90
-                      </span>
-                    </div>
-                    <div className="text-xs text-stone-500 mb-2">
-                      Duration: 60 minutes
-                    </div>
-                    <Link href="/booking?service=reiki-healing&type=distance&package=single">
-                      <Button
-                        size="sm"
-                        className="w-full bg-sage-600 hover:bg-sage-700 text-white"
-                      >
-                        Book Distance Single
-                      </Button>
-                    </Link>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="border border-stone-100 rounded-lg p-2">
-                      <div className="text-xs text-stone-700 mb-1">
-                        3 Sessions
-                      </div>
-                      <div className="text-sm font-semibold text-sage-600 mb-2">
-                        AUD 250
-                      </div>
-                      <Link href="/booking?service=reiki-healing&type=distance&package=3-sessions">
-                        <Button
-                          size="sm"
-                          className="w-full text-xs bg-sage-600 hover:bg-sage-700 text-white"
-                        >
-                          Book 3
-                        </Button>
-                      </Link>
-                    </div>
-                    <div className="border border-stone-100 rounded-lg p-2">
-                      <div className="text-xs text-stone-700 mb-1">
-                        5 Sessions
-                      </div>
-                      <div className="text-sm font-semibold text-sage-600 mb-2">
-                        AUD 420
-                      </div>
-                      <Link href="/booking?service=reiki-healing&type=distance&package=5-sessions">
-                        <Button
-                          size="sm"
-                          className="w-full text-xs bg-sage-600 hover:bg-sage-700 text-white"
-                        >
-                          Book 5
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-1 pt-2">
-                  {[
-                    "Release tension & stress",
-                    "Mental clarity",
-                    "Physical healing support",
-                    "Chakra balancing",
-                  ].map((benefit, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center gap-2 text-xs text-stone-600"
-                    >
-                      <CheckCircle className="h-3 w-3 text-sage-600" />
-                      {benefit}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Animal Reiki & Communication */}
-            <Card className="border-stone-200 hover:shadow-lg transition-shadow">
-              <CardContent className="p-6 space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-sage-100 rounded-lg">
-                    <Leaf className="h-6 w-6 text-sage-600" />
-                  </div>
-                  <h3 className="font-semibold text-stone-800">
-                    Animal Reiki & Communication
-                  </h3>
-                </div>
-                <p className="text-stone-600 text-sm leading-relaxed">
-                  Healing, understanding, and connection for your beloved
-                  companions through energy work.
-                </p>
-
-                {/* In-Person Sessions */}
-                <div className="space-y-3">
-                  <h4 className="text-sm font-medium text-stone-700">
-                    In-Person Sessions
-                  </h4>
-
-                  <div className="border border-stone-100 rounded-lg p-3">
-                    <div className="flex justify-between items-center text-sm mb-2">
-                      <span className="font-medium text-stone-700">
-                        Single Session
-                      </span>
-                      <span className="font-semibold text-sage-600">
-                        AUD 160
-                      </span>
-                    </div>
-                    <div className="text-xs text-stone-500 mb-2">
-                      Duration: 45-60 minutes
-                    </div>
-                    <Link href="/booking?service=animal-reiki&type=in-person&package=single">
-                      <Button
-                        size="sm"
-                        className="w-full bg-sage-600 hover:bg-sage-700 text-white"
-                      >
-                        Book In-Person Single
-                      </Button>
-                    </Link>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="border border-stone-100 rounded-lg p-2">
-                      <div className="text-xs text-stone-700 mb-1">
-                        3 Sessions
-                      </div>
-                      <div className="text-sm font-semibold text-sage-600 mb-2">
-                        AUD 450
-                      </div>
-                      <Link href="/booking?service=animal-reiki&type=in-person&package=3-sessions">
-                        <Button
-                          size="sm"
-                          className="w-full text-xs bg-sage-600 hover:bg-sage-700 text-white"
-                        >
-                          Book 3
-                        </Button>
-                      </Link>
-                    </div>
-                    <div className="border border-stone-100 rounded-lg p-2">
-                      <div className="text-xs text-stone-700 mb-1">
-                        5 Sessions
-                      </div>
-                      <div className="text-sm font-semibold text-sage-600 mb-2">
-                        AUD 750
-                      </div>
-                      <Link href="/booking?service=animal-reiki&type=in-person&package=5-sessions">
-                        <Button
-                          size="sm"
-                          className="w-full text-xs bg-sage-600 hover:bg-sage-700 text-white"
-                        >
-                          Book 5
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Distance Sessions */}
-                <div className="space-y-3">
-                  <h4 className="text-sm font-medium text-stone-700">
-                    Distance Sessions
-                  </h4>
-
-                  <div className="border border-stone-100 rounded-lg p-3">
-                    <div className="flex justify-between items-center text-sm mb-2">
-                      <span className="font-medium text-stone-700">
-                        Single Session
-                      </span>
-                      <span className="font-semibold text-sage-600">
-                        AUD 110
-                      </span>
-                    </div>
-                    <div className="text-xs text-stone-500 mb-2">
-                      Duration: 45-60 minutes
-                    </div>
-                    <Link href="/booking?service=animal-reiki&type=distance&package=single">
-                      <Button
-                        size="sm"
-                        className="w-full bg-sage-600 hover:bg-sage-700 text-white"
-                      >
-                        Book Distance Single
-                      </Button>
-                    </Link>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="border border-stone-100 rounded-lg p-2">
-                      <div className="text-xs text-stone-700 mb-1">
-                        3 Sessions
-                      </div>
-                      <div className="text-sm font-semibold text-sage-600 mb-2">
-                        AUD 300
-                      </div>
-                      <Link href="/booking?service=animal-reiki&type=distance&package=3-sessions">
-                        <Button
-                          size="sm"
-                          className="w-full text-xs bg-sage-600 hover:bg-sage-700 text-white"
-                        >
-                          Book 3
-                        </Button>
-                      </Link>
-                    </div>
-                    <div className="border border-stone-100 rounded-lg p-2">
-                      <div className="text-xs text-stone-700 mb-1">
-                        5 Sessions
-                      </div>
-                      <div className="text-sm font-semibold text-sage-600 mb-2">
-                        AUD 500
-                      </div>
-                      <Link href="/booking?service=animal-reiki&type=distance&package=5-sessions">
-                        <Button
-                          size="sm"
-                          className="w-full text-xs bg-sage-600 hover:bg-sage-700 text-white"
-                        >
-                          Book 5
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Pet & Parent Package */}
-                <div className="border-t border-stone-100 pt-3">
-                  <h4 className="text-sm font-medium text-stone-700 mb-3">
-                    Pet & Parent Package
-                  </h4>
-                  <div className="space-y-2">
-                    <div className="text-xs text-stone-600 mb-2">
-                      Healing for both you and your pet
-                    </div>
-
-                    {/* In-Person Pet & Parent */}
-                    <div className="border border-amber-100 rounded-lg p-2 bg-amber-50">
-                      <div className="text-xs font-medium text-amber-800 mb-2">
-                        In-Person Package
-                      </div>
-                      <div className="grid grid-cols-3 gap-1 text-xs">
-                        <div className="text-center">
-                          <div className="text-sage-600 font-medium">
-                            AUD 250
-                          </div>
-                          <Link href="/booking?service=animal-reiki&type=pet-parent-in-person&package=single">
-                            <Button
-                              size="sm"
-                              className="w-full text-xs mt-1 bg-sage-600 hover:bg-sage-700 text-white"
-                            >
-                              1 Session
-                            </Button>
-                          </Link>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-sage-600 font-medium">
-                            AUD 700
-                          </div>
-                          <Link href="/booking?service=animal-reiki&type=pet-parent-in-person&package=3-sessions">
-                            <Button
-                              size="sm"
-                              className="w-full text-xs mt-1 bg-sage-600 hover:bg-sage-700 text-white"
-                            >
-                              3 Sessions
-                            </Button>
-                          </Link>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-sage-600 font-medium">
-                            AUD 1000
-                          </div>
-                          <Link href="/booking?service=animal-reiki&type=pet-parent-in-person&package=5-sessions">
-                            <Button
-                              size="sm"
-                              className="w-full text-xs mt-1 bg-sage-600 hover:bg-sage-700 text-white"
-                            >
-                              5 Sessions
-                            </Button>
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Distance Pet & Parent */}
-                    <div className="border border-blue-100 rounded-lg p-2 bg-blue-50">
-                      <div className="text-xs font-medium text-blue-800 mb-2">
-                        Distance Package
-                      </div>
-                      <div className="grid grid-cols-3 gap-1 text-xs">
-                        <div className="text-center">
-                          <div className="text-sage-600 font-medium">
-                            AUD 200
-                          </div>
-                          <Link href="/booking?service=animal-reiki&type=pet-parent-distance&package=single">
-                            <Button
-                              size="sm"
-                              className="w-full text-xs mt-1 bg-sage-600 hover:bg-sage-700 text-white"
-                            >
-                              1 Session
-                            </Button>
-                          </Link>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-sage-600 font-medium">
-                            AUD 550
-                          </div>
-                          <Link href="/booking?service=animal-reiki&type=pet-parent-distance&package=3-sessions">
-                            <Button
-                              size="sm"
-                              className="w-full text-xs mt-1 bg-sage-600 hover:bg-sage-700 text-white"
-                            >
-                              3 Sessions
-                            </Button>
-                          </Link>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-sage-600 font-medium">
-                            AUD 950
-                          </div>
-                          <Link href="/booking?service=animal-reiki&type=pet-parent-distance&package=5-sessions">
-                            <Button
-                              size="sm"
-                              className="w-full text-xs mt-1 bg-sage-600 hover:bg-sage-700 text-white"
-                            >
-                              5 Sessions
-                            </Button>
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-1 pt-2">
-                  {[
-                    "Pet anxiety relief",
-                    "Behavioral understanding",
-                    "Emotional balance",
-                    "Stronger bonds",
-                  ].map((benefit, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center gap-2 text-xs text-stone-600"
-                    >
-                      <CheckCircle className="h-3 w-3 text-sage-600" />
-                      {benefit}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Lama Fera Healing */}
-            <Card className="border-stone-200 hover:shadow-lg transition-shadow">
-              <CardContent className="p-6 space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-sage-100 rounded-lg">
-                    <Zap className="h-6 w-6 text-sage-600" />
-                  </div>
-                  <h3 className="font-semibold text-stone-800">
-                    Lama Fera Healing
-                  </h3>
-                </div>
-                <p className="text-stone-600 text-sm leading-relaxed">
-                  Ancient Tibetan healing for deep spiritual & energetic
-                  transformation from Buddhist monasteries.
-                </p>
-
-                <div className="space-y-3">
-                  <div className="border border-stone-100 rounded-lg p-3">
-                    <div className="flex justify-between items-center text-sm mb-2">
-                      <span className="font-medium text-stone-700">
-                        In-Person Session
-                      </span>
-                      <span className="font-semibold text-sage-600">
-                        AUD 150
-                      </span>
-                    </div>
-                    <div className="text-xs text-stone-500 mb-2">
-                      Duration: 30-45 minutes
-                    </div>
-                    <Link href="/booking?service=lama-fera&type=in-person">
-                      <Button
-                        size="sm"
-                        className="w-full bg-sage-600 hover:bg-sage-700 text-white"
-                      >
-                        Book In-Person
-                      </Button>
-                    </Link>
-                  </div>
-
-                  <div className="border border-stone-100 rounded-lg p-3">
-                    <div className="flex justify-between items-center text-sm mb-2">
-                      <span className="font-medium text-stone-700">
-                        Distance Session
-                      </span>
-                      <span className="font-semibold text-sage-600">
-                        AUD 120
-                      </span>
-                    </div>
-                    <div className="text-xs text-stone-500 mb-2">
-                      Duration: 30-45 minutes
-                    </div>
-                    <Link href="/booking?service=lama-fera&type=distance">
-                      <Button
-                        size="sm"
-                        className="w-full bg-sage-600 hover:bg-sage-700 text-white"
-                      >
-                        Book Distance
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-
-                <div className="space-y-1 pt-2">
-                  {[
-                    "Remove negative energy",
-                    "Clear karmic blocks",
-                    "Spiritual growth",
-                    "Aura protection",
-                  ].map((benefit, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center gap-2 text-xs text-stone-600"
-                    >
-                      <CheckCircle className="h-3 w-3 text-sage-600" />
-                      {benefit}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="text-center mt-12">
-            <Link href="/services">
-              <Button
-                size="lg"
-                className="bg-sage-600 hover:bg-sage-700 text-white"
-              >
-                View All Services & Programs
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <WaysToWork />
+      <WaysToWork showAllServices />
 
       {/* Testimonials Section */}
       <section id="testimonials" className="py-20 bg-stone-50">
@@ -1364,6 +648,7 @@ export default function HomePage() {
                     onSubmit={(e) => handleSubmit(e, "consultation")}
                     className="space-y-4"
                   >
+                    <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-stone-700 mb-2">
@@ -1421,7 +706,10 @@ export default function HomePage() {
                       <label className="block text-sm font-medium text-stone-700 mb-2">
                         Preferred Contact Method
                       </label>
-                      <select className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500">
+                      <select
+                        name="contactMethod"
+                        className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
+                      >
                         <option>Phone Call</option>
                         <option>Email</option>
                         <option>Text Message</option>
@@ -1433,7 +721,7 @@ export default function HomePage() {
                         What would you like to work on?
                       </label>
                       <select
-                        name="contactMethod"
+                        name="workOn"
                         className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                       >
                         <option>Anxiety & Stress Relief</option>
@@ -1451,6 +739,7 @@ export default function HomePage() {
                         Tell me more about your situation
                       </label>
                       <textarea
+                        name="details"
                         rows={4}
                         className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                         placeholder="Share what you'd like to achieve and any questions you have..."
@@ -1499,7 +788,7 @@ export default function HomePage() {
                   About Rangika
                 </Link>
                 <Link
-                  href="/services"
+                  href="/sessions"
                   className="block text-stone-300 hover:text-white transition-colors"
                 >
                   Services

@@ -157,7 +157,7 @@ export function AccessRequestRow({ request, packages, courses }: { request: Requ
             <DialogDescription>
               {preset
                 ? `They asked for ${request.wantsLabel}, so that's already chosen. Change it if needed, then approve.`
-                : "Choose their sessions and/or courses. They'll get an email and can then sign in with Google."}
+                : "Choose their sessions and/or classes. They'll get an email and can then sign in with Google."}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">

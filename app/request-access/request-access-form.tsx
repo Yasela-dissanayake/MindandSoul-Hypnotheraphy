@@ -15,8 +15,8 @@ type Wants = "SESSIONS" | "COURSE" | "UNSURE";
 
 const CHOICES: { id: Wants | "ONLINE"; icon: typeof Sparkles; title: string; text: string }[] = [
   { id: "SESSIONS", icon: Sparkles, title: "Sessions with Rangika", text: "Hypnotherapy, Reiki or Animal Reiki, one to one" },
-  { id: "COURSE", icon: GraduationCap, title: "A course", text: "A Reiki or Animal Reiki course with Rangika" },
-  { id: "ONLINE", icon: BookOpen, title: "An online course", text: "Self-paced courses you can buy and start straight away" },
+  { id: "COURSE", icon: GraduationCap, title: "A class", text: "A Reiki or Animal Reiki class with Rangika" },
+  { id: "ONLINE", icon: BookOpen, title: "A self-paced course", text: "Self-paced courses you can buy and start straight away" },
   { id: "UNSURE", icon: HelpCircle, title: "I'm not sure yet", text: "Send the request and Rangika will help" },
 ];
 
@@ -107,7 +107,7 @@ export function RequestAccessForm({
 
       {wants === "COURSE" && (
         <div className="space-y-1.5">
-          <Label htmlFor="ra-course">Which course?</Label>
+          <Label htmlFor="ra-course">Which class?</Label>
           <select id="ra-course" className={selectCls} value={courseId} onChange={(e) => setCourseId(e.target.value)}>
             <option value="">Choose…</option>
             {courses.map((c) => (
@@ -121,9 +121,9 @@ export function RequestAccessForm({
 
       {wants === "ONLINE" ? (
         <div className="space-y-3 rounded-xl bg-sage-50 p-4 text-sm text-stone-700 ring-1 ring-sage-200">
-          <p>Online courses don&apos;t need approval. Choose one and pay, and your account is set up straight away.</p>
+          <p>Self-paced courses don&apos;t need approval. Choose one and pay, and your account is set up straight away.</p>
           <Button asChild className="w-full bg-sage-600 hover:bg-sage-700">
-            <Link href="/learn">See the online courses</Link>
+            <Link href="/courses">See the courses</Link>
           </Button>
         </div>
       ) : (

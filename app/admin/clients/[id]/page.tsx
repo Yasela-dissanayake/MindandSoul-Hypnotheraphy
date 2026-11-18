@@ -54,7 +54,7 @@ const TABS = [
   { id: "tasks", label: "Tasks" },
   { id: "trackers", label: "Trackers" },
   { id: "uploads", label: "Uploads" },
-  { id: "courses", label: "Courses" },
+  { id: "courses", label: "Classes" },
   { id: "journal", label: "Journal" },
   { id: "progress", label: "Progress" },
   { id: "notes", label: "Private notes" },
@@ -104,7 +104,7 @@ async function ClientHeader({ id, tab }: { id: string; tab: Tab }) {
         <p className="text-sm text-stone-600">
           {[...new Set(client.plans.map((p) => serviceLabel(p.service)))].join(", ") || "No sessions"}
           {" · "}
-          {client.enrollments.map((e) => e.course.title).join(", ") || "No courses"}
+          {client.enrollments.map((e) => e.course.title).join(", ") || "No classes"}
         </p>
       </div>
 

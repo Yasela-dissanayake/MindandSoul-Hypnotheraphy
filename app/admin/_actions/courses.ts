@@ -55,24 +55,24 @@ const websiteSchema = z.object({
   published: z.boolean(),
 });
 
-/** Price, dates and text for the public /courses page, and whether it is on the website. */
+/** Price, dates and text for the public /classes page, and whether it is on the website. */
 export async function updateCourseWebsite(id: string, input: z.input<typeof websiteSchema>): Promise<ActionResult<{ slug: string }>> {
   await requireAdmin();
   const parsed = websiteSchema.safeParse(input);
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Please check the details.");
   const d = parsed.data;
   const course = await db.course.findUnique({ where: { id }, select: { title: true, slug: true, archived: true } });
-  if (!course) return fail("Course not found.");
+  if (!course) return fail("Class not found.");
   const price = Math.round(d.price * 100);
-  if (d.published && price < 50) return fail("Add a price before putting the course on the website.");
-  if (d.published && course.archived) return fail("This course is hidden. Show it to students again first.");
+  if (d.published && price < 50) return fail("Add a price before putting the class on the website.");
+  if (d.published && course.archived) return fail("This class is hidden. Show it to students again first.");
   const slug = course.slug ?? (await uniqueCourseSlug(course.title, id));
   await db.course.update({
     where: { id },
     data: { slug, summary: blank(d.summary), details: blank(d.details), format: blank(d.format), schedule: blank(d.schedule), price, seats: d.seats, published: d.published },
   });
   refreshAll();
-  revalidatePath("/courses", "layout");
+  revalidatePath("/classes", "layout");
   return { ok: true, data: { slug } };
 }
 
@@ -80,12 +80,12 @@ export async function updateCourseWebsite(id: string, input: z.input<typeof webs
 export async function deleteCourse(id: string): Promise<ActionResult> {
   await requireAdmin();
   const c = await db.course.findUnique({ where: { id }, select: { imageKey: true, _count: { select: { enrollments: true, purchases: true } } } });
-  if (!c) return fail("Course not found.");
-  if (c._count.enrollments || c._count.purchases) return fail("This course has students or payments, so it can't be deleted. Hide it instead.");
+  if (!c) return fail("Class not found.");
+  if (c._count.enrollments || c._count.purchases) return fail("This class has students or payments, so it can't be deleted. Hide it instead.");
   await db.course.delete({ where: { id } });
   if (c.imageKey && !isSiteImage(c.imageKey)) await deleteObject(c.imageKey);
   refreshAll();
-  revalidatePath("/courses", "layout");
+  revalidatePath("/classes", "layout");
   return { ok: true };
 }
 
@@ -94,11 +94,11 @@ export async function setCourseCover(id: string, key: string | null): Promise<Ac
   await requireAdmin();
   if (key !== null && !/^covers\/[\w.\-\/]+$/.test(key)) return fail("Upload failed. Please try again.");
   const c = await db.course.findUnique({ where: { id }, select: { imageKey: true } });
-  if (!c) return fail("Course not found.");
+  if (!c) return fail("Class not found.");
   await db.course.update({ where: { id }, data: { imageKey: key } });
   if (c.imageKey && c.imageKey !== key && !isSiteImage(c.imageKey)) await deleteObject(c.imageKey);
   refreshAll();
-  revalidatePath("/courses", "layout");
+  revalidatePath("/classes", "layout");
   return { ok: true };
 }
 
@@ -190,7 +190,7 @@ export async function enrollStudent(userId: string, courseId: string): Promise<A
   await requireAdmin();
   const user = await db.user.findUnique({ where: { id: userId } });
   if (!user || user.role !== "CLIENT") return fail("Person not found.");
-  if (!(await db.course.findUnique({ where: { id: courseId }, select: { id: true } }))) return fail("Course not found.");
+  if (!(await db.course.findUnique({ where: { id: courseId }, select: { id: true } }))) return fail("Class not found.");
   await db.enrollment.upsert({ where: { userId_courseId: { userId, courseId } }, update: {}, create: { userId, courseId } });
   refreshAll();
   return { ok: true };

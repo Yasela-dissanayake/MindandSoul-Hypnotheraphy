@@ -56,14 +56,14 @@ export function CourseDetails({ course }: { course: EditorCourse }) {
             <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
               <Pencil className="mr-1.5 h-3.5 w-3.5" /> Edit
             </Button>
-            <Button size="sm" variant="outline" disabled={pending} onClick={() => run(() => setCourseArchived(course.id, !course.archived), course.archived ? "Course visible again" : "Course hidden")}>
-              {course.archived ? "Show to students" : "Hide course"}
+            <Button size="sm" variant="outline" disabled={pending} onClick={() => run(() => setCourseArchived(course.id, !course.archived), course.archived ? "Class visible again" : "Class hidden")}>
+              {course.archived ? "Show to students" : "Hide class"}
             </Button>
             {course.canDelete && (
               <ConfirmButton
-                title="Delete this course?"
+                title="Delete this class?"
                 description="Its modules and material list are deleted too. Library files stay in the Library."
-                onConfirm={() => run(() => deleteCourse(course.id), "Course deleted", (r) => r.ok && router.push("/admin/courses"))}
+                onConfirm={() => run(() => deleteCourse(course.id), "Class deleted", (r) => r.ok && router.push("/admin/classes"))}
               />
             )}
           </div>
@@ -75,7 +75,7 @@ export function CourseDetails({ course }: { course: EditorCourse }) {
   return (
     <div className="space-y-3 rounded-xl bg-stone-50 p-4">
       <div className="space-y-2">
-        <Label>Course name</Label>
+        <Label>Class name</Label>
         <Input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
       </div>
       <div className="space-y-2">
@@ -146,7 +146,7 @@ export function CourseModulesEditor({ course }: { course: EditorCourse }) {
               <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setEdit({ id: m.id, title: m.title, description: m.description ?? "" })} aria-label="Edit">
                 <Pencil className="h-4 w-4" />
               </Button>
-              <ConfirmButton icon title={`Delete "${m.title}"?`} description="Its material stays in the course, just not in a module. Students' ticks for it are removed." onConfirm={() => run(() => deleteCourseModule(m.id), "Deleted")} />
+              <ConfirmButton icon title={`Delete "${m.title}"?`} description="Its material stays in the class, just not in a module. Students' ticks for it are removed." onConfirm={() => run(() => deleteCourseModule(m.id), "Deleted")} />
             </li>
           ),
         )}
@@ -190,7 +190,7 @@ export function CourseMaterialEditor({ course, library }: { course: EditorCourse
           }
           aria-label="Where"
         >
-          <option value="">Course material</option>
+          <option value="">Class material</option>
           {course.modules.map((m) => (
             <option key={m.id} value={m.id}>
               {m.title}
@@ -205,7 +205,7 @@ export function CourseMaterialEditor({ course, library }: { course: EditorCourse
         <Button size="icon" variant="ghost" className="h-8 w-8" disabled={pending || i === list.length - 1} onClick={() => run(() => moveCourseItem(item.id, 1))} aria-label="Move down">
           <ArrowDown className="h-4 w-4" />
         </Button>
-        <Button size="icon" variant="ghost" className="h-8 w-8" disabled={pending} onClick={() => run(() => removeCourseItem(item.id), "Removed from course")} aria-label="Remove">
+        <Button size="icon" variant="ghost" className="h-8 w-8" disabled={pending} onClick={() => run(() => removeCourseItem(item.id), "Removed from class")} aria-label="Remove">
           <X className="h-4 w-4" />
         </Button>
       </li>
@@ -214,15 +214,15 @@ export function CourseMaterialEditor({ course, library }: { course: EditorCourse
 
   return (
     <Section
-      title="Course material & extras"
-      hint="Everything here is shared: every student on this course sees it, including anything you add later."
+      title="Class material & extras"
+      hint="Everything here is shared: every student on this class sees it, including anything you add later."
       action={
         <Button size="sm" className="bg-sage-600 hover:bg-sage-700" onClick={() => setPicking(true)}>
           <Plus className="mr-1 h-3.5 w-3.5" /> Add material
         </Button>
       }
     >
-      {course.items.length === 0 && <p className="text-sm text-stone-500">No material yet. Add the tutorials, PDFs, recordings and videos for this course.</p>}
+      {course.items.length === 0 && <p className="text-sm text-stone-500">No material yet. Add the tutorials, PDFs, recordings and videos for this class.</p>}
       {main.length > 0 && <ul className="space-y-2">{main.map((it, i) => row(it, i, main))}</ul>}
       {extras.length > 0 && (
         <div className="space-y-2">
@@ -241,7 +241,7 @@ export function CourseMaterialEditor({ course, library }: { course: EditorCourse
         targetLabel="Module"
         defaultTag={course.title}
         showExtra
-        onAdd={(ids, moduleId, extra) => run(() => addCourseItems(course.id, ids, moduleId, extra), "Added to the course")}
+        onAdd={(ids, moduleId, extra) => run(() => addCourseItems(course.id, ids, moduleId, extra), "Added to the class")}
         pending={pending}
       />
     </Section>
@@ -316,7 +316,7 @@ export function CourseStudents({
   const [pick, setPick] = useState("");
 
   return (
-    <Section title={`Students (${students.length})`} hint="Only these people can see this course. Upload each student's signed certificate when they finish.">
+    <Section title={`Students (${students.length})`} hint="Only these people can see this class. Upload each student's signed certificate when they finish.">
       <div className="flex flex-wrap gap-2">
         <select className={`${selectCls} max-w-xs`} value={pick} onChange={(e) => setPick(e.target.value)}>
           <option value="">Add an existing person…</option>
@@ -354,9 +354,9 @@ export function CourseStudents({
               </Button>
               <ConfirmButton
                 label="Remove"
-                title={`Remove ${s.name} from this course?`}
-                description="They'll no longer see the course. Their module ticks and certificate for it are deleted."
-                onConfirm={() => run(() => unenrollStudent(s.enrollmentId), "Removed from course")}
+                title={`Remove ${s.name} from this class?`}
+                description="They'll no longer see the class. Their module ticks and certificate for it are deleted."
+                onConfirm={() => run(() => unenrollStudent(s.enrollmentId), "Removed from class")}
               />
             </div>
           </li>
@@ -381,11 +381,11 @@ export function PersonCourses({
   const available = allCourses.filter((c) => !enrollments.some((e) => e.courseId === c.id));
   return (
     <div className="space-y-4">
-      {enrollments.length === 0 && <p className="rounded-xl bg-white p-5 text-stone-500 ring-1 ring-stone-200">Not enrolled in any course.</p>}
+      {enrollments.length === 0 && <p className="rounded-xl bg-white p-5 text-stone-500 ring-1 ring-stone-200">Not enrolled in any class.</p>}
       {enrollments.map((e) => (
         <section key={e.enrollmentId} className="space-y-3 rounded-2xl bg-white p-5 ring-1 ring-stone-200">
           <div className="flex flex-wrap items-center gap-2">
-            <Link href={`/admin/courses/${e.courseId}`} className="flex-1 font-serif text-xl text-stone-800 hover:underline">
+            <Link href={`/admin/classes/${e.courseId}`} className="flex-1 font-serif text-xl text-stone-800 hover:underline">
               {e.courseTitle}
             </Link>
             {e.completed && <Badge className="bg-sage-100 text-sage-800 hover:bg-sage-100">Completed</Badge>}
@@ -404,9 +404,9 @@ export function PersonCourses({
               {e.completed ? "Mark in progress" : "Mark completed"}
             </Button>
             <ConfirmButton
-              label="Remove from course"
+              label="Remove from class"
               title={`Remove from ${e.courseTitle}?`}
-              description="They'll no longer see this course. Their module ticks and certificate for it are deleted."
+              description="They'll no longer see this class. Their module ticks and certificate for it are deleted."
               onConfirm={() => run(() => unenrollStudent(e.enrollmentId), "Removed")}
             />
           </div>
@@ -415,7 +415,7 @@ export function PersonCourses({
       {available.length > 0 && (
         <div className="flex flex-wrap gap-2 rounded-2xl border-2 border-dashed border-sage-200 bg-white p-4">
           <select className={`${selectCls} max-w-xs`} value={pick} onChange={(e) => setPick(e.target.value)}>
-            <option value="">Enrol in a course…</option>
+            <option value="">Enrol in a class…</option>
             {available.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.title}
@@ -431,7 +431,7 @@ export function PersonCourses({
   );
 }
 
-/** Price, dates and description for the public /courses page, and the publish switch. */
+/** Price, dates and description for the public /classes page, and the publish switch. */
 export function CourseWebsiteForm({ course }: { course: EditorCourse }) {
   const w = course.website;
   const [f, setF] = useState({
@@ -474,7 +474,7 @@ export function CourseWebsiteForm({ course }: { course: EditorCourse }) {
           <h2 className="flex items-center gap-2 font-serif text-xl text-stone-800">
             <Globe className="h-5 w-5 text-sage-600" /> On the website
           </h2>
-          <p className="text-sm text-stone-500">People can read about this course on the Courses page, pay by card and be enrolled automatically.</p>
+          <p className="text-sm text-stone-500">People can read about this class on the Classes page, pay by card and be enrolled automatically.</p>
         </div>
         <span className={`rounded-full px-3 py-1 text-xs font-medium ${f.published ? "bg-sage-100 text-sage-800" : "bg-amber-100 text-amber-900"}`}>
           {f.published ? "On the website" : "Not on the website"}
@@ -483,7 +483,7 @@ export function CourseWebsiteForm({ course }: { course: EditorCourse }) {
       <div className="grid gap-4 sm:grid-cols-[1fr_9rem_9rem]">
         <div className="space-y-1.5">
           <Label htmlFor="cw-summary">Short summary</Label>
-          <Input id="cw-summary" maxLength={200} placeholder="One line shown on the course list" value={f.summary} onChange={set("summary")} />
+          <Input id="cw-summary" maxLength={200} placeholder="One line shown on the class list" value={f.summary} onChange={set("summary")} />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="cw-price">Price (AUD)</Label>
@@ -505,12 +505,12 @@ export function CourseWebsiteForm({ course }: { course: EditorCourse }) {
         </div>
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="cw-details">About this course (website)</Label>
+        <Label htmlFor="cw-details">About this class (website)</Label>
         <Textarea
           id="cw-details"
           rows={6}
           maxLength={10000}
-          placeholder={"What people will learn, who it's for, what's included… Leave empty to use the course description."}
+          placeholder={"What people will learn, who it's for, what's included… Leave empty to use the class description."}
           value={f.details}
           onChange={set("details")}
         />
@@ -532,7 +532,7 @@ export function CourseWebsiteForm({ course }: { course: EditorCourse }) {
           ))}
         {f.published && slug && (
           <Button variant="ghost" asChild>
-            <a href={`/courses/${slug}`} target="_blank" rel="noreferrer">
+            <a href={`/classes/${slug}`} target="_blank" rel="noreferrer">
               <ExternalLink className="mr-2 h-4 w-4" /> View on website
             </a>
           </Button>

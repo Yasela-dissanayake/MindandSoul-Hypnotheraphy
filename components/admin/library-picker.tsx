@@ -138,7 +138,7 @@ export function LibraryPicker(props: {
         <div className="grid grid-cols-2 gap-2">
           {(
             [
-              [false, "Course material"],
+              [false, "Class material"],
               [true, "Extras (bonus)"],
             ] as const
           ).map(([v, l]) => (

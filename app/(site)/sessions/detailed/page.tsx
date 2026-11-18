@@ -583,7 +583,7 @@ export default function DetailedServicesPage() {
       <section className="py-12 bg-gradient-to-br from-stone-100 to-sage-50">
         <div className="container mx-auto px-4">
           <div className="flex items-center gap-4 mb-8">
-            <Link href="/services">
+            <Link href="/sessions">
               <Button
                 variant="outline"
                 size="sm"
@@ -664,7 +664,7 @@ export default function DetailedServicesPage() {
                           <Link
                             href={
                               service.id === "reiki-training"
-                                ? "/courses"
+                                ? "/classes"
                                 : service.id != "meditation"
                                 ? `/booking?service=${service.id}`
                                 : "/contact"
@@ -672,7 +672,7 @@ export default function DetailedServicesPage() {
                           >
                             <Button className="bg-sage-600 hover:bg-sage-700 text-white">
                               <Calendar className="h-4 w-4 mr-2" />
-                              {service.id === "reiki-training" ? "See Courses & Enrol" : "Book This Service"}
+                              {service.id === "reiki-training" ? "See Classes & Enrol" : "Book This Service"}
                             </Button>
                           </Link>
                           <Link href="/contact">
@@ -1156,7 +1156,7 @@ export default function DetailedServicesPage() {
 
                     {service.courses && (
                       <Expandable
-                        title="Reiki Course Offerings"
+                        title="Reiki Class Offerings"
                         icon={<GraduationCap className="h-6 w-6" />}
                         hint={<>{service.courses.length} levels</>}
                       >
@@ -1268,11 +1268,11 @@ export default function DetailedServicesPage() {
                     {service.id === "reiki-training" && (
                       <div className="flex flex-col items-start justify-between gap-4 rounded-xl bg-sage-50 p-5 ring-1 ring-sage-200 sm:flex-row sm:items-center">
                         <div>
-                          <p className="font-serif text-xl text-stone-800">Course dates, prices &amp; enrolment</p>
+                          <p className="font-serif text-xl text-stone-800">Class dates, prices &amp; enrolment</p>
                           <p className="text-sm text-stone-600">See the next classes, places left and enrol online.</p>
                         </div>
-                        <Link href="/courses">
-                          <Button className="bg-sage-600 hover:bg-sage-700 text-white">See Courses</Button>
+                        <Link href="/classes">
+                          <Button className="bg-sage-600 hover:bg-sage-700 text-white">See Classes</Button>
                         </Link>
                       </div>
                     )}
@@ -1732,13 +1732,13 @@ export default function DetailedServicesPage() {
                         session or free consultation today.
                       </p>
                       <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Link href={service.id === "reiki-training" ? "/courses" : `/booking?service=${service.id}`}>
+                        <Link href={service.id === "reiki-training" ? "/classes" : `/booking?service=${service.id}`}>
                           <Button
                             size="lg"
                             className="bg-white text-sage-600 hover:bg-stone-50"
                           >
                             <Calendar className="h-5 w-5 mr-2" />
-                            {service.id === "reiki-training" ? "See Courses & Enrol" : "Book This Service"}
+                            {service.id === "reiki-training" ? "See Classes & Enrol" : "Book This Service"}
                           </Button>
                         </Link>
                         <Link href="/contact">

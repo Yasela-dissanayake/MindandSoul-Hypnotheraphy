@@ -22,7 +22,6 @@ import Link from "next/link";
 import { ServiceImageSlider } from "@/components/service-image-slider";
 import Image from "next/image";
 import { Expandable } from "@/components/site/expandable";
-import { WaysToWork } from "@/components/site/ways-to-work";
 
 export default function ServicesPage() {
   // Service images for the slider
@@ -414,8 +413,6 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      <WaysToWork />
-
       {/* Core Services Overview */}
       {/* <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
@@ -581,6 +578,7 @@ export default function ServicesPage() {
                         size="md"
                         title="Pricing & Booking Options"
                         className="bg-sage-50"
+                        defaultOpen
                       >
                       <div className="space-y-4">
 
@@ -1035,7 +1033,7 @@ export default function ServicesPage() {
                       </ul>
                     </Expandable>
 
-                    <Link href={`/services/detailed#${service.id}`}>
+                    <Link href={`/sessions/detailed#${service.id}`}>
                       <Button
                         variant="outline"
                         className="w-full my-6 border-sage-300 text-sage-700 hover:bg-sage-50 bg-transparent"
@@ -1045,9 +1043,9 @@ export default function ServicesPage() {
                     </Link>
 
                     {service.id === "reiki-training" ? (
-                      <Link href="/courses">
+                      <Link href="/classes">
                         <Button className="w-full bg-sage-600 hover:bg-sage-700 text-white">
-                          See Course Dates & Enrol
+                          See Class Dates & Enrol
                         </Button>
                       </Link>
                     ) : service.bookable ? (
@@ -1133,7 +1131,7 @@ export default function ServicesPage() {
                     <p className="text-sm text-sage-700">{service.note}</p>
                   </div>
 
-                  <Link href={`/services/detailed#${service.id}`}>
+                  <Link href={`/sessions/detailed#${service.id}`}>
                     <Button
                       variant="outline"
                       className="w-full my-6 border-sage-300 text-sage-700 hover:bg-sage-50 bg-transparent"

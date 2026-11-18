@@ -86,6 +86,41 @@ export default async function SessionsPage() {
         <ExistingClientSessions people={everyone.map((u) => ({ id: u.id, name: u.name ? `${u.name} (${u.email})` : u.email }))} />
       </div>
 
+      <section id="packages" className="scroll-mt-6 space-y-3 border-b border-stone-200 pb-8">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h2 className="font-serif text-2xl text-stone-800">Ready-made packages</h2>
+            <p className="text-sm text-stone-500">
+              Optional time-savers, e.g. &quot;Quit smoking: 6 sessions&quot;. Build the weekly work once, then copy it to a client and change anything just for them.
+            </p>
+          </div>
+          <NewTemplateDialog />
+        </div>
+        {templates.length === 0 ? (
+          <p className="rounded-xl bg-white p-5 text-sm text-stone-500 ring-1 ring-stone-200">No packages yet. You don&apos;t need one: you can also build a client&apos;s plan from scratch.</p>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {templates.map((t) => (
+              <Link key={t.id} href={`/admin/plans/${t.id}`} className="space-y-2 rounded-xl bg-white p-4 ring-1 ring-stone-200 transition hover:ring-sage-300">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="font-medium text-stone-800">{t.title}</p>
+                  <Badge variant="outline" className="font-normal">
+                    {SERVICES.find((s) => s.id === t.service)?.short}
+                  </Badge>
+                  {t.totalSessions && <Badge variant="outline">{t.totalSessions} sessions</Badge>}
+                </div>
+                <p className="text-xs text-stone-500">
+                  {t._count.modules} weeks · {t._count.items} items · {t._count.tasks} tasks · {t._count.trackers} trackers
+                </p>
+                <p className="text-xs text-sage-700">
+                  Given to {usedCount(t.id)} {usedCount(t.id) === 1 ? "client" : "clients"}
+                </p>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+
       <section id="questions" className="scroll-mt-6 space-y-3">
         <div className="flex items-center gap-2">
           <h2 className="font-serif text-2xl text-stone-800">Questions</h2>
@@ -189,41 +224,6 @@ export default async function SessionsPage() {
           </ul>
         </details>
       )}
-
-      <section id="packages" className="scroll-mt-6 space-y-3 border-t border-stone-200 pt-8">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h2 className="font-serif text-2xl text-stone-800">Ready-made packages</h2>
-            <p className="text-sm text-stone-500">
-              Optional time-savers, e.g. &quot;Quit smoking: 6 sessions&quot;. Build the weekly work once, then copy it to a client and change anything just for them.
-            </p>
-          </div>
-          <NewTemplateDialog />
-        </div>
-        {templates.length === 0 ? (
-          <p className="rounded-xl bg-white p-5 text-sm text-stone-500 ring-1 ring-stone-200">No packages yet. You don&apos;t need one: you can also build a client&apos;s plan from scratch.</p>
-        ) : (
-          <div className="grid gap-3 sm:grid-cols-2">
-            {templates.map((t) => (
-              <Link key={t.id} href={`/admin/plans/${t.id}`} className="space-y-2 rounded-xl bg-white p-4 ring-1 ring-stone-200 transition hover:ring-sage-300">
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="font-medium text-stone-800">{t.title}</p>
-                  <Badge variant="outline" className="font-normal">
-                    {SERVICES.find((s) => s.id === t.service)?.short}
-                  </Badge>
-                  {t.totalSessions && <Badge variant="outline">{t.totalSessions} sessions</Badge>}
-                </div>
-                <p className="text-xs text-stone-500">
-                  {t._count.modules} weeks · {t._count.items} items · {t._count.tasks} tasks · {t._count.trackers} trackers
-                </p>
-                <p className="text-xs text-sage-700">
-                  Given to {usedCount(t.id)} {usedCount(t.id) === 1 ? "client" : "clients"}
-                </p>
-              </Link>
-            ))}
-          </div>
-        )}
-      </section>
     </div>
   );
 }

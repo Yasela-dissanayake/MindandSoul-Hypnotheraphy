@@ -51,14 +51,14 @@ export default async function TodayPage() {
       {nothing && (
         <div className="rounded-2xl bg-white p-6 text-center ring-1 ring-stone-200">
           <p className="font-serif text-lg text-stone-700">Rangika is getting your space ready.</p>
-          <p className="mt-2 text-sm text-stone-500">Your sessions work or course material will appear here soon.</p>
+          <p className="mt-2 text-sm text-stone-500">Your sessions work or class material will appear here soon.</p>
         </div>
       )}
 
       {learning.map((p) => (
         <Link
           key={p.id}
-          href={`/portal/learning/${p.id}`}
+          href={`/portal/courses/${p.id}`}
           className="block space-y-2 rounded-2xl bg-white p-5 ring-1 ring-stone-200 transition hover:ring-sage-300"
         >
           <div className="flex items-center justify-between gap-3">
@@ -138,13 +138,13 @@ export default async function TodayPage() {
 
       {courses.length > 0 && (
         <section className="space-y-3">
-          <h2 className="font-serif text-xl text-stone-800">My courses</h2>
+          <h2 className="font-serif text-xl text-stone-800">My classes</h2>
           {courses.map((c) => {
             const total = c.course.modules.length;
             return (
               <Link
                 key={c.enrollmentId}
-                href={`/portal/courses/${c.course.id}`}
+                href={`/portal/classes/${c.course.id}`}
                 className="block space-y-2 rounded-2xl bg-white p-4 ring-1 ring-stone-200 transition hover:ring-sage-300"
               >
                 <div className="flex items-center gap-3">

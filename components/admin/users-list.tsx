@@ -93,7 +93,7 @@ export function UsersList({ rows, q: initialQ, area, status }: { rows: UserRow[]
         <select value={area} onChange={(e) => reload({ area: e.target.value })} className={selectCls} aria-label="Show">
           <option value="">Everyone</option>
           <option value="sessions">Session clients</option>
-          <option value="courses">Course students</option>
+          <option value="courses">Class students</option>
         </select>
         <select value={status} onChange={(e) => reload({ status: e.target.value })} className={selectCls} aria-label="Status">
           <option value="active">Active</option>
@@ -113,7 +113,7 @@ export function UsersList({ rows, q: initialQ, area, status }: { rows: UserRow[]
             <thead className="border-b border-stone-200 text-left text-xs uppercase tracking-wide text-stone-500">
               <tr>
                 <th className="px-4 py-3 font-medium">Name</th>
-                <th className="px-4 py-3 font-medium">Sessions / courses</th>
+                <th className="px-4 py-3 font-medium">Sessions / classes</th>
                 <th className="px-4 py-3 font-medium">Started</th>
                 <th className="px-4 py-3 font-medium">Last active</th>
                 <th className="px-4 py-3 font-medium">Today</th>

@@ -22,17 +22,17 @@ export const onSaleWhere = { published: true, archived: false, price: { gte: 50 
 /** Starts a card payment for a place. The price always comes from the database, never from the browser. */
 export async function startCoursePurchase(input: { itemId: string; name: string; email: string; phone?: string }) {
   const course = await db.course.findFirst({ where: { id: input.itemId, ...onSaleWhere } });
-  if (!course) throw new PurchaseError("This course is not open for enrolment any more.");
-  if (course.seats !== null && course.seats <= 0) throw new PurchaseError("Sorry, this course is full. Please contact Rangika to join the waiting list.");
+  if (!course) throw new PurchaseError("This class is not open for enrolment any more.");
+  if (course.seats !== null && course.seats <= 0) throw new PurchaseError("Sorry, this class is full. Please contact Rangika to join the waiting list.");
   const email = input.email.trim().toLowerCase();
 
   const existing = await db.user.findUnique({ where: { email }, select: { enrollments: { where: { courseId: course.id, completedAt: null }, select: { id: true } } } });
-  if (existing?.enrollments.length) throw new PurchaseError("You're already enrolled in this course. Please sign in to see it.");
+  if (existing?.enrollments.length) throw new PurchaseError("You're already enrolled in this class. Please sign in to see it.");
   await settleOpenPayments(
     await db.coursePurchase.findMany({ where: { courseId: course.id, email, status: "PENDING" }, select: { id: true, paymentIntentId: true } }),
     fulfilCoursePurchase,
     (id) => db.coursePurchase.updateMany({ where: { id, status: "PENDING" }, data: { status: "FAILED" } }),
-    "You've already paid for this course and your place is booked. Please sign in to see it (your login details were emailed to you).",
+    "You've already paid for this class and your place is booked. Please sign in to see it (your login details were emailed to you).",
   );
 
   const purchase = await db.coursePurchase.create({
@@ -44,7 +44,7 @@ export async function startCoursePurchase(input: { itemId: string; name: string;
       currency: course.currency,
       automatic_payment_methods: { enabled: true },
       receipt_email: email,
-      description: `Course: ${course.title}`,
+      description: `Class: ${course.title}`,
       metadata: { kind: "course", purchase_id: purchase.id, course: course.title, client_email: email },
     });
     await db.coursePurchase.update({ where: { id: purchase.id }, data: { paymentIntentId: pi.id } });

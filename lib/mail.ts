@@ -83,7 +83,7 @@ export function loginDetailsEmail(opts: {
   const hello = `Hello${opts.name ? ` ${opts.name}` : ""},`;
   const intro =
     opts.customText?.trim() ||
-    `Your private space at Heal With Rangika is ready. There you'll find your sessions work, course material and journal, all in one calm place.`;
+    `Your private space at Heal With Rangika is ready. There you'll find your sessions work, class material and journal, all in one calm place.`;
   const url = `${SITE_URL}/login`;
   const details = `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px;background:#f6f7f6;border-radius:8px;font-family:Arial,sans-serif;font-size:15px">
 <tr><td style="padding:12px 16px 4px;color:#78716c">Username</td><td style="padding:12px 16px 4px"><strong>${escapeHtml(opts.username)}</strong></td></tr>
@@ -146,7 +146,7 @@ ${url}`,
 export function welcomeEmail(opts: { name?: string | null }) {
   const hello = `Welcome${opts.name ? `, ${opts.name}` : ""}!`;
   const url = `${SITE_URL}/portal`;
-  const body = `You're all set. Your private page shows your sessions work and course material. Tick tasks off as you go, and use your journal whenever you like.`;
+  const body = `You're all set. Your private page shows your sessions work and class material. Tick tasks off as you go, and use your journal whenever you like.`;
   return {
     subject: "Welcome to Heal With Rangika",
     html: layout(`<p style="margin:0 0 16px">${escapeHtml(hello)}</p>${paragraphs(body)}${button(url, "Open my page")}`),
@@ -242,7 +242,7 @@ export function packagePurchasedEmail(opts: { name: string; packageTitle: string
     ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px;background:#f6f7f6;border-radius:8px;font-family:Arial,sans-serif;font-size:15px">
 <tr><td style="padding:12px 16px 4px;color:#78716c">Username</td><td style="padding:12px 16px 4px"><strong>${escapeHtml(opts.login.username)}</strong></td></tr>
 <tr><td style="padding:4px 16px 12px;color:#78716c">Password</td><td style="padding:4px 16px 12px"><strong>${escapeHtml(opts.login.password)}</strong></td></tr></table>`
-    : `<p style="margin:0 0 16px">Sign in with your usual username and password. You'll find it under <strong>My learning</strong>.</p>`;
+    : `<p style="margin:0 0 16px">Sign in with your usual username and password. You'll find it under <strong>My courses</strong>.</p>`;
   return {
     subject: `Your course is ready: ${opts.packageTitle}`,
     html: layout(
@@ -254,7 +254,7 @@ export function packagePurchasedEmail(opts: { name: string; packageTitle: string
 
 ${intro}
 
-${opts.login ? `Username: ${opts.login.username}\nPassword: ${opts.login.password}` : "Sign in with your usual username and password. You'll find it under My learning."}
+${opts.login ? `Username: ${opts.login.username}\nPassword: ${opts.login.password}` : "Sign in with your usual username and password. You'll find it under My courses."}
 
 Sign in: ${url}`,
   };
@@ -262,7 +262,7 @@ Sign in: ${url}`,
 
 /** To Rangika: someone bought a package. */
 export function packageSoldEmail(opts: { name: string; email: string; packageTitle: string; amount: string; userId: string }) {
-  const url = `${SITE_URL}/admin/learning`;
+  const url = `${SITE_URL}/admin/courses`;
   return {
     subject: `New sale: ${opts.packageTitle}`,
     html: layout(
@@ -274,7 +274,7 @@ export function packageSoldEmail(opts: { name: string; email: string; packageTit
 
 /** To Rangika: a learner finished every lesson and is waiting for their certificate. */
 export function packageFinishedEmail(opts: { name: string; packageTitle: string }) {
-  const url = `${SITE_URL}/admin/learning#finished`;
+  const url = `${SITE_URL}/admin/courses#finished`;
   return {
     subject: `${opts.name} finished ${opts.packageTitle}`,
     html: layout(
@@ -287,7 +287,7 @@ export function packageFinishedEmail(opts: { name: string; packageTitle: string 
 /** To the learner: Rangika uploaded their certificate. */
 export function packageCertificateEmail(opts: { name?: string | null; packageTitle: string; packageId: string }) {
   const hello = `Hello${opts.name ? ` ${opts.name}` : ""},`;
-  const url = `${SITE_URL}/portal/learning/${opts.packageId}`;
+  const url = `${SITE_URL}/portal/courses/${opts.packageId}`;
   return {
     subject: `Your certificate for ${opts.packageTitle}`,
     html: layout(
@@ -312,11 +312,11 @@ export function courseEnrolledEmail(opts: {
   const when = [opts.schedule, opts.format].filter(Boolean).join(" · ");
   const url = `${SITE_URL}/login`;
   const details = opts.login
-    ? `<p style="margin:0 0 8px">Your private space, where your course notes and material will appear:</p>
+    ? `<p style="margin:0 0 8px">Your private space, where your class notes and material will appear:</p>
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px;background:#f6f7f6;border-radius:8px;font-family:Arial,sans-serif;font-size:15px">
 <tr><td style="padding:12px 16px 4px;color:#78716c">Username</td><td style="padding:12px 16px 4px"><strong>${escapeHtml(opts.login.username)}</strong></td></tr>
 <tr><td style="padding:4px 16px 12px;color:#78716c">Password</td><td style="padding:4px 16px 12px"><strong>${escapeHtml(opts.login.password)}</strong></td></tr></table>`
-    : `<p style="margin:0 0 16px">Sign in with your usual username and password. You'll find the course under <strong>My courses</strong>.</p>`;
+    : `<p style="margin:0 0 16px">Sign in with your usual username and password. You'll find the class under <strong>My classes</strong>.</p>`;
   return {
     subject: `You're enrolled: ${opts.courseTitle}`,
     html: layout(
@@ -328,7 +328,7 @@ export function courseEnrolledEmail(opts: {
 
 ${intro}
 ${when ? `\nWhen and where: ${when}\n` : ""}
-${opts.login ? `Username: ${opts.login.username}\nPassword: ${opts.login.password}` : "Sign in with your usual username and password. You'll find the course under My courses."}
+${opts.login ? `Username: ${opts.login.username}\nPassword: ${opts.login.password}` : "Sign in with your usual username and password. You'll find the class under My classes."}
 
 Sign in: ${url}`,
   };
@@ -336,7 +336,7 @@ Sign in: ${url}`,
 
 /** To Rangika: someone paid for a place on a course. */
 export function courseSoldEmail(opts: { name: string; email: string; phone?: string | null; courseTitle: string; amount: string; seatsLeft: number | null }) {
-  const url = `${SITE_URL}/admin/courses`;
+  const url = `${SITE_URL}/admin/classes`;
   const contact = [opts.email, opts.phone].filter(Boolean).join(" · ");
   const seats = opts.seatsLeft === null ? "" : `${opts.seatsLeft} place${opts.seatsLeft === 1 ? "" : "s"} left.`;
   return {
@@ -345,5 +345,38 @@ export function courseSoldEmail(opts: { name: string; email: string; phone?: str
       `<p style="margin:0 0 16px"><strong>${escapeHtml(opts.name)}</strong> (${escapeHtml(contact)}) paid ${escapeHtml(opts.amount)} for <strong>${escapeHtml(opts.courseTitle)}</strong>.</p><p style="margin:0 0 16px">They've been enrolled automatically. ${escapeHtml(seats)}</p>${button(url, "Open Courses")}`,
     ),
     text: `${opts.name} (${contact}) paid ${opts.amount} for ${opts.courseTitle}.\nThey've been enrolled automatically. ${seats}\n\n${url}`,
+  };
+}
+
+/** To Rangika: someone sent the contact form (free consultation request or a question). */
+export function enquiryEmail(opts: {
+  kind: "CONSULTATION" | "QUESTION";
+  name: string;
+  email: string;
+  phone?: string | null;
+  contactMethod?: string | null;
+  topic?: string | null;
+  message?: string | null;
+}) {
+  const url = `${SITE_URL}/admin/enquiries`;
+  const consult = opts.kind === "CONSULTATION";
+  const rows = [
+    ["Email", opts.email],
+    ["Phone", opts.phone],
+    ["Prefers", opts.contactMethod],
+    [consult ? "Would like to work on" : "Subject", opts.topic],
+  ].filter(([, v]) => v) as [string, string][];
+  const subject = consult ? `Free consultation request: ${opts.name}` : `New question from ${opts.name}`;
+  return {
+    subject,
+    html: layout(
+      `<p style="margin:0 0 16px"><strong>${escapeHtml(opts.name)}</strong> ${consult ? "asked for a free consultation" : "sent a question"} on the website.</p>` +
+        `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px;font-family:Arial,sans-serif;font-size:14px">${rows
+          .map(([k, v]) => `<tr><td style="padding:2px 12px 2px 0;color:#78716c">${k}</td><td style="padding:2px 0">${escapeHtml(v)}</td></tr>`)
+          .join("")}</table>` +
+        (opts.message ? `<p style="margin:0 0 16px;white-space:pre-line">${escapeHtml(opts.message)}</p>` : "") +
+        button(url, "Open in your dashboard"),
+    ),
+    text: `${opts.name} ${consult ? "asked for a free consultation" : "sent a question"} on the website.\n\n${rows.map(([k, v]) => `${k}: ${v}`).join("\n")}\n\n${opts.message ?? ""}\n\n${url}`,
   };
 }

@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { countWaitingQuestions } from "@/lib/questions";
 import { countNewSales } from "@/lib/sales";
+import { countOpenEnquiries } from "@/lib/enquiries";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { viewerTimezone } from "@/lib/viewer-tz";
@@ -16,7 +17,7 @@ export default async function AdminOverview() {
   await requireAdminPage();
   const since = new Date(Date.now() - DAY);
   // All at once: one database trip instead of three in a row.
-  const [settings, pendingRequests, waitingQuestions, counts, recent, unread, unreadCount, sales] = await Promise.all([
+  const [settings, pendingRequests, waitingQuestions, counts, recent, unread, unreadCount, sales, openEnquiries] = await Promise.all([
     getSettings(),
     db.accessRequest.count({ where: { status: "PENDING" } }),
     countWaitingQuestions(),
@@ -39,6 +40,7 @@ export default async function AdminOverview() {
     }),
     db.journalEntry.count({ where: { readAt: null } }),
     countNewSales(),
+    countOpenEnquiries(),
   ]);
 
   const [sessionClients, students, newUploads] = counts;
@@ -77,14 +79,23 @@ export default async function AdminOverview() {
               <strong>New on the website:</strong>{" "}
               {[
                 sales.sessions && `${sales.sessions} session booking${sales.sessions === 1 ? "" : "s"}`,
-                sales.courses && `${sales.courses} course enrolment${sales.courses === 1 ? "" : "s"}`,
-                sales.learning && `${sales.learning} online-learning purchase${sales.learning === 1 ? "" : "s"}`,
+                sales.courses && `${sales.courses} class enrolment${sales.courses === 1 ? "" : "s"}`,
+                sales.learning && `${sales.learning} course purchase${sales.learning === 1 ? "" : "s"}`,
               ]
                 .filter(Boolean)
                 .join(", ")}
             </span>
           </span>
           <span className="shrink-0 text-sm font-medium text-sage-800">See them →</span>
+        </Link>
+      )}
+
+      {openEnquiries > 0 && (
+        <Link href="/admin/enquiries" className="flex items-center justify-between gap-3 rounded-xl bg-sage-50 p-4 ring-1 ring-sage-200 hover:bg-sage-100">
+          <span className="text-stone-800">
+            <strong>{openEnquiries}</strong> {openEnquiries === 1 ? "enquiry is" : "enquiries are"} waiting for a reply (free consultation requests and questions).
+          </span>
+          <span className="shrink-0 text-sm font-medium text-sage-800">Reply →</span>
         </Link>
       )}
 
@@ -109,7 +120,7 @@ export default async function AdminOverview() {
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {[
           { label: "Session clients", value: sessionClients },
-          { label: "Course students", value: students },
+          { label: "Class students", value: students },
           { label: "Unread journal entries", value: unreadCount },
           { label: "New uploads from clients", value: newUploads },
         ].map((s) => (
