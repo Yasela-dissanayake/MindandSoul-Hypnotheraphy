@@ -3,12 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Leaf } from "lucide-react";
 import Image from "next/image";
+import { useIsActive } from "@/components/site/nav-links";
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
+  const isActive = useIsActive();
 
   const navItems = [
     { href: "/", label: "Home" },
@@ -30,6 +32,7 @@ export function MobileNav() {
         </Button>
       </SheetTrigger>
       <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+        <SheetTitle className="sr-only">Menu</SheetTitle>
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between pb-6 border-b border-stone-200">
@@ -51,7 +54,12 @@ export function MobileNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-lg text-stone-600 hover:text-sage-600 transition-colors py-2 px-4 rounded-lg hover:bg-sage-50"
+                aria-current={isActive(item.href) ? "page" : undefined}
+                className={`text-lg transition-colors py-2 px-4 rounded-lg border-l-4 ${
+                  isActive(item.href)
+                    ? "border-sage-600 bg-sage-50 font-medium text-sage-800"
+                    : "border-transparent text-stone-600 hover:text-sage-600 hover:bg-sage-50"
+                }`}
                 onClick={() => setOpen(false)}
               >
                 {item.label}

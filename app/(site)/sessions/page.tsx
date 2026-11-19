@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Clock, Globe, Heart, MapPin, MessageCircle, Sparkles, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ServiceImageSlider } from "@/components/service-image-slider";
+import { HeroSlideshow } from "@/components/site/hero-slideshow";
 import { CurrencySwitch } from "@/components/site/currency-switch";
 import { loadPublishedServices, cheapest } from "@/lib/session-catalog";
 import { classPrice, formatPrice, viewerCurrency } from "@/lib/currency";
@@ -15,11 +15,12 @@ export const metadata: Metadata = {
 };
 export const dynamic = "force-dynamic";
 
+// Wide (16:10) photos cropped around the people, so they fill the hero well on any screen.
 const SLIDES = [
-  { src: "/service_hypnotherapy.jpeg", alt: "A clinical hypnotherapy session with Rangika" },
-  { src: "/reiki1.jpeg", alt: "A Reiki energy healing session" },
-  { src: "/animal3.jpeg", alt: "Animal Reiki and communication with a dog" },
-  { src: "/lama1.jpeg", alt: "A calm space for healing and meditation" },
+  { src: "/session-covers/clinical-hypnotherapy.jpg", alt: "A clinical hypnotherapy session with Rangika" },
+  { src: "/session-covers/reiki-energy-healing.jpg", alt: "A Reiki energy healing session" },
+  { src: "/session-covers/animal-communication.jpg", alt: "Animal Reiki and communication with a dog" },
+  { src: "/session-covers/meditation-programs.jpg", alt: "A calm space for healing and meditation" },
 ];
 
 // "What happens during a session" and FAQs, from the website document.
@@ -61,14 +62,16 @@ export default async function SessionsPage() {
 
   return (
     <div className="min-h-screen bg-stone-50">
-      <section className="bg-gradient-to-br from-stone-100 to-sage-50 py-16 lg:py-24">
-        <div className="container mx-auto px-4 text-center">
+      {/* Hero: Rangika's photos slowly crossfade behind the heading. */}
+      <section className="relative isolate flex min-h-[520px] items-center overflow-hidden py-20 lg:min-h-[640px] lg:py-28">
+        <HeroSlideshow images={SLIDES} interval={6000} />
+        <div className="container relative z-10 mx-auto px-4 text-center">
           <div className="mx-auto max-w-4xl space-y-6">
-            <h1 className="font-serif text-4xl leading-tight text-stone-800 lg:text-6xl">
+            <h1 className="font-serif text-4xl leading-tight text-white drop-shadow-sm lg:text-6xl">
               One-to-One Sessions
-              <span className="text-sage-600"> for Mind, Body &amp; Soul</span>
+              <span className="text-sage-200"> for Mind, Body &amp; Soul</span>
             </h1>
-            <p className="text-lg leading-relaxed text-stone-600">
+            <p className="mx-auto max-w-3xl text-lg leading-relaxed text-stone-100">
               Different pathways, one intention: supporting your wellbeing with compassion, understanding and care. Every session is tailored to you, in person in
               Perth or online.
             </p>
@@ -76,18 +79,10 @@ export default async function SessionsPage() {
               <Button asChild size="lg" className="bg-sage-600 text-white hover:bg-sage-700">
                 <Link href="/booking">Book a session</Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="border-stone-300 bg-transparent text-stone-700 hover:bg-stone-50">
+              <Button asChild size="lg" variant="outline" className="border-white/80 bg-white/10 text-white backdrop-blur-sm hover:bg-white hover:text-stone-800">
                 <Link href="/contact">Free consultation</Link>
               </Button>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-white py-12">
-        <div className="container mx-auto px-4">
-          <div className="mx-auto max-w-5xl">
-            <ServiceImageSlider images={SLIDES} interval={6000} />
           </div>
         </div>
       </section>

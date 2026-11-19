@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "@/components/mobile-nav";
+import { DesktopNavLinks } from "@/components/site/nav-links";
 
 /** The website's top bar: logo, menu and "Book a Session". Used by the site layout and the 404 page. */
 export function SiteHeader() {
@@ -20,48 +21,7 @@ export function SiteHeader() {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
-            <Link
-              href="/about"
-              className="text-stone-600 hover:text-sage-600 transition-colors"
-            >
-              About
-            </Link>
-            <Link
-              href="/sessions"
-              className="text-stone-600 hover:text-sage-600 transition-colors"
-            >
-              Sessions
-            </Link>
-            <Link
-              href="/classes"
-              className="text-stone-600 hover:text-sage-600 transition-colors"
-            >
-              Classes
-            </Link>
-            <Link
-              href="/courses"
-              className="text-stone-600 hover:text-sage-600 transition-colors"
-            >
-              Courses
-            </Link>
-            <Link
-              href="/testimonials"
-              className="text-stone-600 hover:text-sage-600 transition-colors"
-            >
-              Testimonials
-            </Link>
-            <Link
-              href="/contact"
-              className="text-stone-600 hover:text-sage-600 transition-colors"
-            >
-              Contact
-            </Link>
-            <Link
-              href="/login"
-              className="text-stone-600 hover:text-sage-600 transition-colors"
-            >
-              Client login
-            </Link>
+            <DesktopNavLinks />
             <Link href="/booking">
               <Button className="bg-sage-600 hover:bg-sage-700 text-white">
                 Book a Session
