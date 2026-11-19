@@ -1,0 +1,178 @@
+"use server";
+
+import { z } from "zod";
+import { revalidatePath } from "next/cache";
+import { db } from "@/lib/db";
+import { requireAdmin } from "@/lib/authz";
+import { deleteObject } from "@/lib/storage";
+import { isSiteImage } from "@/lib/covers";
+import { slugify } from "@/lib/learning";
+import { blank, fail, type ActionResult } from "./common";
+
+// One-to-one session services on the website (Sessions page and booking): Rangika edits text,
+// prices (AUD and AED) and packages here. Changes show on the website straight away.
+
+function refresh() {
+  revalidatePath("/sessions", "layout");
+  revalidatePath("/booking");
+  revalidatePath("/admin/sessions", "layout");
+}
+
+async function uniqueSlug(title: string, excludeId?: string) {
+  const base = slugify(title);
+  for (let i = 0; i < 50; i++) {
+    const slug = i === 0 ? base : `${base}-${i + 1}`;
+    const taken = await db.sessionService.findFirst({ where: { slug, ...(excludeId ? { id: { not: excludeId } } : {}) }, select: { id: true } });
+    if (!taken) return slug;
+  }
+  return `${base}-${Date.now() % 100000}`;
+}
+
+export async function createSessionService(input: { title: string }): Promise<ActionResult<{ id: string }>> {
+  await requireAdmin();
+  const title = input.title.trim();
+  if (!title) return fail("Please enter a name.");
+  if (title.length > 150) return fail("Please use a shorter name.");
+  const count = await db.sessionService.count();
+  const s = await db.sessionService.create({
+    data: { title, slug: await uniqueSlug(title), order: count + 1, published: false, planService: "HYPNOTHERAPY" },
+  });
+  refresh();
+  return { ok: true, data: { id: s.id } };
+}
+
+const serviceSchema = z
+  .object({
+    title: z.string().trim().min(1, "Please enter a name.").max(150),
+    summary: z.string().max(300).optional().nullable(),
+    details: z.string().max(10000).optional().nullable(),
+    highlights: z.string().max(5000).optional().nullable(),
+    planService: z.enum(["HYPNOTHERAPY", "REIKI_HEALING", "ANIMAL_REIKI"]),
+    minutes: z.number().int().min(15, "Sessions must be at least 15 minutes.").max(480).nullable(),
+    lengthLabel: z.string().max(60).optional().nullable(),
+    inPerson: z.boolean(),
+    online: z.boolean(),
+    enquiryOnly: z.boolean(),
+    published: z.boolean(),
+  })
+  .refine((d) => d.enquiryOnly || d.inPerson || d.online, { message: "Choose in person, online, or both." });
+
+export async function updateSessionService(id: string, input: z.input<typeof serviceSchema>): Promise<ActionResult> {
+  await requireAdmin();
+  const parsed = serviceSchema.safeParse(input);
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Please check the details.");
+  const d = parsed.data;
+  const s = await db.sessionService.findUnique({ where: { id }, select: { _count: { select: { options: true } } } });
+  if (!s) return fail("Session not found.");
+  if (d.published && !d.enquiryOnly && s._count.options === 0) return fail("Add at least one price before showing it on the website.");
+  await db.sessionService.update({
+    where: { id },
+    data: {
+      title: d.title,
+      summary: blank(d.summary),
+      details: blank(d.details),
+      highlights: blank(d.highlights),
+      planService: d.planService,
+      minutes: d.minutes,
+      lengthLabel: blank(d.lengthLabel),
+      inPerson: d.inPerson,
+      online: d.online,
+      enquiryOnly: d.enquiryOnly,
+      published: d.published,
+    },
+  });
+  refresh();
+  return { ok: true };
+}
+
+/** Deleting is only possible before anyone has booked it; otherwise hide it instead. */
+export async function deleteSessionService(id: string): Promise<ActionResult> {
+  await requireAdmin();
+  const s = await db.sessionService.findUnique({ where: { id }, select: { imageKey: true, _count: { select: { plans: true } }, options: { select: { _count: { select: { bookings: true } } } } } });
+  if (!s) return fail("Session not found.");
+  if (s._count.plans || s.options.some((o) => o._count.bookings)) return fail("People have booked this session, so it can't be deleted. Hide it from the website instead.");
+  await db.sessionService.delete({ where: { id } });
+  if (s.imageKey && !isSiteImage(s.imageKey)) await deleteObject(s.imageKey);
+  refresh();
+  return { ok: true };
+}
+
+/** Move a service up or down on the Sessions page. */
+export async function moveSessionService(id: string, dir: -1 | 1): Promise<ActionResult> {
+  await requireAdmin();
+  const all = await db.sessionService.findMany({ orderBy: [{ order: "asc" }, { title: "asc" }], select: { id: true } });
+  const i = all.findIndex((x) => x.id === id);
+  const j = i + dir;
+  if (i < 0 || j < 0 || j >= all.length) return { ok: true };
+  [all[i], all[j]] = [all[j], all[i]];
+  await db.$transaction(all.map((x, n) => db.sessionService.update({ where: { id: x.id }, data: { order: n + 1 } })));
+  refresh();
+  return { ok: true };
+}
+
+export async function setSessionCover(id: string, key: string | null): Promise<ActionResult> {
+  await requireAdmin();
+  if (key !== null && !/^covers\/[\w.\-\/]+$/.test(key)) return fail("Upload failed. Please try again.");
+  const s = await db.sessionService.findUnique({ where: { id }, select: { imageKey: true } });
+  if (!s) return fail("Session not found.");
+  await db.sessionService.update({ where: { id }, data: { imageKey: key } });
+  if (s.imageKey && s.imageKey !== key && !isSiteImage(s.imageKey)) await deleteObject(s.imageKey);
+  refresh();
+  return { ok: true };
+}
+
+// --- Prices: single session and packages ---------------------------------------
+
+const optionSchema = z.object({
+  title: z.string().trim().min(1, "Please enter a name, e.g. \"Single session\".").max(80),
+  sessions: z.number().int().min(1, "At least 1 session.").max(50),
+  price: z.number().min(0.5, "Please enter the AUD price.").max(100000),
+  priceAed: z.number().min(0).max(500000).nullable(),
+  mode: z.enum(["IN_PERSON", "DISTANCE"]).nullable(),
+  note: z.string().max(200).optional().nullable(),
+});
+
+export async function saveSessionOption(serviceId: string, optionId: string | null, input: z.input<typeof optionSchema>): Promise<ActionResult> {
+  await requireAdmin();
+  const parsed = optionSchema.safeParse(input);
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Please check the price.");
+  const d = parsed.data;
+  const priceAed = d.priceAed ? Math.round(d.priceAed * 100) : null;
+  if (priceAed !== null && priceAed < 200) return fail("The AED price is too low. Leave it empty to show the AUD price instead.");
+  const data = { title: d.title, sessions: d.sessions, price: Math.round(d.price * 100), priceAed, mode: d.mode, note: blank(d.note) };
+  if (optionId) {
+    const o = await db.sessionOption.findFirst({ where: { id: optionId, serviceId }, select: { id: true } });
+    if (!o) return fail("Price not found.");
+    await db.sessionOption.update({ where: { id: optionId }, data });
+  } else {
+    const count = await db.sessionOption.count({ where: { serviceId } });
+    await db.sessionOption.create({ data: { ...data, serviceId, order: count + 1 } });
+  }
+  refresh();
+  return { ok: true };
+}
+
+/** Bookings already made keep their price; the option just disappears from the website. */
+export async function deleteSessionOption(optionId: string): Promise<ActionResult> {
+  await requireAdmin();
+  const o = await db.sessionOption.findUnique({ where: { id: optionId }, select: { serviceId: true, service: { select: { published: true, enquiryOnly: true, _count: { select: { options: true } } } } } });
+  if (!o) return fail("Price not found.");
+  if (o.service.published && !o.service.enquiryOnly && o.service._count.options <= 1) return fail("This is the only price. Hide the session from the website first, or add another price.");
+  await db.sessionOption.delete({ where: { id: optionId } });
+  refresh();
+  return { ok: true };
+}
+
+export async function moveSessionOption(optionId: string, dir: -1 | 1): Promise<ActionResult> {
+  await requireAdmin();
+  const o = await db.sessionOption.findUnique({ where: { id: optionId }, select: { serviceId: true } });
+  if (!o) return fail("Price not found.");
+  const all = await db.sessionOption.findMany({ where: { serviceId: o.serviceId }, orderBy: [{ order: "asc" }, { sessions: "asc" }], select: { id: true } });
+  const i = all.findIndex((x) => x.id === optionId);
+  const j = i + dir;
+  if (j < 0 || j >= all.length) return { ok: true };
+  [all[i], all[j]] = [all[j], all[i]];
+  await db.$transaction(all.map((x, n) => db.sessionOption.update({ where: { id: x.id }, data: { order: n + 1 } })));
+  refresh();
+  return { ok: true };
+}

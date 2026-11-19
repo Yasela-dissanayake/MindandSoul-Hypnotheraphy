@@ -13,14 +13,37 @@ import { SubmissionUpload, MySubmissions } from "@/components/portal/submissions
 import { cn } from "@/lib/utils";
 import { AskQuestion } from "@/components/portal/ask-question";
 import { MyQuestions } from "@/components/portal/my-questions";
+import { PlanBookings } from "@/components/portal/plan-bookings";
 
 export default async function SessionsPage() {
   const user = await requireClientPage();
-  const [{ plans, personal }, submissions, questions] = await Promise.all([
+  const [{ plans, personal }, submissions, questions, bookingInfo] = await Promise.all([
     getSessionMaterial(user.id),
     db.submission.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 50 }),
     db.question.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 50 }),
+    // Their booked sessions per plan, and whether each plan can be booked online (bought on the website).
+    db.plan.findMany({
+      where: { userId: user.id },
+      select: {
+        id: true,
+        totalSessions: true,
+        sessionService: { select: { published: true, enquiryOnly: true } },
+        bookings: { where: { status: "CONFIRMED" }, orderBy: { startsAt: "asc" }, select: { id: true, startsAt: true, endsAt: true, mode: true } },
+      },
+    }),
   ]);
+  const now = new Date();
+  const bookingsFor = (planId: string) => {
+    const p = bookingInfo.find((x) => x.id === planId);
+    if (!p) return null;
+    const upcoming = p.bookings.filter((b) => b.endsAt > now);
+    return {
+      upcoming,
+      pastCount: p.bookings.length - upcoming.length,
+      left: p.sessionService ? Math.max(0, (p.totalSessions ?? 0) - p.bookings.length) : 0,
+      canBook: Boolean(p.sessionService?.published && !p.sessionService.enquiryOnly),
+    };
+  };
   const today = todayIn(user.timezone);
 
   if (!plans.length) {
@@ -63,6 +86,8 @@ export default async function SessionsPage() {
                 <Progress value={(Math.max(0, current - 1) / plan.totalSessions) * 100} className="h-2 bg-sage-100 [&>div]:bg-sage-500" />
               </div>
             ) : null}
+
+            {!plan.completedAt && bookingsFor(plan.id) && <PlanBookings planId={plan.id} timezone={user.timezone} {...bookingsFor(plan.id)!} />}
 
             {plan.meetingLink && !plan.completedAt && (
               <a

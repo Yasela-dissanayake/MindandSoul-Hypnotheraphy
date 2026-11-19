@@ -14,6 +14,9 @@ const nextConfig = {
   // links are forwarded to /classes by the course pages themselves.
   async redirects() {
     return [
+      // The old long "detailed" page became one page per session (/sessions/<service>).
+      { source: "/services/detailed", destination: "/sessions", permanent: true },
+      { source: "/sessions/detailed", destination: "/sessions", permanent: true },
       { source: "/services", destination: "/sessions", permanent: true },
       { source: "/services/:path*", destination: "/sessions/:path*", permanent: true },
       { source: "/learn", destination: "/courses", permanent: true },

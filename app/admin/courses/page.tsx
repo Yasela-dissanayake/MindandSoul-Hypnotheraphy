@@ -8,11 +8,12 @@ import { Progress } from "@/components/ui/progress";
 import { LearningCertificateUpload, NewPackageDialog } from "@/components/admin/learning-editor";
 import { cn } from "@/lib/utils";
 import { viewerTimezone } from "@/lib/viewer-tz";
+import { ClientSessionFilter } from "@/components/admin/client-session-filter";
 
-export default async function LearningAdminPage() {
+export default async function LearningAdminPage({ searchParams }: { searchParams: Promise<{ course?: string }> }) {
   const tz = await viewerTimezone();
   await requireAdminPage();
-  const [packages, settings, sales] = await Promise.all([
+  const [packages, settings, sales, sp] = await Promise.all([
     db.learningPackage.findMany({
       orderBy: [{ archived: "asc" }, { order: "asc" }, { createdAt: "asc" }],
       include: {
@@ -25,9 +26,20 @@ export default async function LearningAdminPage() {
     }),
     getSettings(),
     db.packagePurchase.findMany({ where: { status: "PAID" }, orderBy: { paidAt: "desc" }, take: 10, include: { package: { select: { title: true } } } }),
+    searchParams,
   ]);
   const when = (d: Date) => d.toLocaleDateString("en-AU", { timeZone: tz, day: "numeric", month: "short", year: "numeric" });
   const waiting = packages.flatMap((p) => p.enrollments.filter((e) => e.completedAt && !e.certificateKey).map((e) => ({ ...e, title: p.title })));
+
+  // Learners table: everyone who has a course, filterable by course (every course is in the filter,
+  // so a new course appears there by itself).
+  const all = packages.flatMap((p) => p.enrollments.map((e) => ({ e, p })));
+  const filterOptions = [
+    { value: "", label: "All courses", count: all.length },
+    ...packages.map((p) => ({ value: p.id, label: p.title, count: p.enrollments.length })),
+  ];
+  const filter = filterOptions.some((o) => o.value === sp.course) ? (sp.course as string) : "";
+  const rows = filter ? all.filter((r) => r.p.id === filter) : all;
 
   return (
     <div className="space-y-10">
@@ -104,43 +116,71 @@ export default async function LearningAdminPage() {
         </p>
       </section>
 
-      {packages
-        .filter((p) => p.enrollments.length > 0)
-        .map((p) => (
-          <section key={p.id} className="space-y-3">
-            <h2 className="font-serif text-xl text-stone-800">
-              {p.title} Learners <span className="text-base text-stone-500">({p.enrollments.length})</span>
-            </h2>
-            <div className="divide-y divide-stone-100 rounded-2xl bg-white ring-1 ring-stone-200">
-              {p.enrollments.map((e) => {
-                const total = p._count.lessons;
-                const done = Math.min(e._count.progress, total);
-                return (
-                  <div key={e.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
-                    <div className="min-w-0 flex-1 space-y-1.5">
-                      <Link href={`/admin/clients/${e.user.id}`} className="font-medium text-stone-800 hover:underline">
-                        {e.user.name || e.user.email}
-                      </Link>
-                      <p className="text-xs text-stone-500">
-                        {e.user.email} · started {when(e.startedAt)}
-                        {e.completedAt ? ` · finished ${when(e.completedAt)}` : ""}
-                      </p>
-                      <Progress value={total ? (done / total) * 100 : 0} className="h-1.5 max-w-xs bg-sage-100 [&>div]:bg-sage-500" />
-                      <p className="text-xs text-stone-500">
-                        {done} of {total} lessons done
-                      </p>
-                    </div>
-                    {e.completedAt ? (
-                      <LearningCertificateUpload enrollmentId={e.id} hasCertificate={Boolean(e.certificateKey)} />
-                    ) : (
-                      <span className="text-sm text-stone-400">In progress</span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        ))}
+      <section id="learners" className="scroll-mt-6 space-y-3">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <h2 className="font-serif text-xl text-stone-800">
+            Learners <span className="text-base text-stone-500">({rows.length})</span>
+          </h2>
+          <ClientSessionFilter options={filterOptions} current={filter} label="Course" param="course" anchor="learners" />
+        </div>
+        {rows.length === 0 ? (
+          <p className="rounded-xl bg-white p-5 text-sm text-stone-500 ring-1 ring-stone-200">
+            {filter ? "No one has this course yet." : "No learners yet. They appear here when someone buys a course."}
+          </p>
+        ) : (
+          <div className="overflow-x-auto rounded-xl bg-white ring-1 ring-stone-200">
+            <table className="w-full min-w-[860px] text-sm">
+              <thead className="border-b border-stone-200 text-left text-xs uppercase tracking-wide text-stone-500">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Learner</th>
+                  <th className="px-4 py-3 font-medium">Course</th>
+                  <th className="px-4 py-3 font-medium">Started</th>
+                  <th className="w-48 px-4 py-3 font-medium">Progress</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map(({ e, p }) => {
+                  const total = p._count.lessons;
+                  const done = Math.min(e._count.progress, total);
+                  return (
+                    <tr key={e.id} className="border-b border-stone-100 align-top last:border-0 hover:bg-stone-50">
+                      <td className="px-4 py-3">
+                        <Link href={`/admin/clients/${e.user.id}`} className="font-medium text-stone-800 hover:underline">
+                          {e.user.name || e.user.email}
+                        </Link>
+                        {e.user.name && <span className="block text-xs text-stone-500">{e.user.email}</span>}
+                      </td>
+                      <td className="px-4 py-3">
+                        <Link href={`/admin/courses/${p.id}`} className="text-stone-700 hover:underline">
+                          {p.title}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-3 text-stone-600">{when(e.startedAt)}</td>
+                      <td className="px-4 py-3">
+                        <Progress value={total ? (done / total) * 100 : 0} className="h-1.5 bg-sage-100 [&>div]:bg-sage-500" />
+                        <p className="mt-1 text-xs text-stone-600">
+                          {done} of {total} lesson{total === 1 ? "" : "s"}
+                        </p>
+                      </td>
+                      <td className="px-4 py-3">
+                        {e.completedAt ? (
+                          <div className="space-y-1">
+                            <p className="text-xs text-stone-500">Finished {when(e.completedAt)}</p>
+                            <LearningCertificateUpload enrollmentId={e.id} hasCertificate={Boolean(e.certificateKey)} />
+                          </div>
+                        ) : (
+                          <span className="text-stone-500">In progress</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
       {sales.length > 0 && (
         <section className="space-y-3">

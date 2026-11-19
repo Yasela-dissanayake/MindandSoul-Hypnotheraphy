@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { requireAdminPage } from "@/lib/authz";
 import { db } from "@/lib/db";
+import { PlanBookingsAdmin } from "@/components/admin/plan-bookings-admin";
 import { loadLibraryOptions, loadPlansForEditor } from "@/lib/admin-plans";
 import { getSettings } from "@/lib/settings";
 import { addDays, dayNumber, formatDate, todayIn } from "@/lib/dates";
@@ -168,11 +169,26 @@ async function QuestionsTab({ clientId }: { clientId: string }) {
 }
 
 async function SessionsTab({ clientId, addPlan }: { clientId: string; addPlan: boolean }) {
-  const [client, plans, library, { packages }] = await Promise.all([
+  const [client, plans, library, { packages }, planBookings, tz] = await Promise.all([
     clientOr404(clientId),
     loadPlansForEditor({ userId: clientId }),
     loadLibraryOptions(clientId),
     loadAccessOptions(),
+    // Their booked sessions per plan (website bookings and package sessions).
+    db.plan.findMany({
+      where: { userId: clientId },
+      select: {
+        id: true,
+        totalSessions: true,
+        sessionServiceId: true,
+        bookings: {
+          where: { status: "CONFIRMED" },
+          orderBy: { startsAt: "asc" },
+          select: { id: true, startsAt: true, endsAt: true, mode: true, credit: true, amount: true, currency: true },
+        },
+      },
+    }),
+    viewerTimezone(),
   ]);
   const name = client.name || client.email;
   const timezone = client.timezone;
@@ -186,6 +202,12 @@ async function SessionsTab({ clientId, addPlan }: { clientId: string; addPlan: b
       {plans.map((plan) => (
         <section key={plan.id} className="space-y-5 rounded-2xl bg-white p-5 ring-1 ring-stone-200">
           <PlanDetails plan={plan} />
+          {(() => {
+            const pb = planBookings.find((x) => x.id === plan.id);
+            if (!pb) return null;
+            const left = pb.sessionServiceId ? Math.max(0, (pb.totalSessions ?? 0) - pb.bookings.length) : 0;
+            return <PlanBookingsAdmin bookings={pb.bookings} left={left} tz={tz} online={Boolean(pb.sessionServiceId)} />;
+          })()}
           <ModulesEditor plan={plan} />
           <MaterialsEditor plan={plan} library={library} />
           <TrackersEditor plan={plan} />

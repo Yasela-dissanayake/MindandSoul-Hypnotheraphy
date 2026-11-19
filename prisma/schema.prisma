@@ -106,6 +106,7 @@ model User {
   plans          Plan[]
   enrollments    Enrollment[]
   learningEnrollments PackageEnrollment[]
+  bookings       Booking[]
   completions    TaskCompletion[]
   trackerEntries TrackerEntry[]
   submissions    Submission[]
@@ -203,6 +204,11 @@ model Plan {
   trackers    Tracker[]
   submissions Submission[]
   questions   Question[]
+
+  // Bought on the website: the service it's for (used to book the remaining sessions of a package).
+  sessionServiceId String?
+  sessionService   SessionService? @relation(fields: [sessionServiceId], references: [id], onDelete: SetNull)
+  bookings         Booking[]
 
   @@index([userId])
 }
@@ -616,7 +622,17 @@ model Booking {
   updatedAt         DateTime      @updatedAt
 
   @@index([date, status])
+  // Linked after payment: the client's account and their session plan for this service.
+  userId   String?
+  planId   String?
+  optionId String? // the single session or package bought
+  credit   Boolean @default(false) // booked with a session left in their package (no payment)
+  user     User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  plan     Plan?          @relation(fields: [planId], references: [id], onDelete: SetNull)
+  option   SessionOption? @relation(fields: [optionId], references: [id], onDelete: SetNull)
+
   @@index([startsAt])
+  @@index([planId, status])
 }
 
 model ReminderLog {
@@ -781,4 +797,51 @@ model Enquiry {
   createdAt     DateTime    @default(now())
 
   @@index([handledAt, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// SESSION SERVICES: one-to-one sessions sold on the website (Rangika edits them in admin)
+// ---------------------------------------------------------------------------
+
+/// e.g. Clinical Hypnotherapy, Reiki Energy Healing. Each client who books gets their own session plan.
+model SessionService {
+  id          String   @id @default(cuid())
+  slug        String   @unique // web address: /sessions/<slug>
+  title       String
+  summary     String? // one line on the Sessions page
+  details     String? // "About" on the service page
+  highlights  String? // "How it can help", one point per line
+  planService Service? // the kind of client session plan a booking creates (null for enquiry-only services)
+  minutes     Int? // length of a booking; null = the calendar's normal length for in-person / online
+  lengthLabel String? // shown to visitors, e.g. "1 hour"; null = not shown
+  inPerson    Boolean  @default(true) // can be booked in person in Perth
+  online      Boolean  @default(true) // can be booked online / at a distance
+  enquiryOnly Boolean  @default(false) // no online booking: people send an enquiry instead (e.g. Corporate)
+  published   Boolean  @default(true)
+  order       Int      @default(0)
+  imageKey    String? // cover photo: a website image ("/...") or an uploaded file
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  options SessionOption[]
+  plans   Plan[]
+}
+
+/// A single session or a package of sessions for a service, e.g. "5 sessions · AUD 610".
+model SessionOption {
+  id        String       @id @default(cuid())
+  serviceId String
+  title     String // e.g. "Single session", "5-session package"
+  sessions  Int          @default(1)
+  price     Int // cents, AUD (everyone outside the UAE)
+  priceAed  Int? // fils, shown to visitors in the UAE; null = they see AUD
+  mode      BookingMode? // only for in-person or only for online; null = either
+  note      String? // e.g. "Recommended for IBS · completed within 6 weeks"
+  order     Int          @default(0)
+  createdAt DateTime     @default(now())
+
+  service  SessionService @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+
+  @@index([serviceId, order])
 }

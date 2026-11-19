@@ -110,9 +110,15 @@ export function blocksOn(data: CalendarData, date: string) {
   return data.changes.filter((c) => c.kind === "BLOCK" && c.fromDate <= date && c.toDate >= date);
 }
 
-/** Free start times for one kind of session, per Perth date. */
-export function freeSlots(data: CalendarData, mode: BookingMode, from: string, to: string, now = new Date()): Record<string, Slot[]> {
-  const { length, gap } = sessionShape(data.rules, mode);
+/**
+ * Free start times for one kind of session, per Perth date.
+ * `minutes` is the service's own length (e.g. 90 for a regression); without it the calendar's
+ * normal in-person / online length is used. The break after a session stays the calendar's.
+ */
+export function freeSlots(data: CalendarData, mode: BookingMode, from: string, to: string, now = new Date(), minutes?: number | null): Record<string, Slot[]> {
+  const shape = sessionShape(data.rules, mode);
+  const length = minutes && minutes >= 15 && minutes <= 480 ? minutes : shape.length;
+  const gap = shape.gap;
   const earliest = now.getTime() + data.rules.bookingNoticeHours * 3600_000;
   const last = addDays(data.today, data.rules.bookingDaysAhead);
   const out: Record<string, Slot[]> = {};

@@ -4,6 +4,7 @@ import { getSettings } from "@/lib/settings";
 import { sendClientBookingConfirmation, sendPractitionerBookingNotification } from "@/lib/email";
 import { BOOKING_TZ, freeSlots, loadCalendar, modeOf, time12 } from "@/lib/booking";
 import { isValidTimezone } from "@/lib/dates";
+import { attachPaidBooking, sendSessionEmails } from "@/lib/session-sales";
 
 const HOLD_MINUTES = 15;
 
@@ -27,6 +28,8 @@ export type HoldInput = {
   medicalConditions?: string;
   amount: number; // cents
   currency: string;
+  optionId?: string; // the session or package bought (from the session services)
+  minutes?: number | null; // the service's session length; default = the calendar's
 };
 
 export class SlotTakenError extends Error {}
@@ -49,7 +52,7 @@ export async function holdSlot(input: HoldInput) {
         data: { status: "CANCELLED", cancelledAt: new Date() },
       });
       const data = await loadCalendar(input.date, input.date, tx);
-      const slot = (freeSlots(data, mode, input.date, input.date)[input.date] ?? []).find((s) => s.start === input.start);
+      const slot = (freeSlots(data, mode, input.date, input.date, new Date(), input.minutes)[input.date] ?? []).find((s) => s.start === input.start);
       if (!slot) throw new SlotTakenError();
       return tx.booking.create({
         data: {
@@ -72,6 +75,7 @@ export async function holdSlot(input: HoldInput) {
           medicalConditions: input.medicalConditions || null,
           amount: input.amount,
           currency: input.currency,
+          optionId: input.optionId ?? null,
         },
       });
     },
@@ -109,6 +113,12 @@ export async function confirmBookingPayment(paymentIntentId: string) {
 
   // Only the first caller sends the emails.
   const claimed = await db.booking.updateMany({ where: { id: fresh.id, emailedAt: null }, data: { emailedAt: new Date() } });
+  if (claimed.count === 1 && fresh.optionId) {
+    // Booked from a session service: give them their account and their own session plan, then email both of them.
+    const attached = await attachPaidBooking(fresh.id);
+    await sendSessionEmails(fresh.id, attached?.login);
+    return db.booking.findUniqueOrThrow({ where: { id: fresh.id } });
+  }
   if (claimed.count === 1) {
     const common = {
       clientName: fresh.clientName,

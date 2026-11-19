@@ -7,14 +7,15 @@ import { Button } from "@/components/ui/button";
 import { uploadFile } from "@/lib/upload-client";
 import { setCourseCover } from "@/app/admin/_actions/courses";
 import { setLearningPackageCover } from "@/app/admin/_actions/learning";
+import { setSessionCover } from "@/app/admin/_actions/session-services";
 import { useAction } from "./use-action";
 
 /** Cover photo shown on the website's course cards and course page. */
-export function CoverUpload({ kind, id, url }: { kind: "course" | "package"; id: string; url: string | null }) {
+export function CoverUpload({ kind, id, url }: { kind: "course" | "package" | "session"; id: string; url: string | null }) {
   const input = useRef<HTMLInputElement>(null);
   const [progress, setProgress] = useState<number | null>(null);
   const { pending, run } = useAction();
-  const save = kind === "course" ? setCourseCover : setLearningPackageCover;
+  const save = kind === "course" ? setCourseCover : kind === "session" ? setSessionCover : setLearningPackageCover;
 
   async function pick(file: File) {
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {

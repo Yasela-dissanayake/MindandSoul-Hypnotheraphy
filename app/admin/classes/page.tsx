@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Award, GraduationCap, Layers, Pencil } from "lucide-react";
+import { Award, GraduationCap, Layers } from "lucide-react";
 import { requireAdminPage } from "@/lib/authz";
 import { db } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
@@ -16,14 +16,15 @@ import { formatPrice } from "@/lib/currency";
 import { newPurchaseWhere } from "@/lib/sales";
 import { MarkSeenButton } from "@/components/admin/mark-seen-button";
 import { cn } from "@/lib/utils";
+import { ClientSessionFilter } from "@/components/admin/client-session-filter";
 
 // Courses, student by student (same layout as the Sessions page):
 // who is studying which course and how far they are, then the shared course content at the bottom.
 
-export default async function CoursesPage() {
+export default async function CoursesPage({ searchParams }: { searchParams: Promise<{ class?: string }> }) {
   const tz = await viewerTimezone();
   await requireAdminPage();
-  const [courses, { packages, courses: courseOptions }, settings, everyone, newSales] = await Promise.all([
+  const [courses, { packages, courses: courseOptions }, settings, everyone, newSales, sp] = await Promise.all([
     db.course.findMany({
       orderBy: [{ archived: "asc" }, { order: "asc" }, { title: "asc" }],
       include: {
@@ -47,6 +48,7 @@ export default async function CoursesPage() {
       orderBy: { paidAt: "desc" },
       select: { id: true, name: true, userId: true, courseId: true, paidAt: true, course: { select: { title: true } } },
     }),
+    searchParams,
   ]);
   // Students who enrolled on the website and Rangika hasn't seen yet.
   const isNewStudent = (courseId: string, userId: string) => newSales.some((s) => s.courseId === courseId && s.userId === userId);
@@ -58,6 +60,16 @@ export default async function CoursesPage() {
   const shown = courses.filter((c) => !c.archived && c.includes.length === 0);
   const finished = courses.flatMap((c) => c.enrollments.filter((e) => e.completedAt).map((e) => ({ ...e, courseTitle: c.title })));
   const needCertificate = finished.filter((e) => !e.certificateKey).length;
+
+  // Students table: everyone currently on a class, filterable by class (every class is in the filter,
+  // so a new class appears there by itself).
+  const current = shown.flatMap((c) => c.enrollments.filter((e) => !e.completedAt).map((e) => ({ e, c })));
+  const filterOptions = [
+    { value: "", label: "All classes", count: current.length },
+    ...shown.map((c) => ({ value: c.id, label: c.title, count: current.filter((r) => r.c.id === c.id).length })),
+  ];
+  const filter = filterOptions.some((o) => o.value === sp.class) ? (sp.class as string) : "";
+  const rows = filter ? current.filter((r) => r.c.id === filter) : current;
 
   return (
     <div className="space-y-10">
@@ -166,89 +178,90 @@ export default async function CoursesPage() {
         </div>
       </section>
 
-      {shown.map((c) => {
-        const rows = c.enrollments.filter((e) => !e.completedAt);
-        const total = c._count.modules;
-        return (
-          <section key={c.id} className="space-y-3">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h2 className="font-serif text-2xl text-stone-800">
-                {c.title} Students <span className="text-base text-stone-500">({rows.length})</span>
-              </h2>
-              <Link href={`/admin/classes/${c.id}`} className="inline-flex items-center gap-1 text-sm text-sage-700 hover:underline">
-                <Pencil className="h-3.5 w-3.5" /> Edit class content
-              </Link>
-            </div>
-            {rows.length === 0 ? (
-              <p className="rounded-xl bg-white p-5 text-sm text-stone-500 ring-1 ring-stone-200">No students in {c.title} right now.</p>
-            ) : (
-              <div className="overflow-x-auto rounded-xl bg-white ring-1 ring-stone-200">
-                <table className="w-full min-w-[680px] text-sm">
-                  <thead className="border-b border-stone-200 text-left text-xs uppercase tracking-wide text-stone-500">
-                    <tr>
-                      <th className="px-4 py-3 font-medium">Student</th>
-                      <th className="px-4 py-3 font-medium">Started</th>
-                      <th className="w-56 px-4 py-3 font-medium">Progress</th>
-                      <th className="px-4 py-3 font-medium">Status</th>
-                      <th className="px-4 py-3 font-medium">Last active</th>
+      <section id="students" className="scroll-mt-6 space-y-3">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <h2 className="font-serif text-2xl text-stone-800">
+            Students <span className="text-base text-stone-500">({rows.length})</span>
+          </h2>
+          <ClientSessionFilter options={filterOptions} current={filter} label="Class" param="class" anchor="students" />
+        </div>
+        {rows.length === 0 ? (
+          <p className="rounded-xl bg-white p-5 text-sm text-stone-500 ring-1 ring-stone-200">
+            {filter ? "No students in this class right now." : "No students yet. They appear here when someone enrols on the website, or when you add them."}
+          </p>
+        ) : (
+          <div className="overflow-x-auto rounded-xl bg-white ring-1 ring-stone-200">
+            <table className="w-full min-w-[860px] text-sm">
+              <thead className="border-b border-stone-200 text-left text-xs uppercase tracking-wide text-stone-500">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Student</th>
+                  <th className="px-4 py-3 font-medium">Class</th>
+                  <th className="px-4 py-3 font-medium">Started</th>
+                  <th className="w-48 px-4 py-3 font-medium">Progress</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Last active</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map(({ e, c }) => {
+                  const total = c._count.modules;
+                  const done = Math.min(e._count.progress, total);
+                  const allDone = total > 0 && done >= total;
+                  const fresh = isNewStudent(c.id, e.user.id);
+                  return (
+                    // The whole row opens the student (the name link stretches over it). New website enrolments are tinted.
+                    <tr key={e.id} className={cn("relative border-b border-stone-100 align-top last:border-0", fresh ? "bg-sage-50 hover:bg-sage-100" : "hover:bg-stone-50")}>
+                      <td className="px-4 py-3">
+                        <span className="flex items-center gap-2">
+                          {fresh && <span className="rounded bg-sage-600 px-1.5 py-0.5 text-[11px] font-semibold text-white">New</span>}
+                          <Link href={`/admin/clients/${e.user.id}?tab=courses`} className="font-medium text-stone-800 after:absolute after:inset-0 hover:underline">
+                            {e.user.name || e.user.email}
+                          </Link>
+                        </span>
+                        {e.user.name && <span className="block text-xs text-stone-500">{e.user.email}</span>}
+                        <StatusBadge status={e.user.status} />
+                      </td>
+                      <td className="relative z-10 px-4 py-3">
+                        <Link href={`/admin/classes/${c.id}`} className="text-stone-700 hover:underline">
+                          {c.title}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-3 text-stone-600">{date(e.startedAt)}</td>
+                      <td className="px-4 py-3">
+                        {total > 0 ? (
+                          <div className="space-y-1">
+                            <Progress value={(done / total) * 100} className="h-1.5 bg-sage-100 [&>div]:bg-sage-500" />
+                            <p className="text-xs text-stone-600">
+                              {done} of {total} module{total === 1 ? "" : "s"}
+                            </p>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-amber-700">No modules yet</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {allDone || e.certificateKey ? (
+                          <div className="flex flex-wrap gap-1.5">
+                            {allDone && <Badge className="bg-sage-600 hover:bg-sage-600">All done: mark complete?</Badge>}
+                            {e.certificateKey && (
+                              <Badge variant="outline" className="gap-1 font-normal">
+                                <Award className="h-3 w-3" /> Certificate added
+                              </Badge>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-stone-500">In progress</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-stone-600">{lastActive(e.user.lastActiveAt)}</td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {rows.map((e) => {
-                      const done = Math.min(e._count.progress, total);
-                      const allDone = total > 0 && done >= total;
-                      const fresh = isNewStudent(c.id, e.user.id);
-                      return (
-                        // The whole row opens the student (the name link stretches over it). New website enrolments are tinted.
-                        <tr key={e.id} className={cn("relative border-b border-stone-100 align-top last:border-0", fresh ? "bg-sage-50 hover:bg-sage-100" : "hover:bg-stone-50")}>
-                          <td className="px-4 py-3">
-                            <span className="flex items-center gap-2">
-                              {fresh && <span className="rounded bg-sage-600 px-1.5 py-0.5 text-[11px] font-semibold text-white">New</span>}
-                              <Link href={`/admin/clients/${e.user.id}?tab=courses`} className="font-medium text-stone-800 after:absolute after:inset-0 hover:underline">
-                                {e.user.name || e.user.email}
-                              </Link>
-                            </span>
-                            {e.user.name && <span className="block text-xs text-stone-500">{e.user.email}</span>}
-                            <StatusBadge status={e.user.status} />
-                          </td>
-                          <td className="px-4 py-3 text-stone-600">{date(e.startedAt)}</td>
-                          <td className="px-4 py-3">
-                            {total > 0 ? (
-                              <div className="space-y-1">
-                                <Progress value={(done / total) * 100} className="h-1.5 bg-sage-100 [&>div]:bg-sage-500" />
-                                <p className="text-xs text-stone-600">
-                                  {done} of {total} module{total === 1 ? "" : "s"}
-                                </p>
-                              </div>
-                            ) : (
-                              <span className="text-xs text-amber-700">No modules yet</span>
-                            )}
-                          </td>
-                          <td className="px-4 py-3">
-                            {allDone || e.certificateKey ? (
-                              <div className="flex flex-wrap gap-1.5">
-                                {allDone && <Badge className="bg-sage-600 hover:bg-sage-600">All done: mark complete?</Badge>}
-                                {e.certificateKey && (
-                                  <Badge variant="outline" className="gap-1 font-normal">
-                                    <Award className="h-3 w-3" /> Certificate added
-                                  </Badge>
-                                )}
-                              </div>
-                            ) : (
-                              <span className="text-stone-500">In progress</span>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 text-stone-600">{lastActive(e.user.lastActiveAt)}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </section>
-        );
-      })}
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
       {finished.length > 0 && (
         <details id="finished" className="scroll-mt-6 rounded-xl bg-white p-4 ring-1 ring-stone-200" open={needCertificate > 0}>

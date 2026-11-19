@@ -9,7 +9,7 @@ export function isSiteImage(key: string) {
 }
 
 /** The address to show a cover at, or null when there is none. */
-export function coverUrl(kind: "course" | "package", item: { id: string; imageKey: string | null; updatedAt: Date }) {
+export function coverUrl(kind: "course" | "package" | "session", item: { id: string; imageKey: string | null; updatedAt: Date }) {
   if (!item.imageKey) return null;
   if (isSiteImage(item.imageKey)) return item.imageKey;
   return `/api/cover/${kind}/${item.id}?v=${item.updatedAt.getTime()}`;

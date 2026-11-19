@@ -13,7 +13,11 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ kin
       ? await db.course.findUnique({ where: { id }, select: { imageKey: true, published: true, archived: true } })
       : kind === "package"
         ? await db.learningPackage.findUnique({ where: { id }, select: { imageKey: true, published: true, archived: true } })
-        : null;
+        : kind === "session"
+          ? await db.sessionService
+              .findUnique({ where: { id }, select: { imageKey: true, published: true } })
+              .then((s) => (s ? { ...s, archived: false } : null))
+          : null;
   if (!item?.imageKey) return new NextResponse(null, { status: 404 });
   if (!item.published || item.archived) {
     const session = await auth();

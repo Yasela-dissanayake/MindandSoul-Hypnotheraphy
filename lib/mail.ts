@@ -407,3 +407,104 @@ export function enquiryEmail(opts: {
     text: `${opts.name} ${consult ? "asked for a free consultation" : "sent a question"} on the website.\n\n${rows.map(([k, v]) => `${k}: ${v}`).join("\n")}\n\n${opts.message ?? ""}\n\n${url}`,
   };
 }
+
+// ---------- One-to-one sessions booked on the website ----------
+
+type SessionMail = {
+  name: string;
+  serviceTitle: string;
+  optionTitle: string; // e.g. "5-session package"; "" for a session booked from a package
+  when: string; // date and time as the reader should see it
+  inPerson: boolean;
+  paid: string | null; // e.g. "AUD 610"; null when booked with a session left in their package
+  sessionsLeft: number; // still to book after this one
+};
+
+function detailRows(rows: [string, string][]) {
+  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px;background:#f6f7f6;border-radius:8px;font-family:Arial,sans-serif;font-size:15px">${rows
+    .map(([k, v]) => `<tr><td style="padding:8px 16px;color:#78716c;vertical-align:top">${escapeHtml(k)}</td><td style="padding:8px 16px">${escapeHtml(v)}</td></tr>`)
+    .join("")}</table>`;
+}
+
+/** To the client: their session is booked (and their login details if the account is new). */
+export function sessionBookedEmail(opts: SessionMail & { login?: { username: string; password: string } | null }) {
+  const hello = `Hello ${opts.name},`;
+  const intro = opts.paid
+    ? `Thank you for booking ${opts.serviceTitle}. Your payment went through and your session is confirmed.`
+    : `Your next ${opts.serviceTitle} session is booked.`;
+  const rows: [string, string][] = [
+    ["Session", [opts.serviceTitle, opts.optionTitle].filter(Boolean).join(" · ")],
+    ["When", opts.when],
+    ["Where", opts.inPerson ? "In person in Perth. Rangika will confirm the address with you." : "Online. Your session link will be in your private space."],
+    ...(opts.paid ? ([["Paid", opts.paid]] as [string, string][]) : []),
+  ];
+  const left =
+    opts.sessionsLeft > 0
+      ? `You have ${opts.sessionsLeft} more session${opts.sessionsLeft === 1 ? "" : "s"} in your package. Book ${opts.sessionsLeft === 1 ? "it" : "them"} whenever it suits you from your private space (My sessions → Book your next session).`
+      : "";
+  const url = `${SITE_URL}/login`;
+  const login = opts.login
+    ? `<p style="margin:0 0 8px">Your private space, where Rangika will add your session notes, exercises and material:</p>${detailRows([
+        ["Username", opts.login.username],
+        ["Password", opts.login.password],
+      ])}`
+    : `<p style="margin:0 0 16px">Sign in with your usual username and password to see your session details.</p>`;
+  return {
+    subject: opts.paid ? `Your session is booked: ${opts.serviceTitle}` : `Session booked: ${opts.serviceTitle}`,
+    html: layout(
+      `<p style="margin:0 0 16px">${escapeHtml(hello)}</p>${paragraphs(intro)}${detailRows(rows)}${left ? paragraphs(left) : ""}${login}${button(url, "Sign in")}<p style="margin:0;color:#78716c;font-size:14px">Need to change the time? Simply reply to this email.</p>`,
+    ),
+    text: `${hello}
+
+${intro}
+
+${rows.map(([k, v]) => `${k}: ${v}`).join("\n")}
+${left ? `\n${left}\n` : ""}
+${opts.login ? `Username: ${opts.login.username}\nPassword: ${opts.login.password}` : "Sign in with your usual username and password to see your session details."}
+
+Sign in: ${url}
+
+Need to change the time? Simply reply to this email.`,
+  };
+}
+
+/** To Rangika: a new one-to-one booking, with what the client wrote on the booking form. */
+export function sessionBookedAdminEmail(
+  opts: SessionMail & {
+    email: string;
+    phone?: string | null;
+    userId?: string | null;
+    clientTimezone?: string | null;
+    concerns?: string | null;
+    previousTherapy?: string | null;
+    medicalConditions?: string | null;
+  },
+) {
+  const url = opts.userId ? `${SITE_URL}/admin/clients/${opts.userId}?tab=sessions` : `${SITE_URL}/admin/bookings`;
+  const rows: [string, string][] = [
+    ["Client", `${opts.name} · ${[opts.email, opts.phone].filter(Boolean).join(" · ")}`],
+    ["Session", [opts.serviceTitle, opts.optionTitle].filter(Boolean).join(" · ")],
+    ["When (Perth time)", opts.when],
+    ["Where", opts.inPerson ? "In person" : "Online / distance"],
+    ...(opts.clientTimezone ? ([["Client's time zone", opts.clientTimezone.replace(/_/g, " ")]] as [string, string][]) : []),
+    ["Payment", opts.paid ?? "Booked with a session left in their package"],
+    ...(opts.sessionsLeft > 0 ? ([["Still to book", `${opts.sessionsLeft} session${opts.sessionsLeft === 1 ? "" : "s"}`]] as [string, string][]) : []),
+  ];
+  const notes: [string, string | null | undefined][] = [
+    ["What they'd like help with", opts.concerns],
+    ["Previous therapy", opts.previousTherapy],
+    ["Medical conditions / medication", opts.medicalConditions],
+  ];
+  const noteHtml = notes
+    .filter(([, v]) => v?.trim())
+    .map(([k, v]) => `<p style="margin:0 0 4px"><strong>${escapeHtml(k)}</strong></p>${quote(v!)}`)
+    .join("");
+  return {
+    subject: `New booking: ${opts.serviceTitle} · ${opts.name}`,
+    html: layout(`${detailRows(rows)}${noteHtml}${button(url, "Open their page")}`),
+    text: `${rows.map(([k, v]) => `${k}: ${v}`).join("\n")}\n\n${notes
+      .filter(([, v]) => v?.trim())
+      .map(([k, v]) => `${k}:\n${v}`)
+      .join("\n\n")}\n\n${url}`,
+  };
+}
