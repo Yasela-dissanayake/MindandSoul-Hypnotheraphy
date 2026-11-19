@@ -27,13 +27,25 @@ function doneMessage(kind: Kind, done: Done) {
       : "The course has been added to your account. Sign in and open My courses.";
 }
 
-function BuyForm({ packageId, title, priceLabel, kind, onDone }: { packageId: string; title: string; priceLabel: string; kind: Kind; onDone: (d: Done) => void }) {
+/** Extra settings for classes: the currency they pay in (as shown) and a prerequisite to confirm. */
+type ClassOptions = { currency?: "aud" | "aed"; prerequisite?: string | null };
+
+function BuyForm({
+  packageId,
+  title,
+  priceLabel,
+  kind,
+  onDone,
+  currency,
+  prerequisite,
+}: { packageId: string; title: string; priceLabel: string; kind: Kind; onDone: (d: Done) => void } & ClassOptions) {
   const stripe = useStripe();
   const elements = useElements();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [agreed, setAgreed] = useState(false);
+  const [prereqDone, setPrereqDone] = useState(false);
   const [dialog, setDialog] = useState<PaymentState>(null);
   const [paid, setPaid] = useState<Done | null>(null);
   const busy = dialog?.status === "processing";
@@ -54,7 +66,9 @@ function BuyForm({ packageId, title, priceLabel, kind, onDone }: { packageId: st
       const res = await fetch(`${API[kind]}/checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(kind === "course" ? { itemId: packageId, name, email, phone } : { packageId, name, email }),
+        body: JSON.stringify(
+          kind === "course" ? { itemId: packageId, name, email, phone, currency, prerequisiteDone: prereqDone } : { packageId, name, email },
+        ),
       });
       const start = await res.json();
       if (!res.ok) {
@@ -141,6 +155,12 @@ function BuyForm({ packageId, title, priceLabel, kind, onDone }: { packageId: st
           <CardElement options={{ style: { base: { fontSize: "16px", color: "#292524", "::placeholder": { color: "#a8a29e" } } } }} />
         </div>
       </div>
+      {prerequisite && (
+        <label className="flex items-start gap-2 rounded-lg bg-sage-50 p-3 text-sm text-stone-700 ring-1 ring-sage-200">
+          <input type="checkbox" className="mt-1" required checked={prereqDone} onChange={(e) => setPrereqDone(e.target.checked)} />
+          <span>I have completed {prerequisite} (with Rangika or another Reiki teacher).</span>
+        </label>
+      )}
       <label className="flex items-start gap-2 text-sm text-stone-600">
         <input type="checkbox" className="mt-1" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
         <span>
@@ -155,7 +175,7 @@ function BuyForm({ packageId, title, priceLabel, kind, onDone }: { packageId: st
           .
         </span>
       </label>
-      <Button type="submit" disabled={!stripe || busy || !agreed} className="w-full bg-sage-600 py-3 hover:bg-sage-700">
+      <Button type="submit" disabled={!stripe || busy || !agreed || (Boolean(prerequisite) && !prereqDone)} className="w-full bg-sage-600 py-3 hover:bg-sage-700">
         {`${kind === "course" ? "Enrol" : "Buy"} · ${priceLabel}`}
       </Button>
       <p className="flex items-center justify-center gap-1 text-xs text-stone-500">
@@ -166,7 +186,7 @@ function BuyForm({ packageId, title, priceLabel, kind, onDone }: { packageId: st
   );
 }
 
-export function BuyPackage({ kind = "package", ...props }: { packageId: string; title: string; priceLabel: string; kind?: Kind }) {
+export function BuyPackage({ kind = "package", ...props }: { packageId: string; title: string; priceLabel: string; kind?: Kind } & ClassOptions) {
   const [done, setDone] = useState<Done | null>(null);
 
   if (done) {

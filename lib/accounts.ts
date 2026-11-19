@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { enrolInClass } from "@/lib/class-enrol";
 import { copyTemplateToUser } from "@/lib/plans";
 import { serviceLabel } from "@/lib/catalog";
 import { normaliseUsername, usernameFromName, usernameProblem } from "@/lib/passwords";
@@ -66,7 +67,6 @@ export async function giveAccess(userId: string, access: z.output<typeof accessS
       });
     }
   }
-  for (const courseId of access.courseIds) {
-    await db.enrollment.upsert({ where: { userId_courseId: { userId, courseId } }, update: {}, create: { userId, courseId } });
-  }
+  // A bundle enrols them in each of its classes.
+  for (const courseId of access.courseIds) await enrolInClass(userId, courseId);
 }

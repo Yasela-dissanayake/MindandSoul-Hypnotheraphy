@@ -7,6 +7,7 @@ import { requireAdmin } from "@/lib/authz";
 import { deleteObject } from "@/lib/storage";
 import { isSiteImage } from "@/lib/covers";
 import { uniqueCourseSlug } from "@/lib/course-sales";
+import { enrolInClass } from "@/lib/class-enrol";
 import { blank, fail, refreshAll, type ActionResult } from "./common";
 
 // Courses are shared: content added here is seen by every enrolled student.
@@ -51,6 +52,12 @@ const websiteSchema = z.object({
   format: z.string().max(120).optional().nullable(),
   schedule: z.string().max(200).optional().nullable(),
   price: z.number().min(0, "The price can't be negative.").max(100000),
+  // Shown (and paid) in the UAE; empty = they see the AUD price.
+  priceAed: z.number().min(0, "The price can't be negative.").max(500000).nullable().optional(),
+  prerequisite: z.string().max(120).optional().nullable(),
+  highlights: z.string().max(5000).optional().nullable(),
+  // For a bundle: the classes it includes (empty = an ordinary class).
+  includeIds: z.array(z.string().min(1).max(50)).max(20).optional(),
   seats: z.number().int().min(0).max(10000).nullable(),
   published: z.boolean(),
 });
@@ -61,15 +68,44 @@ export async function updateCourseWebsite(id: string, input: z.input<typeof webs
   const parsed = websiteSchema.safeParse(input);
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Please check the details.");
   const d = parsed.data;
-  const course = await db.course.findUnique({ where: { id }, select: { title: true, slug: true, archived: true } });
+  const course = await db.course.findUnique({
+    where: { id },
+    select: { title: true, slug: true, archived: true, _count: { select: { enrollments: true, includedIn: true } } },
+  });
   if (!course) return fail("Class not found.");
   const price = Math.round(d.price * 100);
+  const priceAed = d.priceAed ? Math.round(d.priceAed * 100) : null;
+  if (priceAed !== null && priceAed < 200) return fail("The AED price is too low. Leave it empty to show the AUD price instead.");
+
+  // Bundle checks: only ordinary classes can go in a bundle, and a bundle has no students of its own.
+  const includeIds = [...new Set((d.includeIds ?? []).filter((x) => x !== id))];
+  if (includeIds.length) {
+    if (includeIds.length < 2) return fail("A bundle needs at least two classes.");
+    if (course._count.includedIn) return fail("This class is part of a bundle, so it can't be a bundle itself.");
+    if (course._count.enrollments) return fail("Students are enrolled in this class directly, so it can't become a bundle. Create a new class for the bundle.");
+    const parts = await db.course.findMany({ where: { id: { in: includeIds } }, select: { id: true, _count: { select: { includes: true } } } });
+    if (parts.length !== includeIds.length) return fail("One of the chosen classes no longer exists.");
+    if (parts.some((p) => p._count.includes)) return fail("A bundle can't include another bundle.");
+  }
   if (d.published && price < 50) return fail("Add a price before putting the class on the website.");
   if (d.published && course.archived) return fail("This class is hidden. Show it to students again first.");
   const slug = course.slug ?? (await uniqueCourseSlug(course.title, id));
   await db.course.update({
     where: { id },
-    data: { slug, summary: blank(d.summary), details: blank(d.details), format: blank(d.format), schedule: blank(d.schedule), price, seats: d.seats, published: d.published },
+    data: {
+      slug,
+      summary: blank(d.summary),
+      details: blank(d.details),
+      format: blank(d.format),
+      schedule: blank(d.schedule),
+      price,
+      priceAed,
+      prerequisite: blank(d.prerequisite),
+      highlights: blank(d.highlights),
+      seats: d.seats,
+      published: d.published,
+      ...(d.includeIds ? { includes: { set: includeIds.map((x) => ({ id: x })) } } : {}),
+    },
   });
   refreshAll();
   revalidatePath("/classes", "layout");
@@ -191,7 +227,7 @@ export async function enrollStudent(userId: string, courseId: string): Promise<A
   const user = await db.user.findUnique({ where: { id: userId } });
   if (!user || user.role !== "CLIENT") return fail("Person not found.");
   if (!(await db.course.findUnique({ where: { id: courseId }, select: { id: true } }))) return fail("Class not found.");
-  await db.enrollment.upsert({ where: { userId_courseId: { userId, courseId } }, update: {}, create: { userId, courseId } });
+  await enrolInClass(userId, courseId); // a bundle enrols them in each of its classes
   refreshAll();
   return { ok: true };
 }

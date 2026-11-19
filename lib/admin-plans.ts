@@ -73,6 +73,8 @@ export async function loadCourseForEditor(courseId: string) {
       modules: { orderBy: [{ order: "asc" }, { title: "asc" }] },
       items: { orderBy: [{ order: "asc" }, { createdAt: "asc" }], include: { resource: { select: { id: true, title: true, kind: true } } } },
       _count: { select: { enrollments: true, purchases: true } },
+      includes: { select: { id: true, title: true }, orderBy: { order: "asc" } },
+      includedIn: { select: { id: true, title: true }, orderBy: { order: "asc" } },
     },
   });
   if (!c) return null;
@@ -91,9 +93,16 @@ export async function loadCourseForEditor(courseId: string) {
       format: c.format ?? "",
       schedule: c.schedule ?? "",
       price: c.price,
+      priceAed: c.priceAed,
+      prerequisite: c.prerequisite ?? "",
+      highlights: c.highlights ?? "",
       seats: c.seats,
       published: c.published,
     },
+    // A bundle enrols students in these classes instead of having content of its own.
+    includes: c.includes,
+    includedIn: c.includedIn,
+    hasStudents: c._count.enrollments > 0,
     modules: c.modules.map((m) => ({ id: m.id, title: m.title, description: m.description })),
     items: c.items.map((i) => ({ id: i.id, moduleId: i.moduleId, note: i.note, extra: i.extra, resource: i.resource, createdAt: i.createdAt.toISOString() })),
   };

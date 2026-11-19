@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Award, GraduationCap, Pencil } from "lucide-react";
+import { Award, GraduationCap, Layers, Pencil } from "lucide-react";
 import { requireAdminPage } from "@/lib/authz";
 import { db } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
@@ -12,7 +12,7 @@ import { EnrolExistingPerson } from "@/components/admin/enrol-existing-person";
 import { NewCourseDialog } from "@/components/admin/new-course-dialog";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { viewerTimezone } from "@/lib/viewer-tz";
-import { money } from "@/lib/learning";
+import { formatPrice } from "@/lib/currency";
 import { newPurchaseWhere } from "@/lib/sales";
 import { MarkSeenButton } from "@/components/admin/mark-seen-button";
 import { cn } from "@/lib/utils";
@@ -28,6 +28,7 @@ export default async function CoursesPage() {
       orderBy: [{ archived: "asc" }, { order: "asc" }, { title: "asc" }],
       include: {
         _count: { select: { modules: true, items: true } },
+        includes: { select: { title: true }, orderBy: { order: "asc" } },
         enrollments: {
           where: { user: { status: { not: "FINISHED" } } },
           orderBy: { startedAt: "desc" },
@@ -53,7 +54,8 @@ export default async function CoursesPage() {
 
   const lastActive = (d: Date | null) => (d ? d.toLocaleDateString("en-AU", { timeZone: tz, day: "numeric", month: "short" }) : "not yet");
   const date = (d: Date) => d.toLocaleDateString("en-AU", { timeZone: tz, day: "numeric", month: "short", year: "numeric" });
-  const shown = courses.filter((c) => !c.archived);
+  // Bundles have no students of their own (buyers are enrolled in the bundle's classes), so no student table for them.
+  const shown = courses.filter((c) => !c.archived && c.includes.length === 0);
   const finished = courses.flatMap((c) => c.enrollments.filter((e) => e.completedAt).map((e) => ({ ...e, courseTitle: c.title })));
   const needCertificate = finished.filter((e) => !e.certificateKey).length;
 
@@ -126,7 +128,7 @@ export default async function CoursesPage() {
             return (
               <Link key={c.id} href={`/admin/classes/${c.id}`} className="flex items-start gap-3 rounded-xl bg-white p-4 ring-1 ring-stone-200 transition hover:ring-sage-300">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sage-50 text-sage-600">
-                  <GraduationCap className="h-4 w-4" />
+                  {c.includes.length ? <Layers className="h-4 w-4" /> : <GraduationCap className="h-4 w-4" />}
                 </div>
                 <div className="min-w-0 flex-1 space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
@@ -137,7 +139,8 @@ export default async function CoursesPage() {
                     {c.archived && <Badge variant="secondary">Hidden</Badge>}
                     {c.published && !c.archived ? (
                       <Badge className="bg-sage-100 font-normal text-sage-800 hover:bg-sage-100">
-                        On website · {money(c.price, c.currency)}
+                        On website · {formatPrice(c.price, "aud")}
+                        {c.priceAed ? ` / ${formatPrice(c.priceAed, "aed")}` : ""}
                         {c.seats !== null ? ` · ${c.seats} place${c.seats === 1 ? "" : "s"} left` : ""}
                       </Badge>
                     ) : (
@@ -148,10 +151,14 @@ export default async function CoursesPage() {
                       )
                     )}
                   </div>
-                  <p className="text-xs text-stone-500">
-                    {c._count.modules} module{c._count.modules === 1 ? "" : "s"} · {c._count.items} item{c._count.items === 1 ? "" : "s"} · {active} current student
-                    {active === 1 ? "" : "s"}
-                  </p>
+                  {c.includes.length ? (
+                    <p className="text-xs text-stone-500">Bundle: enrols buyers in {c.includes.map((x) => x.title).join(" + ")}</p>
+                  ) : (
+                    <p className="text-xs text-stone-500">
+                      {c._count.modules} module{c._count.modules === 1 ? "" : "s"} · {c._count.items} item{c._count.items === 1 ? "" : "s"} · {active} current student
+                      {active === 1 ? "" : "s"}
+                    </p>
+                  )}
                 </div>
               </Link>
             );

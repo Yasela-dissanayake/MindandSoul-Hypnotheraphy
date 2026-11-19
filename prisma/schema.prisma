@@ -373,16 +373,24 @@ model Course {
   details   String? // "about this course" on the website; falls back to description
   format    String? // e.g. "In person in Perth · 2 days"
   schedule  String? // e.g. "Sat 14 & Sun 15 December, 9am-4pm"
-  price     Int      @default(0) // cents
+  price     Int      @default(0) // cents, AUD (everyone outside the UAE)
+  priceAed  Int? // fils (AED cents), shown to visitors in the UAE; null = they see the AUD price
   currency  String   @default("aud")
   seats     Int? // places left; null = no limit
   published Boolean  @default(false) // false = not on the website
   imageKey  String? // cover photo (R2 object key)
+  prerequisite String? // e.g. "Reiki Level 1": shown on the website; buyers confirm they have completed it
+  highlights   String? // "What you'll explore" on the website, one point per line
 
   modules     CourseModule[]
   items       CourseItem[]
   enrollments Enrollment[]
   purchases   CoursePurchase[]
+
+  // A bundle (e.g. "Reiki Level 1 & 2") includes other classes: buying it enrols the student in each of them,
+  // so the content is added once, in the individual classes.
+  includes   Course[] @relation("ClassBundle")
+  includedIn Course[] @relation("ClassBundle")
 }
 
 model CourseModule {

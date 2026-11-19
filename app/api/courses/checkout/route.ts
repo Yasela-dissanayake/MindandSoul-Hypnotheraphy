@@ -8,6 +8,10 @@ const schema = z.object({
   name: z.string().trim().min(1, "Please enter your name.").max(100),
   email: z.string().trim().email("Please enter a valid email address.").max(200),
   phone: z.string().trim().max(40).optional(),
+  // Which of the class's prices they saw (AUD, or AED in the UAE). The amount still comes from the database.
+  currency: z.enum(["aud", "aed"]).optional(),
+  // "I have completed Reiki Level 1" for classes with a prerequisite.
+  prerequisiteDone: z.boolean().optional(),
 });
 
 /** Starts paying for a place on a taught course. The price comes from the database, not from the browser. */

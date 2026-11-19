@@ -431,8 +431,8 @@ export function PersonCourses({
   );
 }
 
-/** Price, dates and description for the public /classes page, and the publish switch. */
-export function CourseWebsiteForm({ course }: { course: EditorCourse }) {
+/** Price (AUD and AED), dates, details and bundle contents for the public /classes page, and the publish switch. */
+export function CourseWebsiteForm({ course, classOptions }: { course: EditorCourse; classOptions: { id: string; title: string; isBundle: boolean }[] }) {
   const w = course.website;
   const [f, setF] = useState({
     summary: w.summary,
@@ -440,11 +440,19 @@ export function CourseWebsiteForm({ course }: { course: EditorCourse }) {
     format: w.format,
     schedule: w.schedule,
     price: w.price ? String(w.price / 100) : "",
+    priceAed: w.priceAed ? String(w.priceAed / 100) : "",
+    prerequisite: w.prerequisite,
+    highlights: w.highlights,
     seats: w.seats === null ? "" : String(w.seats),
     published: w.published,
   });
+  const [includeIds, setIncludeIds] = useState<string[]>(course.includes.map((c) => c.id));
   const [slug, setSlug] = useState(w.slug);
   const { pending, run } = useAction();
+  // Classes that can go in a bundle: ordinary classes other than this one.
+  const bundleChoices = classOptions.filter((c) => c.id !== course.id && !c.isBundle);
+  // A class that's already in a bundle, or has its own students, can't become a bundle.
+  const canBeBundle = course.includedIn.length === 0 && (!course.hasStudents || includeIds.length > 0);
   const save = (published = f.published) =>
     run(
       () =>
@@ -454,8 +462,12 @@ export function CourseWebsiteForm({ course }: { course: EditorCourse }) {
           format: f.format,
           schedule: f.schedule,
           price: Number(f.price || 0),
+          priceAed: f.priceAed.trim() === "" ? null : Number(f.priceAed),
+          prerequisite: f.prerequisite,
+          highlights: f.highlights,
           seats: f.seats.trim() === "" ? null : Math.max(0, Math.floor(Number(f.seats))),
           published,
+          includeIds,
         }),
       published && !w.published ? "Published. People can enrol on the website now." : !published && w.published ? "Taken off the website" : "Saved",
       (r) => {
@@ -466,6 +478,7 @@ export function CourseWebsiteForm({ course }: { course: EditorCourse }) {
       },
     );
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setF({ ...f, [k]: e.target.value });
+  const toggleInclude = (id: string) => setIncludeIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
 
   return (
     <div className="space-y-4">
@@ -480,14 +493,20 @@ export function CourseWebsiteForm({ course }: { course: EditorCourse }) {
           {f.published ? "On the website" : "Not on the website"}
         </span>
       </div>
-      <div className="grid gap-4 sm:grid-cols-[1fr_9rem_9rem]">
-        <div className="space-y-1.5">
-          <Label htmlFor="cw-summary">Short summary</Label>
-          <Input id="cw-summary" maxLength={200} placeholder="One line shown on the class list" value={f.summary} onChange={set("summary")} />
-        </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="cw-summary">Short summary</Label>
+        <Input id="cw-summary" maxLength={200} placeholder="One line shown on the class list" value={f.summary} onChange={set("summary")} />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-3">
         <div className="space-y-1.5">
           <Label htmlFor="cw-price">Price (AUD)</Label>
-          <Input id="cw-price" type="number" min={0} step={0.01} placeholder="e.g. 350" value={f.price} onChange={set("price")} />
+          <Input id="cw-price" type="number" min={0} step={0.01} placeholder="e.g. 325" value={f.price} onChange={set("price")} />
+          <p className="text-xs text-stone-500">Everyone outside the UAE.</p>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="cw-price-aed">Price (AED)</Label>
+          <Input id="cw-price-aed" type="number" min={0} step={0.01} placeholder="e.g. 800" value={f.priceAed} onChange={set("priceAed")} />
+          <p className="text-xs text-stone-500">Visitors in the UAE. Empty = they see AUD.</p>
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="cw-seats">Places left</Label>
@@ -497,12 +516,17 @@ export function CourseWebsiteForm({ course }: { course: EditorCourse }) {
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label htmlFor="cw-format">Where and how long</Label>
-          <Input id="cw-format" maxLength={120} placeholder="e.g. In person in Perth · 2 days" value={f.format} onChange={set("format")} />
+          <Input id="cw-format" maxLength={120} placeholder="e.g. Online live group class · 2 days, 3 hours each" value={f.format} onChange={set("format")} />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="cw-schedule">Next dates</Label>
-          <Input id="cw-schedule" maxLength={200} placeholder="e.g. Sat 14 & Sun 15 December, 9am–4pm" value={f.schedule} onChange={set("schedule")} />
+          <Input id="cw-schedule" maxLength={200} placeholder="e.g. Sat 14 & Sun 15 December, 6–9pm (Perth time)" value={f.schedule} onChange={set("schedule")} />
         </div>
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="cw-prereq">Before you join (optional)</Label>
+        <Input id="cw-prereq" maxLength={120} placeholder="e.g. Reiki Level 1" value={f.prerequisite} onChange={set("prerequisite")} />
+        <p className="text-xs text-stone-500">The class people must have completed first. Buyers tick a box to confirm it. Leave empty if anyone can join.</p>
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="cw-details">About this class (website)</Label>
@@ -514,8 +538,39 @@ export function CourseWebsiteForm({ course }: { course: EditorCourse }) {
           value={f.details}
           onChange={set("details")}
         />
-        <p className="text-xs text-stone-500">The module names are listed on the website too, under “What you’ll cover”. Places left goes down by one with each payment.</p>
       </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="cw-highlights">What you&apos;ll explore</Label>
+        <Textarea
+          id="cw-highlights"
+          rows={6}
+          maxLength={5000}
+          placeholder={"One point per line, e.g.\nThe history and origins of Reiki\nThe Five Reiki Principles"}
+          value={f.highlights}
+          onChange={set("highlights")}
+        />
+        <p className="text-xs text-stone-500">
+          Shown as a tick list on the class page. The module names you add above are listed too, under “What you’ll cover”. Places left goes down by one with each
+          payment.
+        </p>
+      </div>
+      {canBeBundle && bundleChoices.length >= 2 && (
+        <div className="space-y-2 rounded-xl border border-stone-200 p-4">
+          <p className="font-medium text-stone-800">Bundle (optional)</p>
+          <p className="text-xs text-stone-500">
+            Tick two or more classes to sell this as a bundle (e.g. “Reiki Level 1 &amp; 2”). Buying it enrols the student in each ticked class, so they get each
+            class&apos;s own content and certificate. Changes apply to new enrolments.
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {bundleChoices.map((c) => (
+              <label key={c.id} className="flex items-center gap-2 text-sm text-stone-700">
+                <input type="checkbox" checked={includeIds.includes(c.id)} onChange={() => toggleInclude(c.id)} />
+                {c.title}
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="flex flex-wrap items-center gap-2">
         <Button disabled={pending} onClick={() => save()} className="bg-sage-600 hover:bg-sage-700">
           {pending ? "Saving…" : "Save"}

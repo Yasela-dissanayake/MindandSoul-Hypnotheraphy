@@ -68,7 +68,9 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
     <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-stone-100 to-sage-50 px-4 py-10">
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm ring-1 ring-stone-200">
         <div className="mb-6 flex flex-col items-center text-center">
-          <Image src="/logo.jpeg" alt="Heal With Rangika" width={72} height={72} priority className="rounded-full" />
+          <Link href="/" aria-label="Back to the website" title="Back to the website" className="rounded-full transition hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage-400 focus-visible:ring-offset-2">
+            <Image src="/logo.jpeg" alt="Heal With Rangika" width={72} height={72} priority className="rounded-full" />
+          </Link>
           <h1 className="mt-4 font-serif text-2xl text-stone-800">Welcome back</h1>
           <p className="mt-1 text-sm text-stone-500">Sign in to your private space</p>
         </div>

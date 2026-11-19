@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Layers } from "lucide-react";
 import { requireAdminPage } from "@/lib/authz";
 import { db } from "@/lib/db";
 import { loadCourseForEditor, loadLibraryOptions } from "@/lib/admin-plans";
@@ -15,7 +15,7 @@ export default async function CourseAdminPage({ params }: { params: Promise<{ id
   await requireAdminPage();
   const { id } = await params;
   const tz = await viewerTimezone();
-  const [course, library, enrollments, clients, sales] = await Promise.all([
+  const [course, library, enrollments, clients, sales, classOptions] = await Promise.all([
     loadCourseForEditor(id),
     loadLibraryOptions(),
     db.enrollment.findMany({
@@ -25,9 +25,16 @@ export default async function CourseAdminPage({ params }: { params: Promise<{ id
     }),
     db.user.findMany({ where: { role: "CLIENT", status: { not: "FINISHED" } }, select: { id: true, name: true, email: true }, orderBy: { name: "asc" } }),
     db.coursePurchase.findMany({ where: { courseId: id, status: "PAID" }, orderBy: { paidAt: "desc" }, take: 50 }),
+    // For the "Bundle" choices in the website form.
+    db.course.findMany({
+      where: { archived: false },
+      orderBy: [{ order: "asc" }, { title: "asc" }],
+      select: { id: true, title: true, _count: { select: { includes: true } } },
+    }),
   ]);
   if (!course) notFound();
   const enrolledIds = new Set(enrollments.map((e) => e.userId));
+  const isBundle = course.includes.length > 0;
 
   return (
     <div className="space-y-6">
@@ -36,11 +43,37 @@ export default async function CourseAdminPage({ params }: { params: Promise<{ id
       </Link>
       <section className="space-y-5 rounded-2xl bg-white p-5 ring-1 ring-stone-200">
         <CourseDetails course={course} />
-        <CourseModulesEditor course={course} />
-        <CourseMaterialEditor course={course} library={library} />
+        {isBundle ? (
+          // A bundle has no content or students of its own: buying it enrols people in these classes.
+          <div className="space-y-2 rounded-xl bg-sage-50 p-4 text-sm text-stone-700 ring-1 ring-sage-200">
+            <p className="flex items-center gap-2 font-medium text-stone-800">
+              <Layers className="h-4 w-4 text-sage-700" /> This is a bundle
+            </p>
+            <p>People who buy it are enrolled in each class below, and see that class&apos;s content and certificate. Add the content and manage students there.</p>
+            <ul className="list-inside list-disc">
+              {course.includes.map((c) => (
+                <li key={c.id}>
+                  <Link href={`/admin/classes/${c.id}`} className="text-sage-800 underline-offset-2 hover:underline">
+                    {c.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <>
+            {course.includedIn.length > 0 && (
+              <p className="text-sm text-stone-500">
+                Also sold in: {course.includedIn.map((b) => b.title).join(", ")}. Bundle buyers are enrolled here and see this content.
+              </p>
+            )}
+            <CourseModulesEditor course={course} />
+            <CourseMaterialEditor course={course} library={library} />
+          </>
+        )}
       </section>
       <section id="website" className="scroll-mt-6 space-y-5 rounded-2xl bg-white p-5 ring-1 ring-stone-200">
-        <CourseWebsiteForm course={course} />
+        <CourseWebsiteForm course={course} classOptions={classOptions.map((c) => ({ id: c.id, title: c.title, isBundle: c._count.includes > 0 }))} />
         <CoverUpload kind="course" id={course.id} url={course.coverUrl} />
         {sales.length > 0 && (
           <div className="space-y-2 border-t border-stone-100 pt-4">
@@ -67,6 +100,7 @@ export default async function CourseAdminPage({ params }: { params: Promise<{ id
           </div>
         )}
       </section>
+      {!isBundle && (
       <section className="rounded-2xl bg-white p-5 ring-1 ring-stone-200">
         <CourseStudents
           courseId={id}
@@ -84,6 +118,7 @@ export default async function CourseAdminPage({ params }: { params: Promise<{ id
           candidates={clients.filter((c) => !enrolledIds.has(c.id)).map((c) => ({ id: c.id, name: `${c.name || c.email} (${c.email})` }))}
         />
       </section>
+      )}
     </div>
   );
 }
