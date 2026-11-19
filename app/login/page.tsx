@@ -87,6 +87,13 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           </p>
         )}
 
+        {sp.bought && !message && (
+          // Arrived from the payment pop-up or the purchase email.
+          <p className="mb-4 rounded-lg bg-sage-50 p-3 text-sm text-sage-900 ring-1 ring-sage-200">
+            Thank you for your purchase! Sign in with the username and password we emailed you (check your spam folder if you can&apos;t see it).
+          </p>
+        )}
+
         <form action={login} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="identifier">Username or email</Label>
@@ -124,7 +131,9 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
                 Continue with Google
               </SubmitButton>
             </form>
-            <p className="mt-2 text-center text-xs text-stone-500">New with Google? Rangika will need to approve your access first.</p>
+            <p className="mt-2 text-center text-xs text-stone-500">
+              Bought a course or class? Use Google with the same email you paid with. Otherwise, new Google sign-ins need Rangika&apos;s approval.
+            </p>
           </>
         )}
 

@@ -17,13 +17,19 @@ export default async function AllUsersPage({ searchParams }: { searchParams: Pro
   const tz = await viewerTimezone();
   await requireAdminPage();
   const sp = await searchParams;
-  const area = sp.area === "sessions" || sp.area === "courses" ? sp.area : "";
+  const area = sp.area === "sessions" || sp.area === "courses" || sp.area === "learning" ? sp.area : "";
   const status = sp.status === "finished" ? "finished" : sp.status === "all" ? "all" : "active";
 
   // Search is done in the browser (instant), so load everyone for the chosen area/status.
   const where: Prisma.UserWhereInput = {
     role: "CLIENT",
-    ...(area === "sessions" ? { plans: { some: {} } } : area === "courses" ? { enrollments: { some: {} } } : {}),
+    ...(area === "sessions"
+      ? { plans: { some: {} } }
+      : area === "courses"
+        ? { enrollments: { some: {} } }
+        : area === "learning"
+          ? { learningEnrollments: { some: {} } }
+          : {}),
     ...(status === "active" ? { status: { in: ["ACTIVE", "INVITED"] } } : status === "finished" ? { status: "FINISHED" } : {}),
   };
   // Every client's "today" is within a day of the server's, whatever their time zone.
@@ -52,6 +58,8 @@ export default async function AllUsersPage({ searchParams }: { searchParams: Pro
           },
         },
         enrollments: { select: { course: { select: { title: true } } }, where: { completedAt: null } },
+        // Self-paced courses they bought (finished ones too, marked as finished).
+        learningEnrollments: { select: { completedAt: true, package: { select: { title: true } } }, orderBy: { startedAt: "asc" } },
         // Only what "Today" needs: ticks near today, plus one-off tasks ever done.
         completions: {
           where: { OR: [{ forDate: { in: nearToday } }, { task: { recurrence: "ONCE" } }] },
@@ -93,7 +101,11 @@ export default async function AllUsersPage({ searchParams }: { searchParams: Pro
       email: c.email,
       username: c.username,
       status: c.status,
-      what: [...services, ...c.enrollments.map((e) => e.course.title)].join(" · ") || "—",
+      what: [
+        ...services.map((title) => ({ kind: "session" as const, title })),
+        ...c.enrollments.map((e) => ({ kind: "class" as const, title: e.course.title })),
+        ...c.learningEnrollments.map((e) => ({ kind: "course" as const, title: e.package.title, finished: Boolean(e.completedAt) })),
+      ],
       started: started ? formatDate(started) : "—",
       lastActive: c.lastActiveAt ? c.lastActiveAt.toLocaleDateString("en-AU", { timeZone: tz, day: "numeric", month: "short" }) : "—",
       today,
@@ -107,7 +119,7 @@ export default async function AllUsersPage({ searchParams }: { searchParams: Pro
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-serif text-3xl text-stone-800">All users</h1>
-          <p className="text-stone-500">Everyone with an account: session clients and class students.</p>
+          <p className="text-stone-500">Everyone with an account: session clients, class students and course students.</p>
         </div>
         <AddPersonDialog packages={packages} courses={courses} siteUrl={SITE_URL} defaultOpen={sp.add === "1"} />
       </div>

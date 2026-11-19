@@ -1,8 +1,9 @@
 import { Resend } from "resend";
 import { createHmac } from "crypto";
+import { sendViaSmtp, smtpConfigured } from "@/lib/email";
 
-// Transactional email through Resend.
-// Without RESEND_API_KEY (local development) emails are printed to the console.
+// Transactional email through Resend, with Gmail (SMTP) as a backup.
+// With neither set up (local development) emails are printed to the console.
 
 const apiKey = process.env.RESEND_API_KEY;
 const resend = apiKey ? new Resend(apiKey) : null;
@@ -36,24 +37,50 @@ function button(href: string, label: string) {
   return `<p style="margin:24px 0"><a href="${href}" style="background:#485a48;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:8px;font-family:Arial,sans-serif;display:inline-block">${escapeHtml(label)}</a></p>`;
 }
 
+/**
+ * Sends an email: through Resend first, then through Gmail (SMTP) if Resend isn't set up or refuses it
+ * (e.g. Resend's test mode, which only delivers to the account owner until a domain is verified).
+ * Fixing either one is enough for emails to arrive.
+ */
 export async function sendMail(opts: { to: string; subject: string; html: string; text: string; replyTo?: string }) {
-  if (!resend) {
-    console.log(`\n📧 [email not sent: RESEND_API_KEY missing]\nTo: ${opts.to}\nSubject: ${opts.subject}\n${opts.text}\n`);
-    return { ok: true as const };
+  let resendError: string | null = null;
+  if (resend) {
+    const { error } = await resend.emails.send({
+      from: EMAIL_FROM,
+      to: opts.to,
+      subject: opts.subject,
+      html: opts.html,
+      text: opts.text,
+      replyTo: opts.replyTo,
+    });
+    if (!error) return { ok: true as const };
+    resendError = error.message;
+    if (!smtpConfigured) {
+      console.error("Email failed:", opts.subject, error);
+      return { ok: false as const, error: error.message };
+    }
   }
-  const { error } = await resend.emails.send({
-    from: EMAIL_FROM,
-    to: opts.to,
-    subject: opts.subject,
-    html: opts.html,
-    text: opts.text,
-    replyTo: opts.replyTo,
-  });
-  if (error) {
-    console.error("Email failed:", opts.subject, error);
-    return { ok: false as const, error: error.message };
+
+  if (smtpConfigured) {
+    try {
+      await sendViaSmtp({ ...opts, fromName: fromName(EMAIL_FROM) });
+      if (resendError) console.warn(`Email sent through Gmail instead (Resend: ${resendError.slice(0, 120)})`);
+      return { ok: true as const };
+    } catch (e) {
+      const smtpError = e instanceof Error ? e.message : String(e);
+      console.error("Email failed:", opts.subject, { resend: resendError ?? "not set up", smtp: smtpError.slice(0, 200) });
+      return { ok: false as const, error: smtpError };
+    }
   }
+
+  // Neither is set up (local development): show the email in the terminal instead.
+  console.log(`\n📧 [email not sent: no RESEND_API_KEY or SMTP settings]\nTo: ${opts.to}\nSubject: ${opts.subject}\n${opts.text}\n`);
   return { ok: true as const };
+}
+
+/** "Heal With Rangika <x@y>" → "Heal With Rangika" (display name for Gmail sending). */
+function fromName(from: string) {
+  return from.match(/^\s*"?([^"<]+?)"?\s*</)?.[1];
 }
 
 // ---------------------------------------------------------------------------
@@ -237,7 +264,7 @@ export function reminderEmail(opts: { name?: string | null; tasks: string[]; use
 export function packagePurchasedEmail(opts: { name: string; packageTitle: string; login?: { username: string; password: string } | null }) {
   const hello = `Hello ${opts.name},`;
   const intro = `Thank you for buying ${opts.packageTitle}. It's ready for you in your private space. Work through the lessons one by one, at your own pace.`;
-  const url = `${SITE_URL}/login`;
+  const url = `${SITE_URL}/login?bought=1`; // shows the "use the details we emailed you" note
   const details = opts.login
     ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px;background:#f6f7f6;border-radius:8px;font-family:Arial,sans-serif;font-size:15px">
 <tr><td style="padding:12px 16px 4px;color:#78716c">Username</td><td style="padding:12px 16px 4px"><strong>${escapeHtml(opts.login.username)}</strong></td></tr>
@@ -310,7 +337,7 @@ export function courseEnrolledEmail(opts: {
   const hello = `Hello ${opts.name},`;
   const intro = `Thank you for enrolling in ${opts.courseTitle}. Your place is booked, and Rangika will be in touch with everything you need before the class.`;
   const when = [opts.schedule, opts.format].filter(Boolean).join(" · ");
-  const url = `${SITE_URL}/login`;
+  const url = `${SITE_URL}/login?bought=1`; // shows the "use the details we emailed you" note
   const details = opts.login
     ? `<p style="margin:0 0 8px">Your private space, where your class notes and material will appear:</p>
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px;background:#f6f7f6;border-radius:8px;font-family:Arial,sans-serif;font-size:15px">

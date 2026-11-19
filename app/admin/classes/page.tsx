@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Award, CalendarClock, GraduationCap, Pencil } from "lucide-react";
+import { Award, GraduationCap, Pencil } from "lucide-react";
 import { requireAdminPage } from "@/lib/authz";
 import { db } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
@@ -175,54 +175,68 @@ export default async function CoursesPage() {
             {rows.length === 0 ? (
               <p className="rounded-xl bg-white p-5 text-sm text-stone-500 ring-1 ring-stone-200">No students in {c.title} right now.</p>
             ) : (
-              <div className="grid gap-3 sm:grid-cols-2">
-                {rows.map((e) => {
-                  const done = Math.min(e._count.progress, total);
-                  const allDone = total > 0 && done >= total;
-                  const fresh = isNewStudent(c.id, e.user.id);
-                  return (
-                    <Link
-                      key={e.id}
-                      href={`/admin/clients/${e.user.id}?tab=courses`}
-                      className={cn(
-                        "space-y-3 rounded-2xl p-4 ring-1 transition",
-                        fresh ? "bg-sage-50 ring-sage-300 hover:ring-sage-400" : "bg-white ring-stone-200 hover:ring-sage-300",
-                      )}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <p className="flex items-center gap-2 font-medium text-stone-800">
-                            {fresh && <span className="rounded bg-sage-600 px-1.5 py-0.5 text-[11px] font-semibold text-white">New</span>}
-                            <span className="truncate">{e.user.name || e.user.email}</span>
-                          </p>
-                          <p className="truncate text-sm text-stone-500">Started {date(e.startedAt)}</p>
-                        </div>
-                        <StatusBadge status={e.user.status} />
-                      </div>
-                      {total > 0 ? (
-                        <div className="space-y-1">
-                          <Progress value={(done / total) * 100} className="h-1.5 bg-sage-100 [&>div]:bg-sage-500" />
-                          <p className="text-xs text-stone-600">
-                            {done} of {total} module{total === 1 ? "" : "s"} done
-                          </p>
-                        </div>
-                      ) : (
-                        <p className="text-xs text-amber-700">This class has no modules yet.</p>
-                      )}
-                      <div className="flex flex-wrap items-center gap-1.5 text-xs text-stone-500">
-                        {allDone && <Badge className="bg-sage-600 hover:bg-sage-600">All modules done: mark complete?</Badge>}
-                        {e.certificateKey && (
-                          <Badge variant="outline" className="gap-1 font-normal">
-                            <Award className="h-3 w-3" /> Certificate added
-                          </Badge>
-                        )}
-                        <span className="inline-flex items-center gap-1">
-                          <CalendarClock className="h-3.5 w-3.5" /> active {lastActive(e.user.lastActiveAt)}
-                        </span>
-                      </div>
-                    </Link>
-                  );
-                })}
+              <div className="overflow-x-auto rounded-xl bg-white ring-1 ring-stone-200">
+                <table className="w-full min-w-[680px] text-sm">
+                  <thead className="border-b border-stone-200 text-left text-xs uppercase tracking-wide text-stone-500">
+                    <tr>
+                      <th className="px-4 py-3 font-medium">Student</th>
+                      <th className="px-4 py-3 font-medium">Started</th>
+                      <th className="w-56 px-4 py-3 font-medium">Progress</th>
+                      <th className="px-4 py-3 font-medium">Status</th>
+                      <th className="px-4 py-3 font-medium">Last active</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((e) => {
+                      const done = Math.min(e._count.progress, total);
+                      const allDone = total > 0 && done >= total;
+                      const fresh = isNewStudent(c.id, e.user.id);
+                      return (
+                        // The whole row opens the student (the name link stretches over it). New website enrolments are tinted.
+                        <tr key={e.id} className={cn("relative border-b border-stone-100 align-top last:border-0", fresh ? "bg-sage-50 hover:bg-sage-100" : "hover:bg-stone-50")}>
+                          <td className="px-4 py-3">
+                            <span className="flex items-center gap-2">
+                              {fresh && <span className="rounded bg-sage-600 px-1.5 py-0.5 text-[11px] font-semibold text-white">New</span>}
+                              <Link href={`/admin/clients/${e.user.id}?tab=courses`} className="font-medium text-stone-800 after:absolute after:inset-0 hover:underline">
+                                {e.user.name || e.user.email}
+                              </Link>
+                            </span>
+                            {e.user.name && <span className="block text-xs text-stone-500">{e.user.email}</span>}
+                            <StatusBadge status={e.user.status} />
+                          </td>
+                          <td className="px-4 py-3 text-stone-600">{date(e.startedAt)}</td>
+                          <td className="px-4 py-3">
+                            {total > 0 ? (
+                              <div className="space-y-1">
+                                <Progress value={(done / total) * 100} className="h-1.5 bg-sage-100 [&>div]:bg-sage-500" />
+                                <p className="text-xs text-stone-600">
+                                  {done} of {total} module{total === 1 ? "" : "s"}
+                                </p>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-amber-700">No modules yet</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3">
+                            {allDone || e.certificateKey ? (
+                              <div className="flex flex-wrap gap-1.5">
+                                {allDone && <Badge className="bg-sage-600 hover:bg-sage-600">All done: mark complete?</Badge>}
+                                {e.certificateKey && (
+                                  <Badge variant="outline" className="gap-1 font-normal">
+                                    <Award className="h-3 w-3" /> Certificate added
+                                  </Badge>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-stone-500">In progress</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-stone-600">{lastActive(e.user.lastActiveAt)}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             )}
           </section>

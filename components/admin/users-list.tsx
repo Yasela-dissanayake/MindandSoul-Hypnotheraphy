@@ -15,7 +15,8 @@ export type UserRow = {
   email: string;
   username: string | null;
   status: "INVITED" | "ACTIVE" | "FINISHED";
-  what: string;
+  /** What they're doing: session services, classes and self-paced courses. */
+  what: { kind: "session" | "class" | "course"; title: string; finished?: boolean }[];
   started: string;
   lastActive: string;
   today: string | null;
@@ -24,6 +25,8 @@ export type UserRow = {
 };
 
 const selectCls = "h-10 rounded-md border border-input bg-white px-3 text-sm";
+
+const KIND_LABEL = { session: "Session", class: "Class", course: "Course" } as const;
 
 /**
  * The All users table with its search and filters.
@@ -94,6 +97,7 @@ export function UsersList({ rows, q: initialQ, area, status }: { rows: UserRow[]
           <option value="">Everyone</option>
           <option value="sessions">Session clients</option>
           <option value="courses">Class students</option>
+          <option value="learning">Course students</option>
         </select>
         <select value={status} onChange={(e) => reload({ status: e.target.value })} className={selectCls} aria-label="Status">
           <option value="active">Active</option>
@@ -113,7 +117,7 @@ export function UsersList({ rows, q: initialQ, area, status }: { rows: UserRow[]
             <thead className="border-b border-stone-200 text-left text-xs uppercase tracking-wide text-stone-500">
               <tr>
                 <th className="px-4 py-3 font-medium">Name</th>
-                <th className="px-4 py-3 font-medium">Sessions / classes</th>
+                <th className="px-4 py-3 font-medium">Sessions / classes / courses</th>
                 <th className="px-4 py-3 font-medium">Started</th>
                 <th className="px-4 py-3 font-medium">Last active</th>
                 <th className="px-4 py-3 font-medium">Today</th>
@@ -138,7 +142,21 @@ export function UsersList({ rows, q: initialQ, area, status }: { rows: UserRow[]
                     </Link>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="block text-stone-700">{c.what}</span>
+                    {c.what.length === 0 ? (
+                      <span className="block text-stone-700">—</span>
+                    ) : (
+                      <ul className="space-y-1">
+                        {c.what.map((w, i) => (
+                          <li key={i} className="flex items-baseline gap-2 text-stone-700">
+                            <span className="w-14 shrink-0 text-[11px] font-medium uppercase tracking-wide text-stone-400">{KIND_LABEL[w.kind]}</span>
+                            <span className={w.finished ? "text-stone-400" : undefined}>
+                              {w.title}
+                              {w.finished && " (finished)"}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                     <StatusBadge status={c.status} />
                   </td>
                   <td className="px-4 py-3 text-stone-600">{c.started}</td>

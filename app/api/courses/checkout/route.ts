@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     const { clientSecret, paymentIntentId } = await startCoursePurchase(parsed.data);
     return NextResponse.json({ client_secret: clientSecret, payment_intent_id: paymentIntentId });
   } catch (e) {
-    if (e instanceof PurchaseError) return NextResponse.json({ error: e.message }, { status: 409 });
+    if (e instanceof PurchaseError) return NextResponse.json({ error: e.message, owned: Boolean(e.opts.owned) }, { status: 409 });
     console.error("Course enrolment checkout failed:", e);
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }

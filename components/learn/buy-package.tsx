@@ -57,7 +57,24 @@ function BuyForm({ packageId, title, priceLabel, kind, onDone }: { packageId: st
         body: JSON.stringify(kind === "course" ? { itemId: packageId, name, email, phone } : { packageId, name, email }),
       });
       const start = await res.json();
-      if (!res.ok) throw new Error(start.error || "Something went wrong. Please try again.");
+      if (!res.ok) {
+        // They already have it (or already paid): offer "Sign in" instead of "Try again".
+        if (start.owned) {
+          setDialog({
+            status: "error",
+            title: kind === "course" ? "You're already enrolled" : "You already have this course",
+            message: start.error,
+            hint: "You have not been charged again. Sign in with the username and password we emailed you when you first bought it.",
+            action: (
+              <Button asChild className="w-full bg-sage-600 hover:bg-sage-700">
+                <Link href="/login">Sign in</Link>
+              </Button>
+            ),
+          });
+          return;
+        }
+        throw new Error(start.error || "Something went wrong. Please try again.");
+      }
 
       // 2. Pay by card.
       const { error: payError, paymentIntent } = await stripe.confirmCardPayment(start.client_secret, {
@@ -91,7 +108,7 @@ function BuyForm({ packageId, title, priceLabel, kind, onDone }: { packageId: st
         ),
         action: (
           <Button asChild className="w-full bg-sage-600 hover:bg-sage-700">
-            <Link href="/login">Sign in</Link>
+            <Link href="/login?bought=1">Sign in</Link>
           </Button>
         ),
       });
@@ -160,7 +177,7 @@ export function BuyPackage({ kind = "package", ...props }: { packageId: string; 
         </p>
         <p className="text-sm">{doneMessage(kind, done)}</p>
         <Button asChild className="w-full bg-sage-600 hover:bg-sage-700">
-          <Link href="/login">Sign in</Link>
+          <Link href="/login?bought=1">Sign in</Link>
         </Button>
       </div>
     );

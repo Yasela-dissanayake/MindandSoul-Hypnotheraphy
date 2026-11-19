@@ -93,7 +93,12 @@ export async function getLearnerPackages(userId: string) {
 
 // ---------- Buying on the website ----------
 
-export class PurchaseError extends Error {}
+export class PurchaseError extends Error {
+  /** owned = they already have it (or already paid for it): the website offers "Sign in" instead of "Try again". */
+  constructor(message: string, readonly opts: { owned?: boolean } = {}) {
+    super(message);
+  }
+}
 
 /**
  * Before a new payment starts, look at this person's earlier unfinished payments for the same item:
@@ -111,9 +116,9 @@ export async function settleOpenPayments(open: { id: string; paymentIntentId: st
     const pi = await stripe().paymentIntents.retrieve(p.paymentIntentId);
     if (pi.status === "succeeded") {
       await fulfil(pi.id);
-      throw new PurchaseError(alreadyMessage);
+      throw new PurchaseError(alreadyMessage, { owned: true });
     }
-    if (pi.status === "processing") throw new PurchaseError("Your earlier payment is still going through. Please wait a minute, then sign in or check your email.");
+    if (pi.status === "processing") throw new PurchaseError("Your earlier payment is still going through. Please wait a minute, then sign in or check your email.", { owned: true });
     if (pi.status !== "canceled") {
       try {
         await stripe().paymentIntents.cancel(pi.id);
@@ -122,7 +127,7 @@ export async function settleOpenPayments(open: { id: string; paymentIntentId: st
         const again = await stripe().paymentIntents.retrieve(pi.id);
         if (again.status === "succeeded" || again.status === "processing") {
           if (again.status === "succeeded") await fulfil(pi.id);
-          throw new PurchaseError(alreadyMessage);
+          throw new PurchaseError(alreadyMessage, { owned: true });
         }
       }
     }
@@ -139,7 +144,7 @@ export async function startPurchase(input: { packageId: string; name: string; em
 
   // Already has it: no need to pay twice.
   const existing = await db.user.findUnique({ where: { email }, select: { learningEnrollments: { where: { packageId: pkg.id }, select: { id: true } } } });
-  if (existing?.learningEnrollments.length) throw new PurchaseError("You already have this course. Please sign in to continue it.");
+  if (existing?.learningEnrollments.length) throw new PurchaseError("You already have this course. Please sign in to continue it.", { owned: true });
   await settleOpenPayments(
     await db.packagePurchase.findMany({ where: { packageId: pkg.id, email, status: "PENDING" }, select: { id: true, paymentIntentId: true } }),
     fulfilPurchase,

@@ -27,7 +27,7 @@ export async function startCoursePurchase(input: { itemId: string; name: string;
   const email = input.email.trim().toLowerCase();
 
   const existing = await db.user.findUnique({ where: { email }, select: { enrollments: { where: { courseId: course.id, completedAt: null }, select: { id: true } } } });
-  if (existing?.enrollments.length) throw new PurchaseError("You're already enrolled in this class. Please sign in to see it.");
+  if (existing?.enrollments.length) throw new PurchaseError("You're already enrolled in this class. Please sign in to see it.", { owned: true });
   await settleOpenPayments(
     await db.coursePurchase.findMany({ where: { courseId: course.id, email, status: "PENDING" }, select: { id: true, paymentIntentId: true } }),
     fulfilCoursePurchase,

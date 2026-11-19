@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarClock, FileUp, MessageCircleQuestion, NotebookPen, Video } from "lucide-react";
+import { FileUp, MessageCircleQuestion, NotebookPen, Video } from "lucide-react";
 import { requireAdminPage } from "@/lib/authz";
 import { db } from "@/lib/db";
 import { SERVICES } from "@/lib/catalog";
@@ -146,60 +146,76 @@ export default async function SessionsPage() {
             {rows.length === 0 ? (
               <p className="rounded-xl bg-white p-5 text-sm text-stone-500 ring-1 ring-stone-200">No clients in {s.label} sessions right now.</p>
             ) : (
-              <div className="grid gap-3 sm:grid-cols-2">
-                {rows.map((p) => {
-                  const u = p.user!;
-                  const materials = p._count.items + personalCount(u.id);
-                  return (
-                    <Link
-                      key={p.id}
-                      href={`/admin/clients/${u.id}?tab=${u._count.questions ? "questions" : "sessions"}`}
-                      className="space-y-3 rounded-2xl bg-white p-4 ring-1 ring-stone-200 transition hover:ring-sage-300"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <p className="truncate font-medium text-stone-800">{u.name || u.email}</p>
-                          <p className="truncate text-sm text-stone-500">{p.title}</p>
-                        </div>
-                        <StatusBadge status={u.status} />
-                      </div>
-                      <div className="flex flex-wrap gap-1.5">
-                        {p.totalSessions ? (
-                          <Badge variant="outline" className="font-normal">
-                            Session {p.currentSession ?? 0} of {p.totalSessions}
-                          </Badge>
-                        ) : null}
-                        {u._count.questions > 0 && (
-                          <Badge className="gap-1 bg-red-600 hover:bg-red-600">
-                            <MessageCircleQuestion className="h-3 w-3" /> {u._count.questions} question{u._count.questions === 1 ? "" : "s"}
-                          </Badge>
-                        )}
-                        {u._count.submissions > 0 && (
-                          <Badge className="gap-1 bg-amber-500 hover:bg-amber-500">
-                            <FileUp className="h-3 w-3" /> {u._count.submissions} new upload{u._count.submissions === 1 ? "" : "s"}
-                          </Badge>
-                        )}
-                        {u._count.journal > 0 && (
-                          <Badge className="gap-1 bg-sage-600 hover:bg-sage-600">
-                            <NotebookPen className="h-3 w-3" /> {u._count.journal} new journal
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-stone-500">
-                        <span className={p.meetingLink ? "inline-flex items-center gap-1 text-sage-700" : "inline-flex items-center gap-1 text-amber-700"}>
-                          <Video className="h-3.5 w-3.5" /> {p.meetingLink ? "Zoom link set" : "No Zoom link yet"}
-                        </span>
-                        <span>
-                          {materials} material{materials === 1 ? "" : "s"} · {p._count.tasks} task{p._count.tasks === 1 ? "" : "s"} · {p._count.trackers} tracker
-                          {p._count.trackers === 1 ? "" : "s"}
-                        </span>
-                        <span className="inline-flex items-center gap-1">
-                          <CalendarClock className="h-3.5 w-3.5" /> active {lastActive(u.lastActiveAt)}
-                        </span>
-                      </p>
-                    </Link>
-                  );
-                })}
+              <div className="overflow-x-auto rounded-xl bg-white ring-1 ring-stone-200">
+                <table className="w-full min-w-[760px] text-sm">
+                  <thead className="border-b border-stone-200 text-left text-xs uppercase tracking-wide text-stone-500">
+                    <tr>
+                      <th className="px-4 py-3 font-medium">Client</th>
+                      <th className="px-4 py-3 font-medium">Progress</th>
+                      <th className="px-4 py-3 font-medium">Waiting for you</th>
+                      <th className="px-4 py-3 font-medium">Zoom</th>
+                      <th className="px-4 py-3 font-medium">Their work</th>
+                      <th className="px-4 py-3 font-medium">Last active</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((p) => {
+                      const u = p.user!;
+                      const materials = p._count.items + personalCount(u.id);
+                      return (
+                        // The whole row opens the client (the name link stretches over it).
+                        <tr key={p.id} className="relative border-b border-stone-100 align-top last:border-0 hover:bg-stone-50">
+                          <td className="px-4 py-3">
+                            <Link
+                              href={`/admin/clients/${u.id}?tab=${u._count.questions ? "questions" : "sessions"}`}
+                              className="font-medium text-stone-800 after:absolute after:inset-0 hover:underline"
+                            >
+                              {u.name || u.email}
+                            </Link>
+                            <span className="block text-xs text-stone-500">{p.title}</span>
+                            <StatusBadge status={u.status} />
+                          </td>
+                          <td className="px-4 py-3 text-stone-700">{p.totalSessions ? `Session ${p.currentSession ?? 0} of ${p.totalSessions}` : "—"}</td>
+                          <td className="px-4 py-3">
+                            {u._count.questions + u._count.submissions + u._count.journal === 0 ? (
+                              <span className="text-stone-400">—</span>
+                            ) : (
+                              <div className="flex flex-wrap gap-1.5">
+                                {u._count.questions > 0 && (
+                                  <Badge className="gap-1 bg-red-600 hover:bg-red-600">
+                                    <MessageCircleQuestion className="h-3 w-3" /> {u._count.questions} question{u._count.questions === 1 ? "" : "s"}
+                                  </Badge>
+                                )}
+                                {u._count.submissions > 0 && (
+                                  <Badge className="gap-1 bg-amber-500 hover:bg-amber-500">
+                                    <FileUp className="h-3 w-3" /> {u._count.submissions} upload{u._count.submissions === 1 ? "" : "s"}
+                                  </Badge>
+                                )}
+                                {u._count.journal > 0 && (
+                                  <Badge className="gap-1 bg-sage-600 hover:bg-sage-600">
+                                    <NotebookPen className="h-3 w-3" /> {u._count.journal} journal
+                                  </Badge>
+                                )}
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className={p.meetingLink ? "inline-flex items-center gap-1 text-sage-700" : "inline-flex items-center gap-1 text-amber-700"}>
+                              <Video className="h-3.5 w-3.5" /> {p.meetingLink ? "Set" : "Not set"}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-stone-600">
+                            {materials} material{materials === 1 ? "" : "s"}
+                            <span className="block text-xs text-stone-500">
+                              {p._count.tasks} task{p._count.tasks === 1 ? "" : "s"} · {p._count.trackers} tracker{p._count.trackers === 1 ? "" : "s"}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-stone-600">{lastActive(u.lastActiveAt)}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             )}
           </section>

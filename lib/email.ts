@@ -38,6 +38,25 @@ const transporter = {
   },
 };
 
+/** Gmail (or other SMTP) details are filled in, so emails can be sent this way. */
+export const smtpConfigured = Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
+
+/**
+ * Sends one email through SMTP (used by lib/mail.ts when Resend can't deliver).
+ * `fromName` is the display name; the address is always the SMTP account's own (Gmail requires that).
+ */
+export async function sendViaSmtp(opts: { to: string; subject: string; html: string; text: string; replyTo?: string; fromName?: string }) {
+  const address = process.env.SMTP_FROM || process.env.SMTP_USER!;
+  await transporter.sendMail({
+    from: opts.fromName ? { name: opts.fromName, address } : address,
+    to: opts.to,
+    subject: opts.subject,
+    html: opts.html,
+    text: opts.text,
+    replyTo: opts.replyTo,
+  });
+}
+
 // Verify transporter configuration
 export async function verifyEmailConfig() {
   try {

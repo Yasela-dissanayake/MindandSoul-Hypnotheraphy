@@ -11,7 +11,15 @@ import { Button } from "@/components/ui/button";
 export type PaymentState =
   | null
   | { status: "processing"; message?: string }
-  | { status: "error"; title?: string; message: string }
+  | {
+      status: "error";
+      title?: string;
+      message: string;
+      /** Small text under the message; null hides it. Default: "You have not been charged…" */
+      hint?: string | null;
+      /** Main button instead of "Try again" (e.g. "Sign in"); a "Close" button is shown under it. */
+      action?: ReactNode;
+    }
   | { status: "success"; title: string; body: ReactNode; action?: ReactNode };
 
 export function PaymentDialog({ state, onClose }: { state: PaymentState; onClose: () => void }) {
@@ -44,10 +52,21 @@ export function PaymentDialog({ state, onClose }: { state: PaymentState; onClose
               <DialogPrimitive.Description className="rounded-lg bg-red-50 p-3 text-sm text-red-800 ring-1 ring-red-200">
                 {state.message}
               </DialogPrimitive.Description>
-              <p className="text-xs text-stone-500">You have not been charged. Check your card details and try again, or use a different card.</p>
-              <Button onClick={onClose} className="w-full bg-sage-600 hover:bg-sage-700">
-                Try again
-              </Button>
+              {state.hint !== null && (
+                <p className="text-xs text-stone-500">{state.hint ?? "You have not been charged. Check your card details and try again, or use a different card."}</p>
+              )}
+              {state.action ? (
+                <div className="space-y-2">
+                  {state.action}
+                  <Button variant="outline" onClick={onClose} className="w-full">
+                    Close
+                  </Button>
+                </div>
+              ) : (
+                <Button onClick={onClose} className="w-full bg-sage-600 hover:bg-sage-700">
+                  Try again
+                </Button>
+              )}
             </div>
           )}
 
