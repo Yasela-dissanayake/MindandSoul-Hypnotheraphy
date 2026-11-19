@@ -124,27 +124,80 @@ export default async function EnquiriesPage({ searchParams }: { searchParams: Pr
           {q ? `Nothing matches "${q}".` : show === "open" ? "No open enquiries. You're all caught up." : "Nothing marked as contacted yet."}
         </p>
       ) : (
-        <ul className="divide-y divide-stone-100 overflow-hidden rounded-2xl bg-white ring-1 ring-stone-200">
-          {items.map((e) => (
-            <li key={e.id} className={cn("flex flex-wrap items-start justify-between gap-x-4 gap-y-2 px-4 py-3", !e.handledAt && "bg-sage-50")}>
-              <div className="min-w-0 flex-1 space-y-1">
-                <p className="flex flex-wrap items-center gap-2">
-                  <span className="rounded bg-sage-600 px-1.5 py-0.5 text-[11px] font-semibold text-white">{KIND_LABEL[e.kind]}</span>
-                  <span className="font-medium text-stone-800">{e.name}</span>
-                  {e.topic && <span className="text-stone-600">{e.topic}</span>}
-                </p>
-                <p className="text-sm text-stone-500">
-                  {when(e.createdAt)} · <span className="select-all">{e.email}</span>
-                  {e.phone ? <> · <span className="select-all">{e.phone}</span></> : null}
-                  {e.contactMethod ? ` · prefers ${e.contactMethod.toLowerCase()}` : ""}
-                  {e.handledAt ? ` · contacted ${when(e.handledAt)}` : ""}
-                </p>
-                {e.message && <p className="whitespace-pre-line text-sm text-stone-700">{e.message}</p>}
-              </div>
-              <EnquiryActions id={e.id} name={e.name} handled={Boolean(e.handledAt)} />
-            </li>
-          ))}
-        </ul>
+        <div className="overflow-x-auto rounded-xl bg-white ring-1 ring-stone-200">
+          <table className="w-full min-w-[880px] text-sm">
+            <thead className="border-b border-stone-200 text-left text-xs uppercase tracking-wide text-stone-500">
+              <tr>
+                <th className="px-4 py-3 font-medium">Received</th>
+                <th className="min-w-[12rem] px-4 py-3 font-medium">From</th>
+                <th className="min-w-[8rem] px-4 py-3 font-medium">About</th>
+                <th className="min-w-[14rem] px-4 py-3 font-medium">Message</th>
+                <th className="px-4 py-3 text-right font-medium">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((e) => {
+                const subject = encodeURIComponent(e.kind === "CONSULTATION" ? "Your free consultation request" : e.topic ? `Re: ${e.topic}` : "Your question");
+                const long = (e.message?.length ?? 0) > 160;
+                return (
+                  // Open (not yet contacted) enquiries are tinted so they stand out.
+                  <tr key={e.id} className={cn("border-b border-stone-100 align-top last:border-0", !e.handledAt ? "bg-sage-50/70" : "hover:bg-stone-50")}>
+                    <td className="whitespace-nowrap px-4 py-3 text-stone-600">
+                      <span
+                        className={cn(
+                          "mb-1 inline-block rounded px-1.5 py-0.5 text-[11px] font-semibold",
+                          e.kind === "CONSULTATION" ? "bg-sage-600 text-white" : "bg-stone-200 text-stone-700",
+                        )}
+                      >
+                        {KIND_LABEL[e.kind]}
+                      </span>
+                      <span className="block">{when(e.createdAt)}</span>
+                      {e.handledAt && <span className="block text-xs text-sage-700">Contacted {when(e.handledAt)}</span>}
+                    </td>
+                    <td className="px-4 py-3">
+                      <p className="font-medium text-stone-800">{e.name}</p>
+                      <a href={`mailto:${e.email}?subject=${subject}`} className="block break-words text-sage-700 underline-offset-2 hover:underline">
+                        {e.email}
+                      </a>
+                      {e.phone && (
+                        <a href={`tel:${e.phone.replace(/[^\d+]/g, "")}`} className="block text-sage-700 underline-offset-2 hover:underline">
+                          {e.phone}
+                        </a>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-stone-700">
+                      {e.topic ?? <span className="text-stone-400">—</span>}
+                      {e.contactMethod && <span className="block text-xs text-stone-500">Prefers {e.contactMethod.toLowerCase()}</span>}
+                    </td>
+                    <td className="px-4 py-3 text-stone-700">
+                      {!e.message ? (
+                        <span className="text-stone-400">—</span>
+                      ) : long ? (
+                        // Long messages show three lines; click to read all of it (and again to fold it).
+                        <details className="group">
+                          <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                            <span className="line-clamp-3 whitespace-pre-line group-open:line-clamp-none">{e.message}</span>
+                            <span className="mt-1 block text-xs font-medium text-sage-700">
+                              <span className="group-open:hidden">Show full message</span>
+                              <span className="hidden group-open:inline">Show less</span>
+                            </span>
+                          </summary>
+                        </details>
+                      ) : (
+                        <p className="whitespace-pre-line">{e.message}</p>
+                      )}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3">
+                      <div className="flex justify-end">
+                        <EnquiryActions id={e.id} name={e.name} handled={Boolean(e.handledAt)} />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

@@ -13,6 +13,9 @@ import { cn } from "@/lib/utils";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { MaterialsEditor, ModulesEditor, PlanDetails, PromptsEditor, TasksEditor, TrackersEditor } from "@/components/admin/plan-editor";
 import { PersonCourses } from "@/components/admin/course-editor";
+import { GiveCourse, RemoveCourse } from "@/components/admin/person-learning";
+import { LearningCertificateUpload } from "@/components/admin/learning-editor";
+import { Progress } from "@/components/ui/progress";
 import { SubmissionsList } from "@/components/admin/submissions-list";
 import { TrackerHistory } from "@/components/trackers/tracker-history";
 import { parseTrackerFields, serviceLabel } from "@/lib/catalog";
@@ -38,6 +41,7 @@ const getClient = cache((id: string) =>
       _count: { select: { journal: { where: { readAt: null } }, submissions: { where: { seenAt: null } }, questions: { where: { answeredAt: null } } } },
       plans: { select: { service: true }, where: { completedAt: null } },
       enrollments: { select: { course: { select: { title: true } } } },
+      learningEnrollments: { select: { package: { select: { title: true } } } },
     },
   }),
 );
@@ -56,6 +60,7 @@ const TABS = [
   { id: "trackers", label: "Trackers" },
   { id: "uploads", label: "Uploads" },
   { id: "courses", label: "Classes" },
+  { id: "learning", label: "Courses" },
   { id: "journal", label: "Journal" },
   { id: "progress", label: "Progress" },
   { id: "notes", label: "Private notes" },
@@ -68,7 +73,10 @@ export default async function ClientPage({ params, searchParams }: { params: Pro
   const { id } = await params;
   const sp = await searchParams;
   const requested = sp.tab === "plan" ? "sessions" : sp.tab; // old links
-  const tab: Tab = (TABS.find((t) => t.id === requested)?.id ?? "sessions") as Tab;
+  // No tab asked for: open where this person has something (sessions, then classes, then courses).
+  const client = requested ? null : await clientOr404(id);
+  const fallback: Tab = !client || client.plans.length ? "sessions" : client.enrollments.length ? "courses" : client.learningEnrollments.length ? "learning" : "sessions";
+  const tab: Tab = (TABS.find((t) => t.id === requested)?.id ?? fallback) as Tab;
 
   return (
     <div className="space-y-6">
@@ -82,6 +90,7 @@ export default async function ClientPage({ params, searchParams }: { params: Pro
       {tab === "trackers" && <TrackersTab clientId={id} />}
       {tab === "uploads" && <UploadsTab clientId={id} />}
       {tab === "courses" && <CoursesTab clientId={id} />}
+      {tab === "learning" && <LearningTab clientId={id} />}
       {tab === "journal" && <JournalTab clientId={id} />}
       {tab === "progress" && <ProgressTab clientId={id} />}
       {tab === "notes" && <NotesTab clientId={id} />}
@@ -103,9 +112,13 @@ async function ClientHeader({ id, tab }: { id: string; tab: Tab }) {
           {client.email} · {client.timezone.replace(/_/g, " ")}
         </p>
         <p className="text-sm text-stone-600">
-          {[...new Set(client.plans.map((p) => serviceLabel(p.service)))].join(", ") || "No sessions"}
-          {" · "}
-          {client.enrollments.map((e) => e.course.title).join(", ") || "No classes"}
+          {[
+            client.plans.length ? `Sessions: ${[...new Set(client.plans.map((p) => serviceLabel(p.service)))].join(", ")}` : "",
+            client.enrollments.length ? `Classes: ${client.enrollments.map((e) => e.course.title).join(", ")}` : "",
+            client.learningEnrollments.length ? `Courses: ${client.learningEnrollments.map((e) => e.package.title).join(", ")}` : "",
+          ]
+            .filter(Boolean)
+            .join(" · ") || "No sessions, classes or courses yet"}
         </p>
       </div>
 
@@ -196,12 +209,12 @@ async function SessionsTab({ clientId, addPlan }: { clientId: string; addPlan: b
     <div className="space-y-6">
       {plans.length === 0 && (
         <p className="rounded-xl bg-stone-50 p-4 text-sm text-stone-600 ring-1 ring-stone-200">
-          {name} has no one-to-one sessions. Add a session plan below if they book a package.
+          {name} has no one-to-one sessions yet. Add a session plan below to start: choose the session and package they&apos;re having.
         </p>
       )}
       {plans.map((plan) => (
         <section key={plan.id} className="space-y-5 rounded-2xl bg-white p-5 ring-1 ring-stone-200">
-          <PlanDetails plan={plan} />
+          <PlanDetails plan={plan} services={packages} />
           {(() => {
             const pb = planBookings.find((x) => x.id === plan.id);
             if (!pb) return null;
@@ -323,6 +336,87 @@ async function CoursesTab({ clientId }: { clientId: string }) {
         startedAt: e.startedAt.toISOString(),
       }))}
     />
+  );
+}
+
+/** Self-paced courses this person has (bought on the website or given by Rangika). */
+async function LearningTab({ clientId }: { clientId: string }) {
+  const [enrollments, all, tz] = await Promise.all([
+    db.packageEnrollment.findMany({
+      where: { userId: clientId },
+      orderBy: { startedAt: "asc" },
+      include: { package: { select: { id: true, title: true, _count: { select: { lessons: true } } } }, _count: { select: { progress: true } } },
+    }),
+    db.learningPackage.findMany({ where: { archived: false }, select: { id: true, title: true }, orderBy: [{ order: "asc" }, { createdAt: "asc" }] }),
+    viewerTimezone(),
+  ]);
+  const purchases = await db.packagePurchase.findMany({
+    where: { userId: clientId, status: "PAID" },
+    select: { packageId: true, amount: true, currency: true, paidAt: true },
+  });
+  const when = (d: Date) => d.toLocaleDateString("en-AU", { timeZone: tz, day: "numeric", month: "short", year: "numeric" });
+  const have = new Set(enrollments.map((e) => e.packageId));
+
+  return (
+    <div className="space-y-4">
+      {enrollments.length === 0 ? (
+        <p className="rounded-xl bg-stone-50 p-4 text-sm text-stone-600 ring-1 ring-stone-200">No self-paced courses yet. People get them by buying on the website, or you can give one below.</p>
+      ) : (
+        <div className="overflow-x-auto rounded-xl bg-white ring-1 ring-stone-200">
+          <table className="w-full min-w-[760px] text-sm">
+            <thead className="border-b border-stone-200 text-left text-xs uppercase tracking-wide text-stone-500">
+              <tr>
+                <th className="px-4 py-3 font-medium">Course</th>
+                <th className="px-4 py-3 font-medium">Started</th>
+                <th className="w-48 px-4 py-3 font-medium">Progress</th>
+                <th className="px-4 py-3 font-medium">Certificate</th>
+                <th className="px-4 py-3 text-right font-medium">Remove</th>
+              </tr>
+            </thead>
+            <tbody>
+              {enrollments.map((e) => {
+                const total = e.package._count.lessons;
+                const done = Math.min(e._count.progress, total);
+                const paid = purchases.find((x) => x.packageId === e.packageId);
+                return (
+                  <tr key={e.id} className="border-b border-stone-100 align-top last:border-0">
+                    <td className="px-4 py-3">
+                      <Link href={`/admin/courses/${e.package.id}`} className="font-medium text-stone-800 hover:underline">
+                        {e.package.title}
+                      </Link>
+                      <p className="text-xs text-stone-500">
+                        {paid ? `Bought on the website${paid.paidAt ? ` · ${when(paid.paidAt)}` : ""}` : "Given by you"}
+                      </p>
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-stone-600">{when(e.startedAt)}</td>
+                    <td className="px-4 py-3">
+                      <Progress value={total ? (done / total) * 100 : 0} className="h-1.5 bg-sage-100 [&>div]:bg-sage-500" />
+                      <p className="mt-1 text-xs text-stone-600">
+                        {done} of {total} lesson{total === 1 ? "" : "s"}
+                        {e.completedAt ? ` · finished ${when(e.completedAt)}` : ""}
+                      </p>
+                    </td>
+                    <td className="px-4 py-3">
+                      {e.completedAt || e.certificateKey ? (
+                        <LearningCertificateUpload enrollmentId={e.id} hasCertificate={Boolean(e.certificateKey)} />
+                      ) : (
+                        <span className="text-stone-500">When they finish</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex justify-end">
+                        <RemoveCourse enrollmentId={e.id} title={e.package.title} />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <GiveCourse userId={clientId} courses={all.filter((c) => !have.has(c.id))} />
+    </div>
   );
 }
 

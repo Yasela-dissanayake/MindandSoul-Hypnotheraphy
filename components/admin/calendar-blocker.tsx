@@ -12,11 +12,13 @@ import { cn } from "@/lib/utils";
 
 type Range = { start: string; end: string };
 type Mode = "IN_PERSON" | "DISTANCE";
+/** A blocked time for one kind of session. */
+type Block = Range & { mode: Mode };
 
 export type DayInfo = {
   slots: (Range & { mode: Mode })[]; // her session times this day (empty = she doesn't work)
   allDay: boolean;
-  blocked: Range[];
+  blocked: (Range & { mode: Mode | null })[]; // mode null = an older block that covers both kinds
   booked: (Range & { name: string })[];
 };
 
@@ -24,6 +26,7 @@ const GROUPS: { mode: Mode; label: string }[] = [
   { mode: "IN_PERSON", label: "In-person sessions" },
   { mode: "DISTANCE", label: "Distance / online sessions" },
 ];
+const GROUP_MODES: Mode[] = GROUPS.map((g) => g.mode);
 
 const toKey = (d: Date) => format(d, "yyyy-MM-dd");
 const fromKey = (k: string) => {
@@ -37,22 +40,25 @@ const t12 = (t: string) => {
   return `${h % 12 === 0 ? 12 : h % 12}:${String(m).padStart(2, "0")} ${h < 12 ? "am" : "pm"}`;
 };
 const overlaps = (a: Range, b: Range) => min(a.start) < min(b.end) && min(b.start) < min(a.end);
-const key = (r: Range[]) => JSON.stringify([...r].sort((a, b) => a.start.localeCompare(b.start)));
+const key = (r: Block[]) => JSON.stringify([...r].sort((a, b) => a.mode.localeCompare(b.mode) || a.start.localeCompare(b.start)));
+/** Older blocks covered both kinds of session: show them as one block of each kind. */
+const asBlocks = (r: DayInfo["blocked"]): Block[] =>
+  r.flatMap((b) => (b.mode ? [{ start: b.start, end: b.end, mode: b.mode }] : (GROUP_MODES.map((mode) => ({ start: b.start, end: b.end, mode })) as Block[])));
 
 export function CalendarBlocker({ today, lastDay, days }: { today: string; lastDay: string; days: Record<string, DayInfo> }) {
   const [selected, setSelected] = useState(today);
   const day = days[selected];
   const [allDay, setAllDay] = useState(false);
-  const [blocked, setBlocked] = useState<Range[]>([]);
+  const [blocked, setBlocked] = useState<Block[]>([]);
   const { pending, run } = useAction();
 
   // Load the saved blocks whenever another day is picked (or after saving).
   useEffect(() => {
     setAllDay(day?.allDay ?? false);
-    setBlocked(day?.blocked ?? []);
+    setBlocked(asBlocks(day?.blocked ?? []));
   }, [selected, day]);
 
-  const changed = !!day && (allDay !== day.allDay || key(blocked) !== key(day.blocked));
+  const changed = !!day && (allDay !== day.allDay || key(blocked) !== key(asBlocks(day.blocked)));
 
   const marks = useMemo(() => {
     const allDayOff: Date[] = [];
@@ -68,10 +74,12 @@ export function CalendarBlocker({ today, lastDay, days }: { today: string; lastD
     return { allDayOff, partly, booked, closed };
   }, [days]);
 
-  // A session is blocked when any blocked time touches it. Tapping a blocked session frees it;
+  // A session is blocked when a blocked time of the SAME kind touches it (an in-person block never
+  // hides an online session, and the other way round). Tapping a blocked session frees it;
   // tapping a free one blocks exactly that session.
-  const isBlocked = (s: Range) => blocked.some((b) => overlaps(b, s));
-  const toggle = (s: Range) => setBlocked(isBlocked(s) ? blocked.filter((b) => !overlaps(b, s)) : [...blocked, { start: s.start, end: s.end }]);
+  const isBlocked = (s: Range & { mode: Mode }) => blocked.some((b) => b.mode === s.mode && overlaps(b, s));
+  const toggle = (s: Range & { mode: Mode }) =>
+    setBlocked(isBlocked(s) ? blocked.filter((b) => !(b.mode === s.mode && overlaps(b, s))) : [...blocked, { start: s.start, end: s.end, mode: s.mode }]);
   const bookedIn = (s: Range) => day?.booked.find((b) => overlaps(b, s));
   const blockedCount = day ? day.slots.filter((s) => isBlocked(s)).length : 0;
 
@@ -200,7 +208,8 @@ export function CalendarBlocker({ today, lastDay, days }: { today: string; lastD
                   );
                 })}
                 <p className="text-xs text-stone-500">
-                  In-person and distance times overlap, so blocking one also blocks the other kind of session at the same time.
+                  Blocking an in-person time doesn&apos;t affect online sessions, and the other way round. A booked session always takes that time for
+                  both kinds, as you can&apos;t be in two sessions at once.
                 </p>
               </div>
             )}

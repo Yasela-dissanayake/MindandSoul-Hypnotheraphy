@@ -107,14 +107,19 @@ export default function ContactPage() {
                 </div>
               </div>
             </div>
-            <div className="relative ">
-              <Image
-                src="/rangika1.jpeg"
-                alt="Peaceful consultation room"
-                width={500}
-                height={500}
-                className="h-auto w-full rounded-2xl shadow-2xl"
-              />
+            {/* Same size as the About page photo (500 × 600). Cropped a little from the top,
+                which also hides the video app's watermark in its corner. */}
+            <div className="relative mx-auto w-full max-w-[500px]">
+              <div className="relative h-[600px] w-full overflow-hidden rounded-2xl shadow-2xl">
+                <Image
+                  src="/rangika1.jpeg"
+                  alt="Rangika, your hypnotherapist and Reiki practitioner"
+                  fill
+                  priority
+                  sizes="(min-width: 1024px) 500px, 100vw"
+                  className="object-cover object-[center_55%]"
+                />
+              </div>
               <div className="absolute -bottom-6 -left-6 bg-white rounded-xl p-4 shadow-lg border border-stone-200">
                 <div className="flex items-center gap-3">
                   <div className="flex -space-x-2">

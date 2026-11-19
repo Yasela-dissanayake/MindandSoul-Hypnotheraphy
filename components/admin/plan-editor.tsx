@@ -64,8 +64,12 @@ const weekHint = (plan: EditorPlan, w: number) =>
 // Details
 // ---------------------------------------------------------------------------
 
-export function PlanDetails({ plan }: { plan: EditorPlan }) {
+export function PlanDetails({ plan, services }: { plan: EditorPlan; services?: { id: string; title: string; planService: string }[] }) {
   const isTemplate = !plan.userId;
+  // Client plans pick their session from Session services & prices (plans added by hand are matched by name).
+  const pickSession = Boolean(services?.length) && !isTemplate;
+  const linkedTo =
+    services?.find((s) => s.id === plan.sessionServiceId) ?? services?.find((s) => s.title.trim().toLowerCase() === plan.title.trim().toLowerCase());
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const { pending, run } = useAction();
@@ -73,6 +77,8 @@ export function PlanDetails({ plan }: { plan: EditorPlan }) {
     title: plan.title,
     description: plan.description ?? "",
     service: plan.service,
+    sessionServiceId: linkedTo?.id ?? "",
+    bookOnline: Boolean(plan.sessionServiceId),
     totalSessions: plan.totalSessions ? String(plan.totalSessions) : "",
     currentSession: plan.currentSession ? String(plan.currentSession) : "",
     startDate: plan.startDate ?? "",
@@ -87,7 +93,8 @@ export function PlanDetails({ plan }: { plan: EditorPlan }) {
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="font-serif text-2xl text-stone-800">{plan.title}</h2>
-              <Badge className="bg-sage-100 text-sage-800 hover:bg-sage-100">{serviceLabel(plan.service)}</Badge>
+              <Badge className="bg-sage-100 text-sage-800 hover:bg-sage-100">{linkedTo?.title ?? serviceLabel(plan.service)}</Badge>
+              {!isTemplate && plan.sessionServiceId && <Badge variant="outline" className="font-normal">Books online</Badge>}
               {plan.completed && <Badge variant="secondary">Completed</Badge>}
             </div>
             <p className="text-sm text-stone-500">
@@ -154,16 +161,30 @@ export function PlanDetails({ plan }: { plan: EditorPlan }) {
           <Label>Title</Label>
           <Input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} placeholder="e.g. Weight loss: 6 sessions" />
         </div>
-        <div className="space-y-2">
-          <Label>Service</Label>
-          <select className={selectCls} value={f.service} onChange={(e) => setF({ ...f, service: e.target.value as typeof f.service })}>
-            {SERVICES.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.label}
-              </option>
-            ))}
-          </select>
-        </div>
+        {pickSession ? (
+          <div className="space-y-2">
+            <Label>Session</Label>
+            <select className={selectCls} value={f.sessionServiceId} onChange={(e) => setF({ ...f, sessionServiceId: e.target.value })}>
+              <option value="">Not one of your sessions ({serviceLabel(f.service)})</option>
+              {services!.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.title}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <Label>Service</Label>
+            <select className={selectCls} value={f.service} onChange={(e) => setF({ ...f, service: e.target.value as typeof f.service })}>
+              {SERVICES.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <div className="space-y-2">
           <Label>Number of sessions</Label>
           <Input type="number" min={1} value={f.totalSessions} onChange={(e) => setF({ ...f, totalSessions: e.target.value })} />
@@ -178,6 +199,15 @@ export function PlanDetails({ plan }: { plan: EditorPlan }) {
               <Label>Week 1 starts on</Label>
               <Input type="date" value={f.startDate} onChange={(e) => setF({ ...f, startDate: e.target.value })} />
             </div>
+            {pickSession && f.sessionServiceId && (
+              <label className="flex items-start gap-2 text-sm text-stone-700 sm:col-span-2">
+                <input type="checkbox" className="mt-1" checked={f.bookOnline} onChange={(e) => setF({ ...f, bookOnline: e.target.checked })} />
+                <span>
+                  Let them book their sessions online from their private space
+                  <span className="block text-xs text-stone-500">They can book as many as the number of sessions above. Untick if you arrange the times yourself.</span>
+                </span>
+              </label>
+            )}
             <div className="space-y-2 sm:col-span-2">
               <Label>Zoom link for their sessions (optional)</Label>
               <Input value={f.meetingLink} onChange={(e) => setF({ ...f, meetingLink: e.target.value })} placeholder="https://zoom.us/j/…" />
@@ -206,6 +236,7 @@ export function PlanDetails({ plan }: { plan: EditorPlan }) {
                   title: f.title,
                   description: f.description,
                   service: f.service,
+                  ...(pickSession ? { sessionServiceId: f.sessionServiceId || null, bookOnline: f.bookOnline } : {}),
                   totalSessions: num(f.totalSessions),
                   currentSession: num(f.currentSession),
                   startDate: f.startDate || null,

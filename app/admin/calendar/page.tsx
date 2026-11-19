@@ -29,7 +29,7 @@ export default async function CalendarPage() {
     days[d] = {
       slots,
       allDay: blocks.some((b) => !b.start),
-      blocked: blocks.filter((b) => b.start && b.end).map((b) => ({ start: b.start!, end: b.end! })),
+      blocked: blocks.filter((b) => b.start && b.end).map((b) => ({ start: b.start!, end: b.end!, mode: b.mode ?? null })),
       booked: confirmed.filter((b) => b.date === d).map((b) => ({ start: b.start, end: b.end, name: b.clientName })),
     };
   }

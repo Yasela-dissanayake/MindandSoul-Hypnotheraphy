@@ -35,6 +35,11 @@ export const accessSchema = z
     sessions: z
       .object({
         service: z.enum(["REIKI_HEALING", "ANIMAL_REIKI", "HYPNOTHERAPY"]),
+        // The session service it's for (Session services & prices). Linked plans let the client book
+        // their package sessions online, just like buying on the website.
+        sessionServiceId: z.string().max(50).nullable().optional(),
+        bookOnline: z.boolean().optional(),
+        title: z.string().trim().max(150).nullable().optional(),
         templateId: z.string().nullable().optional(),
         totalSessions: z.number().int().min(1).max(100).nullable().optional(),
         startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
@@ -52,7 +57,22 @@ export async function giveAccess(userId: string, access: z.output<typeof accessS
   if (access.sessions) {
     const s = access.sessions;
     const start = s.startDate || startDate;
-    if (s.templateId) {
+    const service = s.sessionServiceId
+      ? await db.sessionService.findUnique({ where: { id: s.sessionServiceId }, select: { id: true, title: true, planService: true } })
+      : null;
+    if (service) {
+      await db.plan.create({
+        data: {
+          userId,
+          title: s.title?.trim() || service.title,
+          service: service.planService ?? s.service,
+          totalSessions: s.totalSessions ?? null,
+          currentSession: s.totalSessions ? 1 : null,
+          startDate: start,
+          sessionServiceId: s.bookOnline === false ? null : service.id,
+        },
+      });
+    } else if (s.templateId) {
       await copyTemplateToUser(s.templateId, userId, start);
     } else {
       await db.plan.create({

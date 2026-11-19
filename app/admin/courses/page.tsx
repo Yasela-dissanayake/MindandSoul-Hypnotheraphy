@@ -59,7 +59,7 @@ export default async function LearningAdminPage({ searchParams }: { searchParams
           {waiting.map((e) => (
             <div key={e.id} className="flex flex-col gap-2 rounded-xl bg-white p-3 ring-1 ring-amber-100 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <Link href={`/admin/clients/${e.user.id}`} className="font-medium text-stone-800 hover:underline">
+                <Link href={`/admin/clients/${e.user.id}?tab=learning`} className="font-medium text-stone-800 hover:underline">
                   {e.user.name || e.user.email}
                 </Link>
                 <p className="text-sm text-stone-500">
@@ -146,7 +146,7 @@ export default async function LearningAdminPage({ searchParams }: { searchParams
                   return (
                     <tr key={e.id} className="border-b border-stone-100 align-top last:border-0 hover:bg-stone-50">
                       <td className="px-4 py-3">
-                        <Link href={`/admin/clients/${e.user.id}`} className="font-medium text-stone-800 hover:underline">
+                        <Link href={`/admin/clients/${e.user.id}?tab=learning`} className="font-medium text-stone-800 hover:underline">
                           {e.user.name || e.user.email}
                         </Link>
                         {e.user.name && <span className="block text-xs text-stone-500">{e.user.email}</span>}

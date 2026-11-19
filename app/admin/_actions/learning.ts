@@ -215,3 +215,32 @@ export async function removeLearningCertificate(enrollmentId: string): Promise<A
   refresh();
   return { ok: true };
 }
+
+// --- Giving a person a course by hand ------------------------------------------
+
+/** Give someone a course without a website payment (e.g. a gift, or paid in person). */
+export async function grantLearningPackage(userId: string, packageId: string): Promise<ActionResult> {
+  await requireAdmin();
+  const [user, pkg] = await Promise.all([
+    db.user.findUnique({ where: { id: userId }, select: { role: true } }),
+    db.learningPackage.findUnique({ where: { id: packageId }, select: { id: true } }),
+  ]);
+  if (!user || user.role !== "CLIENT") return fail("Person not found.");
+  if (!pkg) return fail("Course not found.");
+  await db.packageEnrollment.upsert({ where: { userId_packageId: { userId, packageId } }, update: {}, create: { userId, packageId } });
+  refresh();
+  revalidatePath("/admin/clients", "layout");
+  return { ok: true };
+}
+
+/** Take a course away from someone: their lesson progress and certificate for it are deleted too. */
+export async function revokeLearningPackage(enrollmentId: string): Promise<ActionResult> {
+  await requireAdmin();
+  const e = await db.packageEnrollment.findUnique({ where: { id: enrollmentId } });
+  if (!e) return fail("Not found.");
+  await db.packageEnrollment.delete({ where: { id: enrollmentId } });
+  await deleteObject(e.certificateKey);
+  refresh();
+  revalidatePath("/admin/clients", "layout");
+  return { ok: true };
+}

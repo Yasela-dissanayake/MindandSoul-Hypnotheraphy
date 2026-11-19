@@ -124,7 +124,8 @@ export function freeSlots(data: CalendarData, mode: BookingMode, from: string, t
   const out: Record<string, Slot[]> = {};
 
   for (let date = from; date <= to && date <= last; date = addDays(date, 1)) {
-    const blocks = blocksOn(data, date);
+    // Blocks for this kind of session (in-person / online), plus older blocks that cover both.
+    const blocks = blocksOn(data, date).filter((b) => !b.mode || b.mode === mode);
     if (blocks.some((b) => !b.start)) continue; // blocked all day
     const busy = data.bookings.filter((b) => b.date === date).map((b) => [toMin(b.start), toMin(b.end)] as const);
     const blocked = blocks.map((b) => [toMin(b.start!), toMin(b.end!)] as const);

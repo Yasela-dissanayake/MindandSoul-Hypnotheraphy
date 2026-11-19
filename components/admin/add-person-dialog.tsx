@@ -48,7 +48,7 @@ export function AddPersonDialog({
   const [open, setOpen] = useState(defaultOpen);
   const { pending, run } = useAction();
   const [form, setForm] = useState({ name: "", email: "" });
-  const [access, setAccess] = useState(emptyAccess);
+  const [access, setAccess] = useState(() => emptyAccess(packages));
   const [username, setUsername] = useState("");
   const [usernameEdited, setUsernameEdited] = useState(false);
   const [password, setPassword] = useState(suggestPassword);
@@ -57,7 +57,7 @@ export function AddPersonDialog({
 
   const reset = () => {
     setForm({ name: "", email: "" });
-    setAccess(emptyAccess());
+    setAccess(emptyAccess(packages));
     setUsername("");
     setUsernameEdited(false);
     setPassword(suggestPassword());
@@ -66,7 +66,7 @@ export function AddPersonDialog({
 
   const submit = () =>
     run(
-      () => createClientAccount({ ...form, username: shownUsername, password, access: accessPayload(access) }),
+      () => createClientAccount({ ...form, username: shownUsername, password, access: accessPayload(access, packages) }),
       "Account created",
       (res) => {
         if (res.ok && res.data) setCreated(res.data as CreatedAccount);

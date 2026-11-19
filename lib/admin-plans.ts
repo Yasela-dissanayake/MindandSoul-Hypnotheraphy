@@ -20,6 +20,7 @@ export async function loadPlansForEditor(where: Prisma.PlanWhereInput) {
     title: p.title,
     description: p.description,
     service: p.service,
+    sessionServiceId: p.sessionServiceId, // linked = the client books their sessions online
     totalSessions: p.totalSessions,
     currentSession: p.currentSession,
     startDate: p.startDate,

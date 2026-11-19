@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { approveAccessRequest, declineAccessRequest, deleteAccessRequest } from "@/app/admin/_actions/requests";
-import type { ServiceId } from "@/lib/catalog";
 import { useAction } from "./use-action";
 import { ConfirmButton } from "./confirm-button";
 import { AccessPicker, accessPayload, emptyAccess, type AccessState, type CourseOption, type PackageOption } from "./access-picker";
@@ -33,15 +32,12 @@ type Request = {
   booking: string | null;
 };
 
-const SERVICE_IDS: ServiceId[] = ["HYPNOTHERAPY", "REIKI_HEALING", "ANIMAL_REIKI"];
-
-/** Approve opens with what they asked for already chosen. */
+/** Approve opens with what they asked for already chosen (for sessions: the first session of that kind). */
 function accessFromRequest(r: Request, packages: PackageOption[], courses: CourseOption[]): AccessState {
-  const a = emptyAccess();
-  if (r.wants === "SESSIONS" && SERVICE_IDS.includes(r.wantsService as ServiceId)) {
-    const service = r.wantsService as ServiceId;
-    const onlyPackage = packages.filter((p) => p.service === service);
-    return { ...a, sessionsOn: true, service, templateId: onlyPackage.length === 1 ? onlyPackage[0].id : "" };
+  const a = emptyAccess(packages);
+  if (r.wants === "SESSIONS") {
+    const match = packages.find((p) => p.planService === r.wantsService);
+    return { ...emptyAccess(packages, match?.id), sessionsOn: true };
   }
   if (r.wants === "COURSE" && r.wantsCourseId && courses.some((c) => c.id === r.wantsCourseId)) {
     return { ...a, courseIds: [r.wantsCourseId] };
@@ -171,7 +167,7 @@ export function AccessRequestRow({ request, packages, courses }: { request: Requ
               disabled={pending || !name.trim() || (!access.sessionsOn && access.courseIds.length === 0)}
               onClick={() =>
                 run(
-                  () => approveAccessRequest(request.id, { name, access: accessPayload(access) }),
+                  () => approveAccessRequest(request.id, { name, access: accessPayload(access, packages) }),
                   "Approved. They can sign in now.",
                   (r) => {
                     if (!r.ok) return;

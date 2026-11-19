@@ -27,11 +27,21 @@ const planSchema = z.object({
   meetingLink: z.string().trim().url("The Zoom link should start with https://").max(500).optional().nullable().or(z.literal("")),
 });
 
-export async function createPlan(input: z.input<typeof planSchema> & { userId?: string | null }): Promise<ActionResult<{ id: string }>> {
+/**
+ * A new session plan. With `sessionServiceId` (a session service from Session services & prices) the plan
+ * takes that service's kind and, with `bookOnline`, lets the client book its sessions from their portal.
+ */
+export async function createPlan(
+  input: z.input<typeof planSchema> & { userId?: string | null; sessionServiceId?: string | null; bookOnline?: boolean },
+): Promise<ActionResult<{ id: string }>> {
   await requireAdmin();
   const parsed = planSchema.safeParse(input);
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Please check the details.");
   const d = parsed.data;
+  const service = input.sessionServiceId
+    ? await db.sessionService.findUnique({ where: { id: input.sessionServiceId }, select: { id: true, planService: true } })
+    : null;
+  if (input.sessionServiceId && !service) return fail("That session no longer exists. Please refresh the page.");
   let startDate = d.startDate ?? null;
   if (input.userId && !startDate) {
     const user = await db.user.findUnique({ where: { id: input.userId }, select: { timezone: true } });
@@ -42,7 +52,8 @@ export async function createPlan(input: z.input<typeof planSchema> & { userId?: 
       userId: input.userId ?? null,
       title: d.title,
       description: blank(d.description),
-      service: d.service,
+      service: service?.planService ?? d.service,
+      sessionServiceId: service && input.userId && input.bookOnline !== false ? service.id : null,
       totalSessions: d.totalSessions ?? null,
       currentSession: d.totalSessions ? (d.currentSession ?? 1) : null,
       startDate: input.userId ? startDate : null,
@@ -54,19 +65,33 @@ export async function createPlan(input: z.input<typeof planSchema> & { userId?: 
   return { ok: true, data: { id: plan.id } };
 }
 
-export async function updatePlan(planId: string, input: z.input<typeof planSchema>): Promise<ActionResult> {
+export async function updatePlan(
+  planId: string,
+  input: z.input<typeof planSchema> & { sessionServiceId?: string | null; bookOnline?: boolean },
+): Promise<ActionResult> {
   await requireAdmin();
   const parsed = planSchema.safeParse(input);
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Please check the details.");
   const d = parsed.data;
   const plan = await db.plan.findUnique({ where: { id: planId } });
   if (!plan) return fail("Plan not found.");
+  // The session it's for (from Session services & prices); its kind decides the plan's service.
+  const service =
+    input.sessionServiceId === undefined || input.sessionServiceId === null
+      ? null
+      : await db.sessionService.findUnique({ where: { id: input.sessionServiceId }, select: { id: true, planService: true } });
+  if (input.sessionServiceId && !service) return fail("That session no longer exists. Please refresh the page.");
+  const link =
+    input.sessionServiceId === undefined || !plan.userId
+      ? {}
+      : { sessionServiceId: service && input.bookOnline !== false ? service.id : null };
   await db.plan.update({
     where: { id: planId },
     data: {
       title: d.title,
       description: blank(d.description),
-      service: d.service,
+      service: service?.planService ?? d.service,
+      ...link,
       totalSessions: d.totalSessions ?? null,
       currentSession: d.totalSessions ? (d.currentSession ?? null) : null,
       startDate: plan.userId ? (d.startDate ?? plan.startDate) : null,
