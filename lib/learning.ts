@@ -94,8 +94,11 @@ export async function getLearnerPackages(userId: string) {
 // ---------- Buying on the website ----------
 
 export class PurchaseError extends Error {
-  /** owned = they already have it (or already paid for it): the website offers "Sign in" instead of "Try again". */
-  constructor(message: string, readonly opts: { owned?: boolean } = {}) {
+  /**
+   * owned = they already have it (or already paid for it): the website offers "Sign in" instead of "Try again".
+   * suggest = what to buy instead (e.g. only the class missing from a bundle), shown as buttons.
+   */
+  constructor(message: string, readonly opts: { owned?: boolean; suggest?: { title: string; href: string }[] } = {}) {
     super(message);
   }
 }

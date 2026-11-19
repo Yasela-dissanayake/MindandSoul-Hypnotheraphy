@@ -41,11 +41,63 @@ export async function startCoursePurchase(input: {
   }
   const email = input.email.trim().toLowerCase();
 
-  // Already has it (for a bundle: every class in it) and hasn't finished: no need to pay twice.
   const wanted = await classesFor(course.id);
-  const existing = await db.user.findUnique({ where: { email }, select: { enrollments: { where: { courseId: { in: wanted }, completedAt: null }, select: { id: true } } } });
-  if (existing && existing.enrollments.length >= wanted.length) {
+
+  // An unfinished payment for another class that overlaps this one (e.g. the Level 1 & 2 bundle in another tab):
+  // if it went through, enrol them first so the checks below see it; if it's still going through, wait;
+  // otherwise cancel it, so they can't end up paying for the same class twice.
+  const others = await db.coursePurchase.findMany({
+    where: { email, status: "PENDING", courseId: { not: course.id } },
+    select: { id: true, courseId: true, paymentIntentId: true },
+  });
+  for (const o of others) {
+    if (!(await classesFor(o.courseId)).some((id) => wanted.includes(id))) continue;
+    const markFailed = () => db.coursePurchase.updateMany({ where: { id: o.id, status: "PENDING" }, data: { status: "FAILED" } });
+    if (!o.paymentIntentId) {
+      await markFailed();
+      continue;
+    }
+    const pi = await stripe().paymentIntents.retrieve(o.paymentIntentId);
+    if (pi.status === "succeeded") await fulfilCoursePurchase(pi.id);
+    else if (pi.status === "processing") {
+      throw new PurchaseError("Your payment for a class in this one is still going through. Please wait a minute, then sign in or check your email.", { owned: true });
+    } else {
+      if (pi.status !== "canceled") await stripe().paymentIntents.cancel(pi.id).catch(() => {});
+      await markFailed();
+    }
+  }
+
+  // What they already have of it (for a bundle: of each class in it).
+  const mine = await db.user.findUnique({
+    where: { email },
+    select: { enrollments: { where: { courseId: { in: wanted } }, select: { courseId: true, completedAt: true, course: { select: { title: true } } } } },
+  });
+  const have = mine?.enrollments ?? [];
+  // Already enrolled (and not finished) in all of it: no need to pay twice.
+  if (have.filter((e) => !e.completedAt).length >= wanted.length) {
     throw new PurchaseError("You're already enrolled in this class. Please sign in to see it.", { owned: true });
+  }
+  // A bundle that includes classes they already have: they'd pay again for those. Point them to only what's missing.
+  if (wanted.length > 1 && have.length > 0) {
+    const haveIds = new Set(have.map((e) => e.courseId));
+    const missing = await db.course.findMany({
+      where: { id: { in: wanted.filter((id) => !haveIds.has(id)) } },
+      orderBy: [{ order: "asc" }, { title: "asc" }],
+      select: { title: true, slug: true, published: true, archived: true },
+    });
+    const list = (t: string[]) => (t.length <= 1 ? t.join("") : `${t.slice(0, -1).join(", ")} and ${t[t.length - 1]}`);
+    const owned = list(have.map((e) => e.course.title));
+    if (missing.length === 0) {
+      throw new PurchaseError(`You already have every class in this bundle (${owned}). Please sign in to see them.`, { owned: true });
+    }
+    const need = list(missing.map((m) => m.title));
+    throw new PurchaseError(
+      `You already have ${owned}, so this bundle would charge you for ${have.length === 1 ? "it" : "them"} again. You only need ${need}.`,
+      {
+        owned: true,
+        suggest: missing.filter((m) => m.slug && m.published && !m.archived).map((m) => ({ title: m.title, href: `/classes/${m.slug}` })),
+      },
+    );
   }
   await settleOpenPayments(
     await db.coursePurchase.findMany({ where: { courseId: course.id, email, status: "PENDING" }, select: { id: true, paymentIntentId: true } }),

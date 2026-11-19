@@ -73,6 +73,26 @@ function BuyForm({
       const start = await res.json();
       if (!res.ok) {
         // They already have it (or already paid): offer "Sign in" instead of "Try again".
+        // A bundle with classes they already have: offer only the missing class(es) instead.
+        const suggest: { title: string; href: string }[] = Array.isArray(start.suggest) ? start.suggest : [];
+        if (start.owned && suggest.length) {
+          setDialog({
+            status: "error",
+            title: "You already have part of this bundle",
+            message: start.error,
+            hint: "You have not been charged.",
+            action: (
+              <div className="space-y-2">
+                {suggest.map((s) => (
+                  <Button key={s.href} asChild className="h-auto w-full whitespace-normal bg-sage-600 py-2.5 hover:bg-sage-700">
+                    <Link href={s.href}>Buy {s.title} only</Link>
+                  </Button>
+                ))}
+              </div>
+            ),
+          });
+          return;
+        }
         if (start.owned) {
           setDialog({
             status: "error",
