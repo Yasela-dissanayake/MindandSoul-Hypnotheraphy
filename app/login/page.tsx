@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/auth/password-input";
 import { SubmitButton } from "@/components/submit-button";
 import { RequestStatusDialog, type RequestStatus } from "@/components/auth/request-status-dialog";
+import { RememberMe } from "@/components/auth/remember-me";
+import { makeSessionCookiesTemporary, saveRememberChoice } from "@/lib/remember-me";
 import { AlertCircle, Info } from "lucide-react";
 
 // Google access-request outcomes are shown as a pop-up instead of a line of text.
@@ -44,13 +46,17 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const message =
     key && !requestStatus ? (MESSAGES[key] ?? { tone: "error" as const, text: "Something went wrong signing in. Please try again." }) : null;
 
-  async function google() {
+  async function google(formData: FormData) {
     "use server";
+    // Remembered for when Google sends them back (see lib/remember-me.ts).
+    await saveRememberChoice(formData.get("remember") === "1");
     await signIn("google", { redirectTo: "/portal" });
   }
 
   async function login(formData: FormData) {
     "use server";
+    const remember = formData.get("remember") === "1";
+    await saveRememberChoice(remember);
     try {
       await signIn("credentials", {
         identifier: String(formData.get("identifier") ?? ""),
@@ -60,6 +66,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
     } catch (e) {
       if (e instanceof CredentialsSignin) redirect(`/login?code=${encodeURIComponent(e.code)}`);
       if (e instanceof AuthError) redirect("/login?error=Configuration");
+      // Signed in. Without "Remember me", the sign-in ends when the browser closes.
+      if (!remember) await makeSessionCookiesTemporary();
       throw e; // the successful sign-in redirect
     }
   }
@@ -113,6 +121,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             <Label htmlFor="password">Password</Label>
             <PasswordInput id="password" name="password" required autoComplete="current-password" className="h-12 text-base" />
           </div>
+          <RememberMe mirrorId="google-remember" />
           <SubmitButton className="h-12 w-full bg-sage-600 text-base hover:bg-sage-700" pendingText="Signing in…">
             Sign in
           </SubmitButton>
@@ -126,6 +135,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
               <span className="h-px flex-1 bg-stone-200" />
             </div>
             <form action={google}>
+              <input type="hidden" id="google-remember" name="remember" defaultValue="0" />
               <SubmitButton variant="outline" className="h-12 w-full gap-3 text-base" pendingText="Opening Google…">
                 <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
                   <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.3-1.6 3.9-5.5 3.9-3.3 0-6-2.7-6-6.1s2.7-6.1 6-6.1c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.3 14.6 2.4 12 2.4 6.7 2.4 2.4 6.7 2.4 12s4.3 9.6 9.6 9.6c5.5 0 9.2-3.9 9.2-9.4 0-.6-.1-1.1-.2-1.6H12z" />

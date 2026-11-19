@@ -8,6 +8,7 @@ import { makeRequestToken } from "@/lib/request-token";
 import { getUserRow } from "@/lib/request-cache";
 import { verifyPassword } from "@/lib/passwords";
 import { sendMail, welcomeEmail } from "@/lib/mail";
+import { REMEMBER_HOURS, rememberChoice, SHORT_SESSION_HOURS } from "@/lib/remember-me";
 
 // Sign-in rules
 // 1. Username (or email) + password: accounts the admin created. 5 wrong tries locks the account for 15 minutes.
@@ -15,6 +16,7 @@ import { sendMail, welcomeEmail } from "@/lib/mail";
 //    Anyone else becomes an "access request" the admin can approve or decline.
 // Sessions are signed cookies (JWT). Every request re-checks the account in the database, so
 // finishing an account or resetting its password signs that person out straight away.
+// "Remember me" (login page): ticked = 30 days; not ticked = until the browser closes, 12 hours at most.
 
 const adminEmails = (process.env.ADMIN_EMAILS ?? "")
   .split(",")
@@ -38,6 +40,8 @@ type Token = {
   name?: string | null;
   email?: string | null;
   picture?: string | null;
+  rem?: boolean; // ticked "Remember me" (missing on older sign-ins = remembered)
+  since?: number; // when they signed in (ms)
 };
 
 class LoginError extends CredentialsSignin {
@@ -92,7 +96,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(db),
   providers,
   trustHost: true,
-  session: { strategy: "jwt", maxAge: 60 * 60 * 24 * 30 },
+  session: { strategy: "jwt", maxAge: REMEMBER_HOURS * 60 * 60 },
   pages: { signIn: "/login", error: "/login" },
   logger: {
     // Normal situations, not server errors, so don't fill the terminal with stack traces:
@@ -142,8 +146,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
     async jwt({ token: rawToken, user }) {
       const token = rawToken as typeof rawToken & Token;
-      if (user?.id) token.uid = user.id;
+      if (user?.id) {
+        token.uid = user.id;
+        token.rem = await rememberChoice();
+        token.since = Date.now();
+      }
       if (!token.uid) return null;
+      // Without "Remember me" the session ends after a few hours, even if the browser stays open.
+      // With it, after 30 days (counted from signing in, not from the last visit).
+      const limitHours = token.rem === false ? SHORT_SESSION_HOURS : REMEMBER_HOURS;
+      if (token.since && Date.now() - token.since > limitHours * 3_600_000) return null;
+      if (token.rem === false && !token.since) return null;
       // Fresh copy when signing in; otherwise shared with the page being rendered.
       const u = user?.id ? await db.user.findUnique({ where: { id: token.uid } }) : await getUserRow(token.uid);
       if (!u || u.status === "FINISHED") return null;
