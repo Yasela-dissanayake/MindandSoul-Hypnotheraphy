@@ -20,7 +20,7 @@ export function loginMessage(opts: { name?: string | null; username: string; pas
   const first = opts.name?.split(" ")[0];
   return `Hi${first ? ` ${first}` : ""},
 
-Here are your login details for your private space at Heal With Rangika:
+Here are your login details for your private space at Mind & Soul Works:
 
 Website: ${opts.siteUrl}/login
 Username: ${opts.username}

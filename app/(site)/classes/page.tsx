@@ -12,7 +12,7 @@ import { getActivePromotion, promotedFirst, promotionLink } from "@/lib/promotio
 import { OfferBadge, promotedCard } from "@/components/site/offer-badge";
 
 export const metadata: Metadata = {
-  title: "Classes · Heal With Rangika",
+  title: "Classes · Mind & Soul Works",
   description:
     "IPHMA accredited Usui Reiki training (Level 1, 2 and 3) and Animal Reiki & Communication training with Rangika. Live online group classes with a certificate.",
 };

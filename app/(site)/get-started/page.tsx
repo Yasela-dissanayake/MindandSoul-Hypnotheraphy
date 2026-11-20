@@ -7,7 +7,7 @@ import { NoAccountDialog } from "@/components/site/no-account-dialog";
 // Google sign-ins from emails with no account are sent here (?from=google).
 
 export const metadata: Metadata = {
-  title: "Get started · Heal With Rangika",
+  title: "Get started · Mind & Soul Works",
   description: "One-to-one sessions, Reiki classes and self-paced courses with Rangika.",
   robots: { index: false },
 };

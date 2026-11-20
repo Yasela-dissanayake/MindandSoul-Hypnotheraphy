@@ -20,7 +20,7 @@ async function load(slug: string) {
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const pkg = await load((await params).slug);
-  return pkg ? { title: `${pkg.title} · Courses · Heal With Rangika`, description: pkg.summary ?? undefined } : { title: "Course not found" };
+  return pkg ? { title: `${pkg.title} · Courses · Mind & Soul Works`, description: pkg.summary ?? undefined } : { title: "Course not found" };
 }
 
 export default async function LearnPackagePage({ params }: { params: Promise<{ slug: string }> }) {

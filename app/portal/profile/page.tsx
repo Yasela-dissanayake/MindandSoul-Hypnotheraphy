@@ -9,7 +9,7 @@ export default async function ProfilePage() {
 
   async function logout() {
     "use server";
-    await signOut({ redirectTo: "/login" });
+    await signOut({ redirectTo: "/" }); // back to the website
   }
 
   return (

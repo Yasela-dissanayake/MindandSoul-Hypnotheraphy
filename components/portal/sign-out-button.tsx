@@ -2,11 +2,11 @@ import { LogOut } from "lucide-react";
 import { signOut } from "@/auth";
 import { SubmitButton } from "@/components/submit-button";
 
-/** "Sign out" in the portal's top bar (every page, desktop and phone). */
+/** "Sign out" in the portal's top bar (every page, desktop and phone). Takes them back to the website. */
 export function SignOutButton() {
   async function logout() {
     "use server";
-    await signOut({ redirectTo: "/login" });
+    await signOut({ redirectTo: "/" }); // back to the website
   }
   return (
     <form action={logout}>

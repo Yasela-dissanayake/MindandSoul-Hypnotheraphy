@@ -12,7 +12,7 @@ import { getActivePromotion, promotedFirst, promotionLink } from "@/lib/promotio
 import { OfferBadge, promotedCard } from "@/components/site/offer-badge";
 
 export const metadata: Metadata = {
-  title: "Sessions · Heal With Rangika",
+  title: "Sessions · Mind & Soul Works",
   description:
     "One-to-one sessions with Rangika: clinical hypnotherapy, age and past life regression, Reiki energy healing, Animal Reiki & communication, Lama Fera and more. In person in Perth or online.",
 };

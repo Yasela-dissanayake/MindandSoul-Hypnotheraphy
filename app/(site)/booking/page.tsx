@@ -8,7 +8,7 @@ import { CurrencySwitch } from "@/components/site/currency-switch";
 import { freeOptionOf, getActivePromotion, promotedFirst, promotionLink } from "@/lib/promotions";
 
 export const metadata: Metadata = {
-  title: "Book a Session · Heal With Rangika",
+  title: "Book a Session · Mind & Soul Works",
   description: "Book a one-to-one session with Rangika: clinical hypnotherapy, regression, Reiki, Animal Reiki and more, in person in Perth or online.",
 };
 export const dynamic = "force-dynamic";

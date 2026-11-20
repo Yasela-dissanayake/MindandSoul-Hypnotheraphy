@@ -7,7 +7,7 @@ import { sendViaSmtp, smtpConfigured } from "@/lib/email";
 
 const apiKey = process.env.RESEND_API_KEY;
 const resend = apiKey ? new Resend(apiKey) : null;
-export const EMAIL_FROM = process.env.EMAIL_FROM || "Heal With Rangika <onboarding@resend.dev>";
+export const EMAIL_FROM = process.env.EMAIL_FROM || "Mind & Soul Works <onboarding@resend.dev>";
 export const PRACTITIONER_EMAIL = process.env.PRACTITIONER_EMAIL || "healwithrangika@gmail.com";
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, "");
 
@@ -27,9 +27,9 @@ function layout(body: string, footer = "") {
   return `<!doctype html><html><body style="margin:0;background:#f6f7f6;font-family:Georgia,'Times New Roman',serif;color:#292524">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f7f6;padding:32px 12px"><tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:12px;overflow:hidden">
-<tr><td style="background:#485a48;color:#ffffff;padding:20px 28px;font-size:20px">Heal With Rangika</td></tr>
+<tr><td style="background:#485a48;color:#ffffff;padding:20px 28px;font-size:20px">Mind &amp; Soul Works</td></tr>
 <tr><td style="padding:28px;font-size:16px;line-height:1.6">${body}</td></tr>
-<tr><td style="padding:16px 28px;background:#f6f7f6;font-size:12px;color:#78716c;font-family:Arial,sans-serif">${footer || "Heal With Rangika · Hypnotherapy &amp; Reiki"}</td></tr>
+<tr><td style="padding:16px 28px;background:#f6f7f6;font-size:12px;color:#78716c;font-family:Arial,sans-serif">${footer || "Mind &amp; Soul Works · Hypnotherapy &amp; Reiki"}</td></tr>
 </table></td></tr></table></body></html>`;
 }
 
@@ -78,7 +78,7 @@ export async function sendMail(opts: { to: string; subject: string; html: string
   return { ok: true as const };
 }
 
-/** "Heal With Rangika <x@y>" → "Heal With Rangika" (display name for Gmail sending). */
+/** "Mind & Soul Works <x@y>" → "Mind & Soul Works" (display name for Gmail sending). */
 function fromName(from: string) {
   return from.match(/^\s*"?([^"<]+?)"?\s*</)?.[1];
 }
@@ -110,13 +110,13 @@ export function loginDetailsEmail(opts: {
   const hello = `Hello${opts.name ? ` ${opts.name}` : ""},`;
   const intro =
     opts.customText?.trim() ||
-    `Your private space at Heal With Rangika is ready. There you'll find your sessions work, class material and journal, all in one calm place.`;
+    `Your private space at Mind & Soul Works is ready. There you'll find your sessions work, class material and journal, all in one calm place.`;
   const url = `${SITE_URL}/login`;
   const details = `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px;background:#f6f7f6;border-radius:8px;font-family:Arial,sans-serif;font-size:15px">
 <tr><td style="padding:12px 16px 4px;color:#78716c">Username</td><td style="padding:12px 16px 4px"><strong>${escapeHtml(opts.username)}</strong></td></tr>
 <tr><td style="padding:4px 16px 12px;color:#78716c">Password</td><td style="padding:4px 16px 12px"><strong>${escapeHtml(opts.password)}</strong></td></tr></table>`;
   return {
-    subject: "Your login details for Heal With Rangika",
+    subject: "Your login details for Mind & Soul Works",
     html: layout(
       `<p style="margin:0 0 16px">${escapeHtml(hello)}</p>${paragraphs(intro)}${details}${button(url, "Sign in")}<p style="margin:0;color:#78716c;font-size:14px">You can change your password after signing in, under Profile.</p>`,
     ),
@@ -137,7 +137,7 @@ export function welcomeEmail(opts: { name?: string | null }) {
   const url = `${SITE_URL}/portal`;
   const body = `You're all set. Your private page shows your sessions work and class material. Tick tasks off as you go, and use your journal whenever you like.`;
   return {
-    subject: "Welcome to Heal With Rangika",
+    subject: "Welcome to Mind & Soul Works",
     html: layout(`<p style="margin:0 0 16px">${escapeHtml(hello)}</p>${paragraphs(body)}${button(url, "Open my page")}`),
     text: `${hello}\n\n${body}\n\n${url}`,
   };

@@ -29,7 +29,7 @@ async function load(slug: string) {
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const c = await load((await params).slug);
-  return c ? { title: `${c.title} · Classes · Heal With Rangika`, description: c.summary ?? undefined } : { title: "Class not found" };
+  return c ? { title: `${c.title} · Classes · Mind & Soul Works`, description: c.summary ?? undefined } : { title: "Class not found" };
 }
 
 export default async function ClassPage({ params }: { params: Promise<{ slug: string }> }) {

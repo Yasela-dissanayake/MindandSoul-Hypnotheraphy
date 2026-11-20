@@ -76,7 +76,7 @@ export function AudioPlayer({ resourceId, src, title, subtitle, rememberPosition
     if (a.paused) {
       a.play().catch(() => setError(true));
       if ("mediaSession" in navigator) {
-        navigator.mediaSession.metadata = new MediaMetadata({ title, artist: "Heal With Rangika" });
+        navigator.mediaSession.metadata = new MediaMetadata({ title, artist: "Mind & Soul Works" });
         navigator.mediaSession.setActionHandler("seekbackward", () => skip(-15));
         navigator.mediaSession.setActionHandler("seekforward", () => skip(30));
       }

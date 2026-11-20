@@ -10,11 +10,11 @@ import { Toaster } from "@/components/ui/sonner";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { TimezoneSync } from "@/components/timezone-sync";
 
-export const metadata: Metadata = { title: "Dashboard · Heal With Rangika", robots: { index: false } };
+export const metadata: Metadata = { title: "Dashboard · Mind & Soul Works", robots: { index: false } };
 
 async function logout() {
   "use server";
-  await signOut({ redirectTo: "/login" });
+  await signOut({ redirectTo: "/" }); // back to the website
 }
 
 /** The menu with its red badges. Streams in, so the page itself never waits for the counts. */

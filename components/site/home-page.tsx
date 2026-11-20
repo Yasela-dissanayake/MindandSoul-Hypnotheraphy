@@ -132,7 +132,7 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
             <div className="space-y-8">
               <div className="space-y-4">
                 <Badge className="bg-sage-100 text-sage-700 hover:bg-sage-100">
-                  🌿 Welcome to Heal With Rangika Australia
+                  🌿 Welcome to Mind & Soul Works Australia
                 </Badge>
                 <h1 className="text-4xl lg:text-6xl font-serif text-stone-800 leading-tight">
                   Where Healing
@@ -313,7 +313,7 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
                   Holistic & Empowering
                 </h3>
                 <p className="text-stone-600">
-                  Heal With Rangika's mission is to guide individuals on a
+                  Mind & Soul Works' mission is to guide individuals on a
                   journey of self-discovery and healing by integrating therapy,
                   mindfulness and energy healing—empowering mind, body, and soul
                   to restore balance and live with greater clarity, peace, and
@@ -524,7 +524,7 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
         <div className="container mx-auto px-4">
           <div className="text-center space-y-4 mb-16">
             <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">
-              Why Choose Heal With Rangika?
+              Why Choose Mind & Soul Works?
             </h2>
           </div>
 
@@ -775,8 +775,8 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 {/* <Leaf className="h-6 w-6 text-sage-400" /> */}
-                <Image width={32} height={32} src="logo.jpeg" alt="logo" />
-                <h3 className="text-xl font-serif">Heal With Rangika</h3>
+                <Image width={40} height={40} src="/brand/logo-mark.png" alt="Mind & Soul Works logo" className="rounded-lg" />
+                <h3 className="text-xl font-serif">Mind & Soul Works</h3>
               </div>
               <p className="text-stone-300 text-sm leading-relaxed">
                 Your partner in healing, growth, and inner transformation.
@@ -828,7 +828,7 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
           <Separator className="my-8 bg-stone-700" />
 
           <div className="flex flex-col md:flex-row justify-between items-center text-sm text-stone-400">
-            <div>© 2025 Heal With Rangika. All rights reserved.</div>
+            <div>© 2025 Mind & Soul Works. All rights reserved.</div>
             <div className="flex gap-6 mt-4 md:mt-0">
               <Link
                 href="/privacy"

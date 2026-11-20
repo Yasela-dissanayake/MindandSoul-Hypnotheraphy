@@ -41,9 +41,9 @@ export function MobileNav() {
               className="flex items-center gap-2"
               onClick={() => setOpen(false)}
             >
-              <Image width={64} height={64} src="/logo.jpeg" alt="logo" />
+              <Image width={48} height={48} src="/brand/logo-mark.png" alt="Mind & Soul Works logo" className="rounded-xl" />
               <span className="text-lg font-serif text-stone-800">
-                Heal With Rangika
+                Mind & Soul Works
               </span>
             </Link>
           </div>

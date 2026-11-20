@@ -18,7 +18,7 @@ const load = (slug: string) => db.sessionService.findFirst({ where: { slug, publ
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const s = await load((await params).slug);
-  return s ? { title: `${s.title} · Sessions · Heal With Rangika`, description: s.summary ?? undefined } : { title: "Session not found" };
+  return s ? { title: `${s.title} · Sessions · Mind & Soul Works`, description: s.summary ?? undefined } : { title: "Session not found" };
 }
 
 export default async function SessionServicePage({ params }: { params: Promise<{ slug: string }> }) {

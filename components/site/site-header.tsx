@@ -13,9 +13,9 @@ export function SiteHeader() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
             {/* <Leaf className="h-8 w-8 text-sage-600" /> */}
-            <Image width={64} height={64} src="/logo.jpeg" alt="logo" />
+            <Image width={52} height={52} src="/brand/logo-mark.png" alt="Mind & Soul Works logo" priority className="rounded-xl" />
             <h1 className="text-2xl font-serif text-stone-800">
-              Heal With Rangika
+              Mind & Soul Works
             </h1>
           </Link>
 

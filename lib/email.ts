@@ -79,11 +79,11 @@ export async function sendTestEmail(to?: string, customData?: any) {
     const mailOptions = {
       from: process.env.SMTP_FROM || process.env.EMAIL_FROM, // booking emails go through Gmail SMTP
       to: recipient,
-      subject: "Test Email from Heal With Rangika",
+      subject: "Test Email from Mind & Soul Works",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #6B7280;">Test Email</h2>
-          <p>This is a test email from your Heal With Rangika booking system.</p>
+          <p>This is a test email from your Mind &amp; Soul Works booking system.</p>
           <p><strong>Sent at:</strong> ${new Date().toLocaleString()}</p>
           ${
             customData
@@ -166,7 +166,7 @@ export async function sendClientBookingConfirmation({
             
             <!-- Header -->
             <div style="background: linear-gradient(135deg, #8B9A8B 0%, #A4B4A4 100%); padding: 40px 30px; text-align: center;">
-              <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 300;">Heal With Rangika</h1>
+              <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 300;">Mind &amp; Soul Works</h1>
               <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">Booking Confirmation</p>
             </div>
 
@@ -224,7 +224,7 @@ export async function sendClientBookingConfirmation({
                 <div style="background-color: #edf2f7; border-left: 4px solid #8B9A8B; padding: 20px; margin-bottom: 30px; border-radius: 0 8px 8px 0;">
                   <h3 style="color: #2d3748; margin: 0 0 15px 0; font-size: 16px;">📍 Location & Directions</h3>
                   <p style="color: #4a5568; margin: 0 0 10px 0; line-height: 1.5;">
-                    <strong>Heal With Rangika</strong><br>
+                    <strong>Mind &amp; Soul Works</strong><br>
                     Perth Healthcare Centre<br>
                     Ground floor<br>
                     Shop 2/1260<br>
@@ -293,7 +293,7 @@ export async function sendClientBookingConfirmation({
                 </p>
                 <p style="color: #2d3748; font-weight: 600; margin: 0;">
                   Warm regards,<br>
-                  The Heal With Rangika's Team
+                  The Mind &amp; Soul Works Team
                 </p>
               </div>
 
@@ -302,7 +302,7 @@ export async function sendClientBookingConfirmation({
             <!-- Footer -->
             <div style="background-color: #2d3748; padding: 20px 30px; text-align: center;">
               <p style="color: #a0aec0; margin: 0; font-size: 14px;">
-                Heal With Rangika | Perth Healthcare Centre, Ground floor, Shop 2/1260, Hay Street, West Perth WA 6005, Australia
+                Mind &amp; Soul Works | Perth Healthcare Centre, Ground floor, Shop 2/1260, Hay Street, West Perth WA 6005, Australia
               </p>
               <p style="color: #718096; margin: 10px 0 0 0; font-size: 12px;">
                 This email was sent regarding your booking confirmation. Please keep this email for your records.
@@ -387,7 +387,7 @@ export async function sendPractitionerBookingNotification({
             <!-- Header -->
             <div style="background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%); padding: 30px; text-align: center;">
               <h1 style="color: white; margin: 0; font-size: 24px;">New Booking Notification</h1>
-              <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0;">Heal With Rangika</p>
+              <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0;">Mind &amp; Soul Works</p>
             </div>
 
             <!-- Main Content -->
@@ -523,7 +523,7 @@ export async function sendPractitionerBookingNotification({
             <!-- Footer -->
             <div style="background-color: #2d3748; padding: 20px; text-align: center;">
               <p style="color: #a0aec0; margin: 0; font-size: 14px;">
-                 Heal With Rangika Booking System
+                 Mind &amp; Soul Works Booking System
               </p>
               <p style="color: #718096; margin: 5px 0 0 0; font-size: 12px;">
                 Booking received at ${new Date().toLocaleString()}

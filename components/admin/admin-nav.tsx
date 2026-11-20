@@ -174,7 +174,7 @@ export function AdminNav({ name, logout, badges = { questions: 0, sales: 0, enqu
 
   const brand = (
     <Link href="/admin" className="flex items-center gap-2">
-      <Image src="/logo.jpeg" alt="" width={32} height={32} className="rounded-full" />
+      <Image src="/brand/logo-mark.png" alt="" width={32} height={32} className="rounded-full" />
       <span className="font-serif text-lg text-stone-800">Dashboard</span>
     </Link>
   );
@@ -199,7 +199,7 @@ export function AdminNav({ name, logout, badges = { questions: 0, sales: 0, enqu
           </SheetTrigger>
           <SheetContent side="left" className="flex w-72 flex-col justify-between">
             <div className="space-y-6">
-              <SheetTitle className="font-serif">Heal With Rangika</SheetTitle>
+              <SheetTitle className="font-serif">Mind & Soul Works</SheetTitle>
               {links}
             </div>
             {footer}

@@ -26,7 +26,7 @@ export default function AboutPage() {
             <div className="space-y-8">
               <div className="space-y-4">
                 <Badge className="bg-sage-100 text-sage-700">
-                  About Heal With Rangika
+                  About Mind & Soul Works
                 </Badge>
                 <h1 className="text-4xl lg:text-6xl font-serif text-stone-800 leading-tight">
                   Meet Your

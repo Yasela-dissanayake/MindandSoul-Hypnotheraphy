@@ -22,7 +22,7 @@ export default function TermsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-700">
-                By accessing and using the Heal With Rangika website and
+                By accessing and using the Mind & Soul Works website and
                 services, you accept and agree to be bound by the terms and
                 provision of this agreement. If you do not agree to abide by the
                 above, please do not use this service.
@@ -42,7 +42,7 @@ export default function TermsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-700">
-                Heal With Rangika provides professional hypnotherapy services
+                Mind & Soul Works provides professional hypnotherapy services
                 including but not limited to:
               </p>
               <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
@@ -214,7 +214,7 @@ export default function TermsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-700">
-                Heal With Rangika shall not be liable for any indirect,
+                Mind & Soul Works shall not be liable for any indirect,
                 incidental, special, consequential, or punitive damages,
                 including without limitation, loss of profits, data, use,
                 goodwill, or other intangible losses, resulting from your use of

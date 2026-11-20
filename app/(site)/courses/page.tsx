@@ -9,7 +9,7 @@ import { getActivePromotion, promotedFirst, promotionLink } from "@/lib/promotio
 import { OfferBadge, promotedCard } from "@/components/site/offer-badge";
 
 export const metadata: Metadata = {
-  title: "Courses · Heal With Rangika",
+  title: "Courses · Mind & Soul Works",
   description: "Self-paced courses by Rangika. Learn at home, at your own pace, one lesson at a time.",
 };
 export const dynamic = "force-dynamic";
