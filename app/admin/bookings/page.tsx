@@ -198,7 +198,7 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
                     </p>
                   </td>
                   <td className="min-w-[8rem] px-4 py-3 text-stone-700">
-                    {b.credit ? <span className="text-stone-500">Package</span> : formatPrice(b.amount, b.currency)}
+                    {b.credit ? <span className="text-stone-500">Package</span> : b.amount === 0 ? <span className="font-medium text-amber-700">Free</span> : formatPrice(b.amount, b.currency)}
                     <p className="text-xs text-stone-500">Booked {stamp(b.createdAt)}</p>
                     {b.cancelledAt && <p className="text-xs text-red-700">Cancelled {stamp(b.cancelledAt)}</p>}
                   </td>
@@ -268,7 +268,7 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
                     {p.course.title}
                   </Link>
                 </td>
-                <td className="whitespace-nowrap px-4 py-3 text-stone-700">{formatPrice(p.amount, p.currency)}</td>
+                <td className="whitespace-nowrap px-4 py-3 text-stone-700">{p.amount === 0 ? <span className="font-medium text-amber-700">Free</span> : formatPrice(p.amount, p.currency)}</td>
                 <td className="whitespace-nowrap px-4 py-3 text-xs text-stone-500">{p.newAccount ? "New account created" : "Existing account"}</td>
                 <td className="whitespace-nowrap px-4 py-3">
                   <div className="flex justify-end">{isNew && <MarkSeenButton kind="courses" id={p.id} />}</div>
@@ -309,7 +309,7 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
                     {p.package.title}
                   </Link>
                 </td>
-                <td className="whitespace-nowrap px-4 py-3 text-stone-700">{formatPrice(p.amount, p.currency)}</td>
+                <td className="whitespace-nowrap px-4 py-3 text-stone-700">{p.amount === 0 ? <span className="font-medium text-amber-700">Free</span> : formatPrice(p.amount, p.currency)}</td>
                 <td className="whitespace-nowrap px-4 py-3 text-xs text-stone-500">{p.newAccount ? "New account created" : "Existing account"}</td>
                 <td className="whitespace-nowrap px-4 py-3">
                   <div className="flex justify-end">{isNew && <MarkSeenButton kind="learning" id={p.id} />}</div>

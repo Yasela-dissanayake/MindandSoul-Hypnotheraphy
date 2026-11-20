@@ -4,6 +4,9 @@ import { BookOpen, Clock, Infinity as Always } from "lucide-react";
 import { db } from "@/lib/db";
 import { money } from "@/lib/learning";
 import { coverUrl } from "@/lib/covers";
+import { cn } from "@/lib/utils";
+import { getActivePromotion, promotedFirst, promotionLink } from "@/lib/promotions";
+import { OfferBadge, promotedCard } from "@/components/site/offer-badge";
 
 export const metadata: Metadata = {
   title: "Courses · Heal With Rangika",
@@ -12,11 +15,18 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function LearnPage() {
-  const packages = await db.learningPackage.findMany({
-    where: { published: true, archived: false },
-    orderBy: [{ order: "asc" }, { createdAt: "asc" }],
-    include: { _count: { select: { lessons: true } } },
-  });
+  const [all, promo] = await Promise.all([
+    db.learningPackage.findMany({
+      where: { published: true, archived: false },
+      orderBy: [{ order: "asc" }, { createdAt: "asc" }],
+      include: { _count: { select: { lessons: true } } },
+    }),
+    getActivePromotion(),
+  ]);
+  // The running promotion's course is listed first, with an offer badge.
+  const link = promo ? promotionLink(promo) : null;
+  const promotedId = link?.kind === "course" ? link.id : null;
+  const packages = promotedFirst(all, promotedId);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sage-50 to-white">
@@ -57,20 +67,29 @@ export default async function LearnPage() {
           </p>
         ) : (
           <div className="mx-auto grid max-w-7xl gap-6 md:grid-cols-2 lg:grid-cols-3 xl:gap-8">
-            {packages.map((p) => (
+            {packages.map((p) => {
+              const promoted = p.id === promotedId;
+              const free = promoted && Boolean(promo?.free);
+              return (
               <Link
                 key={p.id}
                 href={`/courses/${p.slug}`}
-                className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-stone-200 transition hover:shadow-md hover:ring-sage-300"
-              >
-                {coverUrl("package", p) ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={coverUrl("package", p)!} alt="" className="h-48 w-full object-cover" />
-                ) : (
-                  <div className="flex h-48 items-center justify-center bg-gradient-to-br from-sage-100 to-sage-200">
-                    <BookOpen className="h-10 w-10 text-sage-700" />
-                  </div>
+                className={cn(
+                  "group flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-stone-200 transition hover:shadow-md hover:ring-sage-300",
+                  promoted && promotedCard,
                 )}
+              >
+                <div className="relative">
+                  {promoted && <OfferBadge overlay free={free} />}
+                  {coverUrl("package", p) ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={coverUrl("package", p)!} alt="" className="h-48 w-full object-cover" />
+                  ) : (
+                    <div className="flex h-48 items-center justify-center bg-gradient-to-br from-sage-100 to-sage-200">
+                      <BookOpen className="h-10 w-10 text-sage-700" />
+                    </div>
+                  )}
+                </div>
                 <div className="flex flex-1 flex-col gap-2 p-5">
                   <h2 className="font-serif text-xl text-stone-800 group-hover:text-sage-800">{p.title}</h2>
                   {p.summary && <p className="text-sm text-stone-600">{p.summary}</p>}
@@ -78,11 +97,19 @@ export default async function LearnPage() {
                     <span className="text-stone-500">
                       {p._count.lessons} lesson{p._count.lessons === 1 ? "" : "s"}
                     </span>
-                    <span className="font-semibold text-stone-800">{money(p.price, p.currency)}</span>
+                    {free ? (
+                      <span className="flex items-baseline gap-1.5">
+                        <span className="font-semibold text-amber-700">Free</span>
+                        {p.price > 0 && <span className="text-xs text-stone-400 line-through">{money(p.price, p.currency)}</span>}
+                      </span>
+                    ) : (
+                      <span className="font-semibold text-stone-800">{money(p.price, p.currency)}</span>
+                    )}
                   </div>
                 </div>
               </Link>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>

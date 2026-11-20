@@ -17,7 +17,12 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ kin
           ? await db.sessionService
               .findUnique({ where: { id }, select: { imageKey: true, published: true } })
               .then((s) => (s ? { ...s, archived: false } : null))
-          : null;
+          : kind === "promotion"
+            ? // A promotion's photo is public only while it runs.
+              await db.promotion
+                .findUnique({ where: { id }, select: { imageKey: true, startsAt: true, endsAt: true } })
+                .then((p) => (p ? { imageKey: p.imageKey, published: p.startsAt <= new Date() && p.endsAt > new Date(), archived: false } : null))
+            : null;
   if (!item?.imageKey) return new NextResponse(null, { status: 404 });
   if (!item.published || item.archived) {
     const session = await auth();

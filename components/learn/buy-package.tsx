@@ -27,8 +27,11 @@ function doneMessage(kind: Kind, done: Done) {
       : "The course has been added to your account. Sign in and open My courses.";
 }
 
-/** Extra settings for classes: the currency they pay in (as shown) and a prerequisite to confirm. */
-type ClassOptions = { currency?: "aud" | "aed"; prerequisite?: string | null };
+/**
+ * Extra settings: the currency they pay in (as shown), a prerequisite to confirm (classes), and
+ * `free` = free under the running promotion (no card; the server checks this again).
+ */
+type ClassOptions = { currency?: "aud" | "aed"; prerequisite?: string | null; free?: boolean };
 
 function BuyForm({
   packageId,
@@ -38,6 +41,7 @@ function BuyForm({
   onDone,
   currency,
   prerequisite,
+  free = false,
 }: { packageId: string; title: string; priceLabel: string; kind: Kind; onDone: (d: Done) => void } & ClassOptions) {
   const stripe = useStripe();
   const elements = useElements();
@@ -57,9 +61,8 @@ function BuyForm({
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!stripe || !elements) return;
-    const card = elements.getElement(CardElement);
-    if (!card) return;
+    const card = free ? null : elements?.getElement(CardElement);
+    if (!free && (!stripe || !card)) return;
     setDialog({ status: "processing" });
     try {
       // 1. Start the payment (the server sets the price).
@@ -110,9 +113,31 @@ function BuyForm({
         throw new Error(start.error || "Something went wrong. Please try again.");
       }
 
+      // Free under a promotion: the server has already set up their account and access.
+      if (start.free) {
+        const done = { newAccount: Boolean(start.newAccount), email };
+        setPaid(done);
+        setDialog({
+          status: "success",
+          title: kind === "course" ? "You're enrolled, free of charge!" : "The course is yours, free of charge!",
+          body: (
+            <>
+              <p className="font-medium text-stone-800">{title}</p>
+              <p className="mt-2">{doneMessage(kind, done)}</p>
+            </>
+          ),
+          action: (
+            <Button asChild className="w-full bg-sage-600 hover:bg-sage-700">
+              <Link href="/login?bought=1">Sign in</Link>
+            </Button>
+          ),
+        });
+        return;
+      }
+
       // 2. Pay by card.
-      const { error: payError, paymentIntent } = await stripe.confirmCardPayment(start.client_secret, {
-        payment_method: { card, billing_details: { name, email } },
+      const { error: payError, paymentIntent } = await stripe!.confirmCardPayment(start.client_secret, {
+        payment_method: { card: card!, billing_details: { name, email } },
       });
       if (payError) throw new Error(payError.message || "The payment didn't go through.");
       if (paymentIntent?.status !== "succeeded") throw new Error("The payment didn't go through.");
@@ -169,12 +194,14 @@ function BuyForm({
           <p className="text-xs text-stone-500">So Rangika can reach you about the class.</p>
         </div>
       )}
-      <div className="space-y-1.5">
-        <Label>Card</Label>
-        <div className="rounded-md border border-input bg-white p-3">
-          <CardElement options={{ style: { base: { fontSize: "16px", color: "#292524", "::placeholder": { color: "#a8a29e" } } } }} />
+      {!free && (
+        <div className="space-y-1.5">
+          <Label>Card</Label>
+          <div className="rounded-md border border-input bg-white p-3">
+            <CardElement options={{ style: { base: { fontSize: "16px", color: "#292524", "::placeholder": { color: "#a8a29e" } } } }} />
+          </div>
         </div>
-      </div>
+      )}
       {prerequisite && (
         <label className="flex items-start gap-2 rounded-lg bg-sage-50 p-3 text-sm text-stone-700 ring-1 ring-sage-200">
           <input suppressHydrationWarning type="checkbox" className="mt-1" required checked={prereqDone} onChange={(e) => setPrereqDone(e.target.checked)} />
@@ -195,11 +222,21 @@ function BuyForm({
           .
         </span>
       </label>
-      <Button type="submit" disabled={!stripe || busy || !agreed || (Boolean(prerequisite) && !prereqDone)} className="w-full bg-sage-600 py-3 hover:bg-sage-700">
-        {`${kind === "course" ? "Enrol" : "Buy"} · ${priceLabel}`}
+      <Button
+        type="submit"
+        disabled={(!free && !stripe) || busy || !agreed || (Boolean(prerequisite) && !prereqDone)}
+        className="w-full bg-sage-600 py-3 hover:bg-sage-700"
+      >
+        {free ? (kind === "course" ? "Join for free" : "Get it for free") : `${kind === "course" ? "Enrol" : "Buy"} · ${priceLabel}`}
       </Button>
       <p className="flex items-center justify-center gap-1 text-xs text-stone-500">
-        <Lock className="h-3 w-3" /> Secure card payment by Stripe
+        {free ? (
+          "Free during the current promotion. No card needed."
+        ) : (
+          <>
+            <Lock className="h-3 w-3" /> Secure card payment by Stripe
+          </>
+        )}
       </p>
       <PaymentDialog state={dialog} onClose={closeDialog} />
     </form>

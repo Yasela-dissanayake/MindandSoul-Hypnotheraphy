@@ -9,6 +9,8 @@ import { coverUrl } from "@/lib/covers";
 import { classPrice, formatPrice, viewerCurrency } from "@/lib/currency";
 import { bundleSaving, highlightLines } from "@/lib/class-display";
 import { CurrencySwitch } from "@/components/site/currency-switch";
+import { getActivePromotion, promotionLink, freeOptionOf } from "@/lib/promotions";
+import { PromoNote } from "@/components/site/promo-note";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +33,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 export default async function ClassPage({ params }: { params: Promise<{ slug: string }> }) {
-  const [c, currency] = await Promise.all([params.then((p) => load(p.slug)), viewerCurrency()]);
+  const [c, currency, promo] = await Promise.all([params.then((p) => load(p.slug)), viewerCurrency(), getActivePromotion()]);
   if (!c) notFound();
   const about = c.details || c.description;
   const full = c.seats !== null && c.seats <= 0;
@@ -41,6 +43,10 @@ export default async function ClassPage({ params }: { params: Promise<{ slug: st
   const highlights = highlightLines(c.highlights);
   const cover = coverUrl("course", c);
   const isBundle = c.includes.length > 0;
+  // The running promotion is about this class (and may make it free).
+  const promoLink = promo ? promotionLink(promo) : null;
+  const promoted = Boolean(promo && promoLink?.kind === "class" && promoLink.id === c.id);
+  const free = promoted && Boolean(promo?.free);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sage-50 to-white">
@@ -147,9 +153,16 @@ export default async function ClassPage({ params }: { params: Promise<{ slug: st
 
           <aside className="lg:sticky lg:top-24 lg:self-start">
             <div className="space-y-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-stone-200">
+              {promoted && promo && <PromoNote promo={promo} freeText="Join this class free of charge while the promotion runs. No card needed." />}
               <div>
-                <p className="font-serif text-3xl text-stone-800">{priceLabel}</p>
-                {saving && <p className="text-sm font-medium text-sage-700">You save {formatPrice(saving, price.currency)}</p>}
+                {free ? (
+                  <p className="flex items-baseline gap-2 font-serif text-3xl text-amber-700">
+                    Free <span className="font-sans text-base text-stone-400 line-through">{priceLabel}</span>
+                  </p>
+                ) : (
+                  <p className="font-serif text-3xl text-stone-800">{priceLabel}</p>
+                )}
+                {saving && !free && <p className="text-sm font-medium text-sage-700">You save {formatPrice(saving, price.currency)}</p>}
               </div>
               <CurrencySwitch current={currency} />
               <ul className="space-y-2 text-sm text-stone-600">
@@ -187,7 +200,7 @@ export default async function ClassPage({ params }: { params: Promise<{ slug: st
                   </Link>
                 </div>
               ) : (
-                <BuyPackage kind="course" packageId={c.id} title={c.title} priceLabel={priceLabel} currency={price.currency} prerequisite={c.prerequisite} />
+                <BuyPackage kind="course" packageId={c.id} title={c.title} priceLabel={priceLabel} currency={price.currency} prerequisite={c.prerequisite} free={free} />
               )}
             </div>
           </aside>

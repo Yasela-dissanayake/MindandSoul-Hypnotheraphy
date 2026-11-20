@@ -13,8 +13,10 @@ export async function POST(request: NextRequest) {
   const parsed = schema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Please check your details." }, { status: 400 });
   try {
-    const { clientSecret, paymentIntentId } = await startPurchase(parsed.data);
-    return NextResponse.json({ client_secret: clientSecret, payment_intent_id: paymentIntentId });
+    const r = await startPurchase(parsed.data);
+    // Free under a promotion: they have it already, nothing to pay.
+    if (r.free) return NextResponse.json({ free: true, newAccount: r.newAccount });
+    return NextResponse.json({ client_secret: r.clientSecret, payment_intent_id: r.paymentIntentId });
   } catch (e) {
     if (e instanceof PurchaseError) return NextResponse.json({ error: e.message, owned: Boolean(e.opts.owned) }, { status: 409 });
     console.error("Course checkout failed:", e);

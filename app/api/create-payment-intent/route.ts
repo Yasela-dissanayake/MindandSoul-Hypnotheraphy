@@ -2,7 +2,8 @@ import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { DATE_RE, TIME_RE } from "@/lib/booking";
-import { SlotTakenError, holdSlot, releaseHold, stripe } from "@/lib/booking-payments";
+import { SlotTakenError, confirmFreeBooking, holdSlot, releaseHold, stripe } from "@/lib/booking-payments";
+import { freeOptionOf, getActivePromotion, promotionLink } from "@/lib/promotions";
 import { classPrice } from "@/lib/currency";
 import { modesFor, optionLabel, sessionTypeOf } from "@/lib/session-catalog";
 
@@ -33,7 +34,10 @@ export async function POST(request: NextRequest) {
   }
   const b = parsed.data;
 
-  const option = await db.sessionOption.findUnique({ where: { id: b.optionId }, include: { service: true } });
+  const option = await db.sessionOption.findUnique({
+    where: { id: b.optionId },
+    include: { service: { include: { options: { orderBy: [{ order: "asc" }, { sessions: "asc" }] } } } },
+  });
   const service = option?.service;
   if (!option || !service || !service.published || service.enquiryOnly) {
     return NextResponse.json({ error: "This session can't be booked online any more. Please refresh the page." }, { status: 409 });
@@ -42,8 +46,32 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "That kind of session isn't available for this service." }, { status: 400 });
   }
   const price = classPrice(option, b.currency);
-  if (price.amount < 50) return NextResponse.json({ error: "This session has no price yet. Please contact Rangika." }, { status: 409 });
   const clientName = `${b.firstName} ${b.lastName}`;
+
+  // Free under the running promotion: this service's single session, once per email.
+  const promo = await getActivePromotion();
+  const link = promo ? promotionLink(promo) : null;
+  const free = Boolean(promo?.free && link?.kind === "session" && link.id === service.id && freeOptionOf(service.options)?.id === option.id);
+  if (free) {
+    const already = await db.booking.findFirst({
+      where: {
+        optionId: option.id,
+        amount: 0,
+        status: "CONFIRMED",
+        clientEmail: { equals: b.email.trim(), mode: "insensitive" },
+        createdAt: { gte: promo!.startsAt },
+      },
+      select: { id: true },
+    });
+    if (already) {
+      return NextResponse.json(
+        { error: "You've already booked your free session with this email. To book another session, choose a paid option.", owned: true },
+        { status: 409 },
+      );
+    }
+  } else if (price.amount < 50) {
+    return NextResponse.json({ error: "This session has no price yet. Please contact Rangika." }, { status: 409 });
+  }
 
   // 1. Keep the time for this person while they pay.
   let booking;
@@ -60,7 +88,7 @@ export async function POST(request: NextRequest) {
       concerns: b.concerns,
       previousTherapy: b.previousTherapy,
       medicalConditions: b.medicalConditions,
-      amount: price.amount,
+      amount: free ? 0 : price.amount,
       currency: price.currency,
       optionId: option.id,
       minutes: service.minutes,
@@ -74,6 +102,19 @@ export async function POST(request: NextRequest) {
     }
     console.error("Could not hold booking time:", e);
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
+  }
+
+  // Free: confirm it now (no card).
+  if (free) {
+    try {
+      const done = await confirmFreeBooking(booking.id);
+      if (!done) throw new Error("The free booking could not be confirmed.");
+      return NextResponse.json({ free: true, newAccount: done.newAccount });
+    } catch (error) {
+      await db.booking.updateMany({ where: { id: booking.id, status: "HELD" }, data: { status: "CANCELLED", cancelledAt: new Date() } });
+      console.error("Free booking failed:", error);
+      return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
+    }
   }
 
   // 2. Start the card payment.

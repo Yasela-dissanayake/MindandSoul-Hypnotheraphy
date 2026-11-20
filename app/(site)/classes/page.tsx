@@ -7,6 +7,9 @@ import { coverUrl } from "@/lib/covers";
 import { classPrice, formatPrice, viewerCurrency } from "@/lib/currency";
 import { bundleSaving } from "@/lib/class-display";
 import { CurrencySwitch } from "@/components/site/currency-switch";
+import { cn } from "@/lib/utils";
+import { getActivePromotion, promotedFirst, promotionLink } from "@/lib/promotions";
+import { OfferBadge, promotedCard } from "@/components/site/offer-badge";
 
 export const metadata: Metadata = {
   title: "Classes · Heal With Rangika",
@@ -16,14 +19,19 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function ClassesPage() {
-  const [classes, currency] = await Promise.all([
+  const [all, currency, promo] = await Promise.all([
     db.course.findMany({
       where: onSaleWhere,
       orderBy: [{ order: "asc" }, { title: "asc" }],
       include: { includes: { select: { title: true, price: true, priceAed: true }, orderBy: { order: "asc" } } },
     }),
     viewerCurrency(),
+    getActivePromotion(),
   ]);
+  // The running promotion's class is listed first, with an offer badge.
+  const link = promo ? promotionLink(promo) : null;
+  const promotedId = link?.kind === "class" ? link.id : null;
+  const classes = promotedFirst(all, promotedId);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sage-50 to-white">
@@ -68,13 +76,19 @@ export default async function ClassesPage() {
               const price = classPrice(c, currency);
               const saving = bundleSaving(c, currency);
               const cover = coverUrl("course", c);
+              const promoted = c.id === promotedId;
+              const free = promoted && Boolean(promo?.free);
               return (
                 <Link
                   key={c.id}
                   href={`/classes/${c.slug}`}
-                  className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-stone-200 transition hover:shadow-md hover:ring-sage-300"
+                  className={cn(
+                    "group flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-stone-200 transition hover:shadow-md hover:ring-sage-300",
+                    promoted && promotedCard,
+                  )}
                 >
                   <div className="relative">
+                    {promoted && <OfferBadge overlay free={free} className={c.includes.length > 0 ? "top-12" : undefined} />}
                     {cover ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={cover} alt="" className="h-52 w-full object-cover" />
@@ -114,7 +128,14 @@ export default async function ClassesPage() {
                       <span className={full ? "font-medium text-amber-700" : "text-sage-700"}>
                         {full ? "Fully booked" : saving ? `Save ${formatPrice(saving, price.currency)}` : c.seats !== null ? `${c.seats} place${c.seats === 1 ? "" : "s"} left` : ""}
                       </span>
-                      <span className="text-lg font-semibold text-stone-800">{formatPrice(price.amount, price.currency)}</span>
+                      {free ? (
+                        <span className="flex items-baseline gap-1.5">
+                          <span className="text-lg font-semibold text-amber-700">Free</span>
+                          <span className="text-xs text-stone-400 line-through">{formatPrice(price.amount, price.currency)}</span>
+                        </span>
+                      ) : (
+                        <span className="text-lg font-semibold text-stone-800">{formatPrice(price.amount, price.currency)}</span>
+                      )}
                     </div>
                   </div>
                 </Link>

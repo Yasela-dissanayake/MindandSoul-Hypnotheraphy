@@ -6,6 +6,7 @@ import { generatePassword, hashPassword, sealForAdmin } from "@/lib/passwords";
 import { PRACTITIONER_EMAIL, packagePurchasedEmail, packageSoldEmail, sendMail } from "@/lib/mail";
 import { resourceSelect } from "@/lib/material";
 import { stripe } from "@/lib/booking-payments";
+import { promoFor } from "@/lib/promotions";
 
 /** "AUD 149.00" */
 export function money(cents: number, currency = "aud") {
@@ -142,7 +143,7 @@ export async function settleOpenPayments(open: { id: string; paymentIntentId: st
 export async function startPurchase(input: { packageId: string; name: string; email: string }) {
   const pkg = await db.learningPackage.findFirst({ where: { id: input.packageId, published: true, archived: false } });
   if (!pkg) throw new PurchaseError("This course is not available any more.");
-  if (pkg.price < 50) throw new PurchaseError("This course has no price yet.");
+  if (pkg.price < 50 && !(await promoFor("course", pkg.id)).free) throw new PurchaseError("This course has no price yet.");
   const email = input.email.trim().toLowerCase();
 
   // Already has it: no need to pay twice.
@@ -154,6 +155,15 @@ export async function startPurchase(input: { packageId: string; name: string; em
     (id) => db.packagePurchase.updateMany({ where: { id, status: "PENDING" }, data: { status: "FAILED" } }),
     "You've already paid for this course. Please sign in to continue it (your login details were emailed to you).",
   );
+
+  // Free while a promotion runs: no card, they get the course straight away.
+  if ((await promoFor("course", pkg.id)).free) {
+    const purchase = await db.packagePurchase.create({
+      data: { packageId: pkg.id, name: input.name.trim(), email, amount: 0, currency: pkg.currency },
+    });
+    const done = await completePurchase(purchase.id);
+    return { free: true as const, newAccount: Boolean(done?.newAccount) };
+  }
 
   const purchase = await db.packagePurchase.create({
     data: { packageId: pkg.id, name: input.name.trim(), email, amount: pkg.price, currency: pkg.currency },
@@ -168,7 +178,7 @@ export async function startPurchase(input: { packageId: string; name: string; em
       metadata: { kind: "learning_package", purchase_id: purchase.id, package: pkg.title, client_email: email },
     });
     await db.packagePurchase.update({ where: { id: purchase.id }, data: { paymentIntentId: pi.id } });
-    return { clientSecret: pi.client_secret!, paymentIntentId: pi.id };
+    return { free: false as const, clientSecret: pi.client_secret!, paymentIntentId: pi.id };
   } catch (e) {
     await db.packagePurchase.update({ where: { id: purchase.id }, data: { status: "FAILED" } });
     throw e;
@@ -220,8 +230,13 @@ export async function fulfilPurchase(paymentIntentId: string) {
 
   const pi = await stripe().paymentIntents.retrieve(paymentIntentId);
   if (pi.status !== "succeeded" || pi.amount_received < purchase.amount) return null;
+  return completePurchase(purchase.id);
+}
 
-  // Only the first caller sets everything up.
+/** Paid (or free under a promotion): create the account if needed, give access, send the emails. Only the first caller does it. */
+async function completePurchase(purchaseId: string) {
+  const purchase = await db.packagePurchase.findUnique({ where: { id: purchaseId }, include: { package: true } });
+  if (!purchase) return null;
   const claimed = await db.packagePurchase.updateMany({ where: { id: purchase.id, status: "PENDING" }, data: { status: "PAID", paidAt: new Date() } });
   if (claimed.count === 0) return db.packagePurchase.findUnique({ where: { id: purchase.id } });
 
@@ -238,7 +253,7 @@ export async function fulfilPurchase(paymentIntentId: string) {
     sendMail({ to: purchase.email, ...packagePurchasedEmail({ name: purchase.name, packageTitle: purchase.package.title, login }) }),
     sendMail({
       to: PRACTITIONER_EMAIL,
-      ...packageSoldEmail({ name: purchase.name, email: purchase.email, packageTitle: purchase.package.title, amount: money(purchase.amount, purchase.currency), userId: user.id }),
+      ...packageSoldEmail({ name: purchase.name, email: purchase.email, packageTitle: purchase.package.title, amount: purchase.amount === 0 ? "Free (promotion)" : money(purchase.amount, purchase.currency), userId: user.id }),
     }),
   ]);
   if (!toLearner.ok || !toRangika.ok) console.error("Course purchase emails failed for", purchase.id);

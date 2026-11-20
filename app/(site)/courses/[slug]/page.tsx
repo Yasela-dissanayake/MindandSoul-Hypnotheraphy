@@ -6,6 +6,8 @@ import { db } from "@/lib/db";
 import { money, orderLessons } from "@/lib/learning";
 import { BuyPackage } from "@/components/learn/buy-package";
 import { coverUrl } from "@/lib/covers";
+import { getActivePromotion, promotionLink } from "@/lib/promotions";
+import { PromoNote } from "@/components/site/promo-note";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +32,11 @@ export default async function LearnPackagePage({ params }: { params: Promise<{ s
     notFound();
   }
   const lessons = orderLessons(pkg.sections, pkg.lessons);
+  // The running promotion is about this course (and may make it free).
+  const promo = await getActivePromotion();
+  const promoLink = promo ? promotionLink(promo) : null;
+  const promoted = Boolean(promo && promoLink?.kind === "course" && promoLink.id === pkg.id);
+  const free = promoted && Boolean(promo?.free);
   const groups = [
     ...pkg.sections.map((s) => ({ title: s.title, lessons: lessons.filter((l) => l.sectionId === s.id) })),
     { title: pkg.sections.length ? "More lessons" : "", lessons: lessons.filter((l) => !l.sectionId || !pkg.sections.some((s) => s.id === l.sectionId)) },
@@ -89,7 +96,14 @@ export default async function LearnPackagePage({ params }: { params: Promise<{ s
 
           <aside className="lg:sticky lg:top-24 lg:self-start">
             <div className="space-y-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-stone-200">
-              <p className="font-serif text-3xl text-stone-800">{money(pkg.price, pkg.currency)}</p>
+              {promoted && promo && <PromoNote promo={promo} freeText="Get this course free of charge while the promotion runs. No card needed." />}
+              {free ? (
+                <p className="flex items-baseline gap-2 font-serif text-3xl text-amber-700">
+                  Free {pkg.price > 0 && <span className="font-sans text-base text-stone-400 line-through">{money(pkg.price, pkg.currency)}</span>}
+                </p>
+              ) : (
+                <p className="font-serif text-3xl text-stone-800">{money(pkg.price, pkg.currency)}</p>
+              )}
               <ul className="space-y-2 text-sm text-stone-600">
                 <li className="flex items-center gap-2">
                   <BookOpen className="h-4 w-4 text-sage-600" /> {lessons.length} lessons, at your own pace
@@ -98,7 +112,7 @@ export default async function LearnPackagePage({ params }: { params: Promise<{ s
                   <Award className="h-4 w-4 text-sage-600" /> Certificate from Rangika when you finish
                 </li>
               </ul>
-              <BuyPackage packageId={pkg.id} title={pkg.title} priceLabel={money(pkg.price, pkg.currency)} />
+              <BuyPackage packageId={pkg.id} title={pkg.title} priceLabel={money(pkg.price, pkg.currency)} free={free} />
             </div>
           </aside>
         </div>

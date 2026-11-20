@@ -5,6 +5,7 @@ import { serviceWithOptions } from "@/lib/session-catalog";
 import { classPrice, viewerCurrency } from "@/lib/currency";
 import { BookingFlow, type BookingService } from "@/components/booking/booking-flow";
 import { CurrencySwitch } from "@/components/site/currency-switch";
+import { freeOptionOf, getActivePromotion, promotedFirst, promotionLink } from "@/lib/promotions";
 
 export const metadata: Metadata = {
   title: "Book a Session · Heal With Rangika",
@@ -17,7 +18,7 @@ export const dynamic = "force-dynamic";
  * /booking?service=<slug>&sessions=<1|3|5…>&mode=in-person|online
  */
 export default async function BookingPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
-  const [sp, currency, services] = await Promise.all([
+  const [sp, currency, services, promo] = await Promise.all([
     searchParams,
     viewerCurrency(),
     db.sessionService.findMany({
@@ -25,10 +26,14 @@ export default async function BookingPage({ searchParams }: { searchParams: Prom
       orderBy: [{ order: "asc" }, { title: "asc" }],
       include: serviceWithOptions,
     }),
+    getActivePromotion(),
   ]);
+  // The running promotion's service is listed first; when it's free, its single session costs nothing.
+  const link = promo ? promotionLink(promo) : null;
+  const promotedId = link?.kind === "session" ? link.id : null;
 
   // Only what the page needs, with each price already in the visitor's currency.
-  const list: BookingService[] = services.map((s) => ({
+  const list: BookingService[] = promotedFirst(services, promotedId).map((s) => ({
     id: s.id,
     slug: s.slug,
     title: s.title,
@@ -36,9 +41,11 @@ export default async function BookingPage({ searchParams }: { searchParams: Prom
     lengthLabel: s.lengthLabel,
     inPerson: s.inPerson,
     online: s.online,
+    promoted: s.id === promotedId,
     options: s.options.map((o) => {
       const p = classPrice(o, currency);
-      return { id: o.id, title: o.title, sessions: o.sessions, note: o.note, mode: o.mode, price: p.amount, currency: p.currency };
+      const free = Boolean(promo?.free && s.id === promotedId && freeOptionOf(s.options)?.id === o.id);
+      return { id: o.id, title: o.title, sessions: o.sessions, note: o.note, mode: o.mode, price: p.amount, currency: p.currency, free };
     }),
   }));
   const sessions = Number(sp.sessions);

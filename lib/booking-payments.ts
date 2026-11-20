@@ -148,6 +148,21 @@ export async function confirmBookingPayment(paymentIntentId: string) {
   return fresh;
 }
 
+/**
+ * A free session under a promotion (no payment): confirm the held time straight away, then set up their
+ * account and session plan and send the emails, as after a payment.
+ */
+export async function confirmFreeBooking(bookingId: string) {
+  const claimed = await db.booking.updateMany({
+    where: { id: bookingId, status: "HELD", amount: 0 },
+    data: { status: "CONFIRMED", heldUntil: null, emailedAt: new Date() },
+  });
+  if (claimed.count === 0) return null;
+  const attached = await attachPaidBooking(bookingId);
+  await sendSessionEmails(bookingId, attached?.login);
+  return { newAccount: Boolean(attached?.login) };
+}
+
 /** Payment failed: let the time go straight away instead of waiting for the hold to run out. */
 export async function releaseHold(paymentIntentId: string) {
   await db.booking.updateMany({ where: { paymentIntentId, status: "HELD" }, data: { status: "CANCELLED", cancelledAt: new Date() } });

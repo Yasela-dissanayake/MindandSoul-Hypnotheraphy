@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, CalendarDays, LayoutDashboard, Library, LogOut, Menu, Settings, Users, ClipboardList, GraduationCap, ShoppingBag, Inbox, Layers, ChevronDown } from "lucide-react";
+import { BookOpen, CalendarDays, LayoutDashboard, Library, LogOut, Menu, Settings, Users, ClipboardList, GraduationCap, Megaphone, ShoppingBag, Inbox, Layers, ChevronDown } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { SubmitButton } from "@/components/submit-button";
@@ -26,6 +26,7 @@ const items: (Item | Group)[] = [
       { href: "/admin/courses", label: "Courses", icon: BookOpen },
     ],
   },
+  { href: "/admin/promotions", label: "Promotion", icon: Megaphone },
   { href: "/admin/enquiries", label: "Enquiries", icon: Inbox, badge: "enquiries" },
   { href: "/admin/bookings", label: "Bookings & sales", icon: ShoppingBag, badge: "sales" },
   { href: "/admin/calendar", label: "Calendar", icon: CalendarDays },

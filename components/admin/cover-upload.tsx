@@ -8,14 +8,15 @@ import { uploadFile } from "@/lib/upload-client";
 import { setCourseCover } from "@/app/admin/_actions/courses";
 import { setLearningPackageCover } from "@/app/admin/_actions/learning";
 import { setSessionCover } from "@/app/admin/_actions/session-services";
+import { setPromotionImage } from "@/app/admin/_actions/promotions";
 import { useAction } from "./use-action";
 
-/** Cover photo shown on the website's course cards and course page. */
-export function CoverUpload({ kind, id, url }: { kind: "course" | "package" | "session"; id: string; url: string | null }) {
+/** Cover photo shown on the website (course cards and pages, or the promotion pop-up and section). */
+export function CoverUpload({ kind, id, url }: { kind: "course" | "package" | "session" | "promotion"; id: string; url: string | null }) {
   const input = useRef<HTMLInputElement>(null);
   const [progress, setProgress] = useState<number | null>(null);
   const { pending, run } = useAction();
-  const save = kind === "course" ? setCourseCover : kind === "session" ? setSessionCover : setLearningPackageCover;
+  const save = kind === "course" ? setCourseCover : kind === "session" ? setSessionCover : kind === "promotion" ? setPromotionImage : setLearningPackageCover;
 
   async function pick(file: File) {
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
@@ -46,7 +47,7 @@ export function CoverUpload({ kind, id, url }: { kind: "course" | "package" | "s
         )}
       </div>
       <div className="space-y-2">
-        <p className="text-sm text-stone-600">Cover photo for the website (JPG, PNG or WebP, wide works best).</p>
+        <p className="text-sm text-stone-600">{kind === "promotion" ? "Photo for the pop-up and the home page section" : "Cover photo for the website"} (JPG, PNG or WebP, wide works best).</p>
         <div className="flex flex-wrap gap-2">
           <input suppressHydrationWarning ref={input} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => e.target.files?.[0] && pick(e.target.files[0])} />
           <Button size="sm" variant="outline" disabled={busy} onClick={() => input.current?.click()}>

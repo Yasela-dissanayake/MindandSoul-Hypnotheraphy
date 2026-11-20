@@ -95,20 +95,20 @@ model User {
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
-  accounts       Account[]
-  sessions       Session[]
-  plans          Plan[]
-  enrollments    Enrollment[]
+  accounts            Account[]
+  sessions            Session[]
+  plans               Plan[]
+  enrollments         Enrollment[]
   learningEnrollments PackageEnrollment[]
-  bookings       Booking[]
-  completions    TaskCompletion[]
-  trackerEntries TrackerEntry[]
-  submissions    Submission[]
-  questions      Question[]
-  journal        JournalEntry[]
-  notes          PrivateNote[]
-  personalFiles  Resource[]
-  reminderLogs   ReminderLog[]
+  bookings            Booking[]
+  completions         TaskCompletion[]
+  trackerEntries      TrackerEntry[]
+  submissions         Submission[]
+  questions           Question[]
+  journal             JournalEntry[]
+  notes               PrivateNote[]
+  personalFiles       Resource[]
+  reminderLogs        ReminderLog[]
 }
 
 model Account {
@@ -368,17 +368,17 @@ model Course {
   updatedAt   DateTime @updatedAt
 
   // Selling the class on the website (/classes/<slug>)
-  slug      String?  @unique
-  summary   String? // one line shown on the course list
-  details   String? // "about this course" on the website; falls back to description
-  format    String? // e.g. "In person in Perth · 2 days"
-  schedule  String? // e.g. "Sat 14 & Sun 15 December, 9am-4pm"
-  price     Int      @default(0) // cents, AUD (everyone outside the UAE)
-  priceAed  Int? // fils (AED cents), shown to visitors in the UAE; null = they see the AUD price
-  currency  String   @default("aud")
-  seats     Int? // places left; null = no limit
-  published Boolean  @default(false) // false = not on the website
-  imageKey  String? // cover photo (R2 object key)
+  slug         String? @unique
+  summary      String? // one line shown on the course list
+  details      String? // "about this course" on the website; falls back to description
+  format       String? // e.g. "In person in Perth · 2 days"
+  schedule     String? // e.g. "Sat 14 & Sun 15 December, 9am-4pm"
+  price        Int     @default(0) // cents, AUD (everyone outside the UAE)
+  priceAed     Int? // fils (AED cents), shown to visitors in the UAE; null = they see the AUD price
+  currency     String  @default("aud")
+  seats        Int? // places left; null = no limit
+  published    Boolean @default(false) // false = not on the website
+  imageKey     String? // cover photo (R2 object key)
   prerequisite String? // e.g. "Reiki Level 1": shown on the website; buyers confirm they have completed it
   highlights   String? // "What you'll explore" on the website, one point per line
 
@@ -389,16 +389,17 @@ model Course {
 
   // A bundle (e.g. "Reiki Level 1 & 2") includes other classes: buying it enrols the student in each of them,
   // so the content is added once, in the individual classes.
-  includes   Course[] @relation("ClassBundle")
-  includedIn Course[] @relation("ClassBundle")
+  includes   Course[]    @relation("ClassBundle")
+  includedIn Course[]    @relation("ClassBundle")
+  promotions Promotion[]
 }
 
 model CourseModule {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   courseId    String
   title       String
   description String?
-  order       Int      @default(0)
+  order       Int     @default(0)
 
   course   Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
   items    CourseItem[]
@@ -423,15 +424,15 @@ model CourseItem {
 }
 
 model Enrollment {
-  id                 String    @id @default(cuid())
-  userId             String
-  courseId           String
-  startedAt          DateTime  @default(now())
-  completedAt        DateTime?
-  certificateKey     String? // scanned, signed certificate (R2 object key)
-  certificateName    String?
-  certificateType    String?
-  certificateAt      DateTime?
+  id              String    @id @default(cuid())
+  userId          String
+  courseId        String
+  startedAt       DateTime  @default(now())
+  completedAt     DateTime?
+  certificateKey  String? // scanned, signed certificate (R2 object key)
+  certificateName String?
+  certificateType String?
+  certificateAt   DateTime?
 
   user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   course   Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
@@ -566,8 +567,8 @@ model CalendarChange {
 }
 
 model Booking {
-  id                String        @id @default(cuid())
-  status            BookingStatus @default(HELD)
+  id                String         @id @default(cuid())
+  status            BookingStatus  @default(HELD)
   mode              BookingMode
   sessionType       String // as chosen on the booking page, e.g. "pet-parent-distance"
   service           String
@@ -585,24 +586,23 @@ model Booking {
   previousTherapy   String?
   medicalConditions String?
   amount            Int // cents
-  currency          String        @default("aud")
-  paymentIntentId   String?       @unique
+  currency          String         @default("aud")
+  paymentIntentId   String?        @unique
   emailedAt         DateTime?
   cancelledAt       DateTime?
   seenAt            DateTime? // Rangika has seen this new booking in the dashboard
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  // Linked after payment: the client's account and their session plan for this service.
+  userId            String?
+  planId            String?
+  optionId          String? // the single session or package bought
+  credit            Boolean        @default(false) // booked with a session left in their package (no payment)
+  user              User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  plan              Plan?          @relation(fields: [planId], references: [id], onDelete: SetNull)
+  option            SessionOption? @relation(fields: [optionId], references: [id], onDelete: SetNull)
 
   @@index([date, status])
-  // Linked after payment: the client's account and their session plan for this service.
-  userId   String?
-  planId   String?
-  optionId String? // the single session or package bought
-  credit   Boolean @default(false) // booked with a session left in their package (no payment)
-  user     User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
-  plan     Plan?          @relation(fields: [planId], references: [id], onDelete: SetNull)
-  option   SessionOption? @relation(fields: [optionId], references: [id], onDelete: SetNull)
-
   @@index([startsAt])
   @@index([planId, status])
 }
@@ -646,6 +646,7 @@ model LearningPackage {
   lessons     Lesson[]
   enrollments PackageEnrollment[]
   purchases   PackagePurchase[]
+  promotions  Promotion[]
 }
 
 model LessonSection {
@@ -795,8 +796,9 @@ model SessionService {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  options SessionOption[]
-  plans   Plan[]
+  options    SessionOption[]
+  plans      Plan[]
+  promotions Promotion[]
 }
 
 /// A single session or a package of sessions for a service, e.g. "5 sessions · AUD 610".
@@ -816,4 +818,32 @@ model SessionOption {
   bookings Booking[]
 
   @@index([serviceId, order])
+}
+
+// ---------------------------------------------------------------------------
+// Promotions: one at a time. Shown on the home page as a pop-up and as a section,
+// from startsAt for `days` days (endsAt). It can point to one session service, class or online course;
+// with `free`, that item can be booked or joined without paying while the promotion runs.
+// ---------------------------------------------------------------------------
+
+model Promotion {
+  id               String   @id @default(cuid())
+  title            String
+  content          String
+  imageKey         String? // photo (uploaded file, or a website image "/...")
+  days             Int // how many days it's shown
+  startsAt         DateTime @default(now())
+  endsAt           DateTime
+  free             Boolean  @default(false) // the linked session / class / course is free while it runs
+  sessionServiceId String?
+  courseId         String? // a class
+  packageId        String? // an online (self-paced) course
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  sessionService SessionService?  @relation(fields: [sessionServiceId], references: [id], onDelete: SetNull)
+  course         Course?          @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  package        LearningPackage? @relation(fields: [packageId], references: [id], onDelete: SetNull)
+
+  @@index([endsAt])
 }

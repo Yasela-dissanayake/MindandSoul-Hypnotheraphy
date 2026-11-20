@@ -7,6 +7,9 @@ import { CurrencySwitch } from "@/components/site/currency-switch";
 import { loadPublishedServices, cheapest } from "@/lib/session-catalog";
 import { classPrice, formatPrice, viewerCurrency } from "@/lib/currency";
 import { coverUrl } from "@/lib/covers";
+import { cn } from "@/lib/utils";
+import { getActivePromotion, promotedFirst, promotionLink } from "@/lib/promotions";
+import { OfferBadge, promotedCard } from "@/components/site/offer-badge";
 
 export const metadata: Metadata = {
   title: "Sessions · Heal With Rangika",
@@ -58,7 +61,11 @@ const FAQS = [
 ];
 
 export default async function SessionsPage() {
-  const [services, currency] = await Promise.all([loadPublishedServices(), viewerCurrency()]);
+  const [all, currency, promo] = await Promise.all([loadPublishedServices(), viewerCurrency(), getActivePromotion()]);
+  // The running promotion's session is listed first, with an offer badge.
+  const link = promo ? promotionLink(promo) : null;
+  const promotedId = link?.kind === "session" ? link.id : null;
+  const services = promotedFirst(all, promotedId);
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -101,18 +108,26 @@ export default async function SessionsPage() {
               const from = cheapest(s.options);
               const price = from ? classPrice(from, currency) : null;
               const cover = coverUrl("session", s);
+              const promoted = s.id === promotedId;
+              const free = promoted && Boolean(promo?.free);
               return (
                 <Link
                   key={s.id}
                   href={`/sessions/${s.slug}`}
-                  className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-stone-200 transition hover:shadow-md hover:ring-sage-300"
-                >
-                  {cover ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={cover} alt="" className="h-52 w-full object-cover" />
-                  ) : (
-                    <div className="h-52 bg-gradient-to-br from-sage-100 to-sage-200" />
+                  className={cn(
+                    "group flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-stone-200 transition hover:shadow-md hover:ring-sage-300",
+                    promoted && promotedCard,
                   )}
+                >
+                  <div className="relative">
+                    {promoted && <OfferBadge overlay free={free} label={free ? "Free session" : undefined} />}
+                    {cover ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={cover} alt="" className="h-52 w-full object-cover" />
+                    ) : (
+                      <div className="h-52 bg-gradient-to-br from-sage-100 to-sage-200" />
+                    )}
+                  </div>
                   <div className="flex flex-1 flex-col gap-2 p-5">
                     <h3 className="font-serif text-xl text-stone-800 group-hover:text-sage-800">{s.title}</h3>
                     {s.summary && <p className="text-sm text-stone-600">{s.summary}</p>}
@@ -135,7 +150,9 @@ export default async function SessionsPage() {
                     </div>
                     <div className="mt-auto flex items-end justify-between gap-2 pt-3 text-sm">
                       <span className="text-sage-700">{s.enquiryOnly ? "Enquire" : s.options.length > 1 ? `${s.options.length} options` : "Book online"}</span>
-                      {price && (
+                      {free ? (
+                        <span className="text-lg font-semibold text-amber-700">Single session free</span>
+                      ) : price && (
                         <span className="text-lg font-semibold text-stone-800">
                           {s.options.length > 1 && <span className="mr-1 text-xs font-normal text-stone-500">from</span>}
                           {formatPrice(price.amount, price.currency)}

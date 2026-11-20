@@ -4,6 +4,7 @@ import { stripe } from "@/lib/booking-payments";
 import { PurchaseError, accountForBuyer, money, settleOpenPayments, slugify } from "@/lib/learning";
 import { classPrice, type Currency } from "@/lib/currency";
 import { classesFor, enrolInClass } from "@/lib/class-enrol";
+import { promoFor } from "@/lib/promotions";
 
 // Taught courses (Reiki Level 1, 2, 3 ...) sold on the website at /courses.
 // Paying enrols the person on the course straight away; Rangika then teaches the class.
@@ -107,6 +108,16 @@ export async function startCoursePurchase(input: {
   );
 
   const price = classPrice(course, input.currency ?? "aud");
+
+  // Free while a promotion runs: no card. Same checks as above, then they're enrolled straight away.
+  if ((await promoFor("class", course.id)).free) {
+    const purchase = await db.coursePurchase.create({
+      data: { courseId: course.id, name: input.name.trim(), email, phone: input.phone?.trim() || null, amount: 0, currency: price.currency },
+    });
+    const done = await completeCoursePurchase(purchase.id);
+    return { free: true as const, newAccount: Boolean(done?.newAccount) };
+  }
+
   const purchase = await db.coursePurchase.create({
     data: { courseId: course.id, name: input.name.trim(), email, phone: input.phone?.trim() || null, amount: price.amount, currency: price.currency },
   });
@@ -120,7 +131,7 @@ export async function startCoursePurchase(input: {
       metadata: { kind: "course", purchase_id: purchase.id, course: course.title, client_email: email },
     });
     await db.coursePurchase.update({ where: { id: purchase.id }, data: { paymentIntentId: pi.id } });
-    return { clientSecret: pi.client_secret!, paymentIntentId: pi.id };
+    return { free: false as const, clientSecret: pi.client_secret!, paymentIntentId: pi.id };
   } catch (e) {
     await db.coursePurchase.update({ where: { id: purchase.id }, data: { status: "FAILED" } });
     throw e;
@@ -138,8 +149,16 @@ export async function fulfilCoursePurchase(paymentIntentId: string) {
 
   const pi = await stripe().paymentIntents.retrieve(paymentIntentId);
   if (pi.status !== "succeeded" || pi.amount_received < purchase.amount) return null;
+  return completeCoursePurchase(purchase.id);
+}
 
-  // Only the first caller sets everything up.
+/**
+ * Paid (or free under a promotion): create the account if needed, enrol them, take one place off,
+ * and send the emails. Only the first caller does it.
+ */
+async function completeCoursePurchase(purchaseId: string) {
+  const purchase = await db.coursePurchase.findUnique({ where: { id: purchaseId }, include: { course: true } });
+  if (!purchase) return null;
   const claimed = await db.coursePurchase.updateMany({ where: { id: purchase.id, status: "PENDING" }, data: { status: "PAID", paidAt: new Date() } });
   if (claimed.count === 0) return db.coursePurchase.findUnique({ where: { id: purchase.id } });
 
@@ -157,7 +176,7 @@ export async function fulfilCoursePurchase(paymentIntentId: string) {
     sendMail({
       to: PRACTITIONER_EMAIL,
       replyTo: purchase.email,
-      ...courseSoldEmail({ name: purchase.name, email: purchase.email, phone: purchase.phone, courseTitle: c.title, amount: money(purchase.amount, purchase.currency), seatsLeft }),
+      ...courseSoldEmail({ name: purchase.name, email: purchase.email, phone: purchase.phone, courseTitle: c.title, amount: purchase.amount === 0 ? "Free (promotion)" : money(purchase.amount, purchase.currency), seatsLeft }),
     }),
   ]);
   if (!toStudent.ok || !toRangika.ok) console.error("Course enrolment emails failed for", purchase.id);

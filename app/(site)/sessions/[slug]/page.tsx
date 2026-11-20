@@ -9,6 +9,8 @@ import { classPrice, formatPrice, viewerCurrency } from "@/lib/currency";
 import { highlightLines } from "@/lib/class-display";
 import { coverUrl } from "@/lib/covers";
 import { CurrencySwitch } from "@/components/site/currency-switch";
+import { getActivePromotion, promotionLink, freeOptionOf } from "@/lib/promotions";
+import { PromoNote } from "@/components/site/promo-note";
 
 export const dynamic = "force-dynamic";
 
@@ -20,8 +22,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 export default async function SessionServicePage({ params }: { params: Promise<{ slug: string }> }) {
-  const [s, currency] = await Promise.all([params.then((p) => load(p.slug)), viewerCurrency()]);
+  const [s, currency, promo] = await Promise.all([params.then((p) => load(p.slug)), viewerCurrency(), getActivePromotion()]);
   if (!s) notFound();
+  // The running promotion is about this session; when free, its single session costs nothing.
+  const promoLink = promo ? promotionLink(promo) : null;
+  const promoted = Boolean(promo && promoLink?.kind === "session" && promoLink.id === s.id);
+  const freeId = promoted && promo?.free && !s.enquiryOnly ? freeOptionOf(s.options)?.id : null;
   const cover = coverUrl("session", s);
   const highlights = highlightLines(s.highlights);
   const single = s.options.find((o) => o.sessions === 1 && !o.mode);
@@ -89,6 +95,7 @@ export default async function SessionServicePage({ params }: { params: Promise<{
                 <h2 className="font-serif text-xl text-stone-800">{s.enquiryOnly ? "Prices" : "Pricing & booking"}</h2>
                 {s.options.length > 0 && <CurrencySwitch current={currency} />}
               </div>
+              {promoted && promo && <PromoNote promo={promo} freeText="Book a single session free of charge while the promotion runs (one per person). No card needed." />}
               {s.options.length > 0 && (
                 <ul className="space-y-3">
                   {s.options.map((o) => {
@@ -98,7 +105,13 @@ export default async function SessionServicePage({ params }: { params: Promise<{
                       <li key={o.id} className="space-y-2 rounded-xl p-3 ring-1 ring-stone-200">
                         <div className="flex items-baseline justify-between gap-2">
                           <span className="font-medium text-stone-800">{o.title}</span>
-                          <span className="font-semibold text-stone-800">{formatPrice(p.amount, p.currency)}</span>
+                          {o.id === freeId ? (
+                            <span className="flex items-baseline gap-1.5 font-semibold text-amber-700">
+                              Free <span className="text-xs font-normal text-stone-400 line-through">{formatPrice(p.amount, p.currency)}</span>
+                            </span>
+                          ) : (
+                            <span className="font-semibold text-stone-800">{formatPrice(p.amount, p.currency)}</span>
+                          )}
                         </div>
                         {o.sessions > 1 && !s.enquiryOnly && single && (
                           <p className="text-xs text-sage-700">
@@ -109,7 +122,7 @@ export default async function SessionServicePage({ params }: { params: Promise<{
                         {o.note && <p className="text-xs text-stone-500">{o.note}</p>}
                         {!s.enquiryOnly && (
                           <Button asChild size="sm" className="w-full bg-sage-600 text-white hover:bg-sage-700">
-                            <Link href={href}>Book {o.sessions > 1 ? o.title.toLowerCase() : "this session"}</Link>
+                            <Link href={href}>{o.id === freeId ? "Book your free session" : `Book ${o.sessions > 1 ? o.title.toLowerCase() : "this session"}`}</Link>
                           </Button>
                         )}
                       </li>

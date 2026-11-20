@@ -18,7 +18,8 @@ import { cn } from "@/lib/utils";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "");
 
-export type BookingOption = { id: string; title: string; sessions: number; note: string | null; mode: "IN_PERSON" | "DISTANCE" | null; price: number; currency: "aud" | "aed" };
+// free = free under the running promotion (the server checks this again when booking).
+export type BookingOption = { id: string; title: string; sessions: number; note: string | null; mode: "IN_PERSON" | "DISTANCE" | null; price: number; currency: "aud" | "aed"; free?: boolean };
 export type BookingService = {
   id: string;
   slug: string;
@@ -28,6 +29,7 @@ export type BookingService = {
   inPerson: boolean;
   online: boolean;
   options: BookingOption[];
+  promoted?: boolean; // the running promotion is about this service
 };
 type Mode = "IN_PERSON" | "DISTANCE";
 
@@ -35,6 +37,16 @@ const money = (amount: number, currency: string) => {
   const v = amount / 100;
   return `${currency.toUpperCase()} ${v.toLocaleString("en-AU", { minimumFractionDigits: Number.isInteger(v) ? 0 : 2, maximumFractionDigits: 2 })}`;
 };
+/** "Free" (with the usual price crossed out) for a free option, otherwise the price. */
+function Price({ o, className }: { o: BookingOption; className?: string }) {
+  if (!o.free) return <span className={className}>{money(o.price, o.currency)}</span>;
+  return (
+    <span className={cn("inline-flex items-baseline gap-1.5", className)}>
+      <span className="text-amber-700">Free</span>
+      {o.price > 0 && <span className="text-xs font-normal text-stone-400 line-through">{money(o.price, o.currency)}</span>}
+    </span>
+  );
+}
 const modesOf = (s: BookingService, o: BookingOption | null): Mode[] =>
   o?.mode ? [o.mode] : ([s.inPerson && "IN_PERSON", s.online && "DISTANCE"].filter(Boolean) as Mode[]);
 const MODE_TEXT: Record<Mode, { title: string; text: string; icon: typeof MapPin }> = {
@@ -97,11 +109,22 @@ export function BookingFlow({ services, initial }: { services: BookingService[];
                     active ? "bg-sage-50 ring-2 ring-sage-500" : "bg-white ring-stone-200 hover:ring-sage-300",
                   )}
                 >
-                  <p className="font-medium text-stone-800">{s.title}</p>
+                  <p className="flex flex-wrap items-center gap-2 font-medium text-stone-800">
+                    {s.title}
+                    {s.promoted && (
+                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-800">
+                        {s.options.some((o) => o.free) ? "Free session" : "Special offer"}
+                      </span>
+                    )}
+                  </p>
                   <p className="text-xs text-stone-500">
                     {[s.lengthLabel, s.inPerson && s.online ? "In person or online" : s.inPerson ? "In person" : "Online / distance"].filter(Boolean).join(" · ")}
                   </p>
-                  {from && <p className="text-sm text-sage-800">{s.options.length > 1 ? "From " : ""}{money(from.price, from.currency)}</p>}
+                  {s.options.some((o) => o.free) ? (
+                    <p className="text-sm font-medium text-amber-700">Single session free</p>
+                  ) : (
+                    from && <p className="text-sm text-sage-800">{s.options.length > 1 ? "From " : ""}{money(from.price, from.currency)}</p>
+                  )}
                 </button>
               );
             })}
@@ -123,7 +146,7 @@ export function BookingFlow({ services, initial }: { services: BookingService[];
                     <span className="min-w-0 flex-1">
                       <span className="flex flex-wrap items-baseline justify-between gap-2">
                         <span className="font-medium text-stone-800">{o.title}</span>
-                        <span className="font-semibold text-stone-800">{money(o.price, o.currency)}</span>
+                        <Price o={o} className="font-semibold text-stone-800" />
                       </span>
                       {o.sessions > 1 && (
                         <span className="block text-xs text-stone-500">
@@ -175,7 +198,7 @@ export function BookingFlow({ services, initial }: { services: BookingService[];
         )}
 
         {service && option && chosenMode && slot && (
-          <Step n={3} title="Your details and payment">
+          <Step n={3} title={option.free ? "Your details" : "Your details and payment"}>
             <Elements stripe={stripePromise}>
               <DetailsAndPay service={service} option={option} mode={chosenMode} slot={slot} onSlotTaken={() => setSlot(null)} />
             </Elements>
@@ -211,7 +234,11 @@ export function BookingFlow({ services, initial }: { services: BookingService[];
                   <CalendarDays className="h-4 w-4 text-sage-600" /> <SlotText slot={slot} />
                 </li>
               )}
-              {option && <li className="border-t border-stone-100 pt-2 text-base font-semibold text-stone-800">{money(option.price, option.currency)}</li>}
+              {option && (
+                <li className="border-t border-stone-100 pt-2 text-base font-semibold text-stone-800">
+                  <Price o={option} />
+                </li>
+              )}
             </ul>
           )}
           <p className="text-xs text-stone-500">
@@ -251,9 +278,9 @@ function DetailsAndPay({ service, option, mode, slot, onSlotTaken }: { service: 
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!stripe || !elements) return;
-    const card = elements.getElement(CardElement);
-    if (!card) return;
+    const free = Boolean(option.free);
+    const card = free ? null : elements?.getElement(CardElement);
+    if (!free && (!stripe || !card)) return;
     setDialog({ status: "processing" });
     let paymentIntentId: string | null = null;
     try {
@@ -267,9 +294,38 @@ function DetailsAndPay({ service, option, mode, slot, onSlotTaken }: { service: 
         if (start.code === "SLOT_TAKEN") setSlotTaken(true);
         throw new Error(start.error || "Something went wrong. Please try again.");
       }
+      if (start.free) {
+        // Free under a promotion: booked and confirmed already, nothing to pay.
+        setDialog({
+          status: "success",
+          title: "Your free session is booked!",
+          body: (
+            <>
+              <p className="font-medium text-stone-800">
+                {service.title} · {option.title}
+              </p>
+              <p className="mt-1">
+                <SlotText slot={slot} /> · {MODE_TEXT[mode].title}
+              </p>
+              <p className="mt-2">
+                We&apos;ve emailed the details to {f.email}.{" "}
+                {start.newAccount
+                  ? "Your private space is ready: sign in with the username and password in that email."
+                  : "You'll find it in your private space when you sign in."}
+              </p>
+            </>
+          ),
+          action: (
+            <Button asChild className="w-full bg-sage-600 hover:bg-sage-700">
+              <Link href="/login?bought=1">Sign in</Link>
+            </Button>
+          ),
+        });
+        return;
+      }
       paymentIntentId = start.payment_intent_id;
-      const { error, paymentIntent } = await stripe.confirmCardPayment(start.client_secret, {
-        payment_method: { card, billing_details: { name: `${f.firstName} ${f.lastName}`, email: f.email, phone: f.phone || undefined } },
+      const { error, paymentIntent } = await stripe!.confirmCardPayment(start.client_secret, {
+        payment_method: { card: card!, billing_details: { name: `${f.firstName} ${f.lastName}`, email: f.email, phone: f.phone || undefined } },
       });
       if (error || paymentIntent?.status !== "succeeded") {
         // Let the time go straight away so they (or someone else) can book it.
@@ -342,12 +398,14 @@ function DetailsAndPay({ service, option, mode, slot, onSlotTaken }: { service: 
       </div>
       <p className="text-xs text-stone-500">Everything you share is private and only seen by Rangika.</p>
 
-      <div className="space-y-1.5">
-        <Label>Card</Label>
-        <div className="rounded-md border border-input bg-white p-3">
-          <CardElement options={{ style: { base: { fontSize: "16px", color: "#292524", "::placeholder": { color: "#a8a29e" } } } }} />
+      {!option.free && (
+        <div className="space-y-1.5">
+          <Label>Card</Label>
+          <div className="rounded-md border border-input bg-white p-3">
+            <CardElement options={{ style: { base: { fontSize: "16px", color: "#292524", "::placeholder": { color: "#a8a29e" } } } }} />
+          </div>
         </div>
-      </div>
+      )}
       <label className="flex items-start gap-2 text-sm text-stone-600">
         <input suppressHydrationWarning type="checkbox" className="mt-1" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
         <span>
@@ -362,11 +420,17 @@ function DetailsAndPay({ service, option, mode, slot, onSlotTaken }: { service: 
           , and understand sessions are complementary to medical care.
         </span>
       </label>
-      <Button type="submit" disabled={!stripe || busy || !agreed} className="w-full bg-sage-600 py-3 hover:bg-sage-700">
-        {`Pay ${money(option.price, option.currency)} and book`}
+      <Button type="submit" disabled={(!option.free && !stripe) || busy || !agreed} className="w-full bg-sage-600 py-3 hover:bg-sage-700">
+        {option.free ? "Book my free session" : `Pay ${money(option.price, option.currency)} and book`}
       </Button>
       <p className="flex items-center justify-center gap-1 text-xs text-stone-500">
-        <Lock className="h-3 w-3" /> Secure card payment by Stripe
+        {option.free ? (
+          "Free during the current promotion (one free session per person). No card needed."
+        ) : (
+          <>
+            <Lock className="h-3 w-3" /> Secure card payment by Stripe
+          </>
+        )}
       </p>
       <PaymentDialog
         state={dialog}

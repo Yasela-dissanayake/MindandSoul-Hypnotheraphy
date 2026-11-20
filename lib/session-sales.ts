@@ -71,7 +71,7 @@ export async function sendSessionEmails(bookingId: string, login?: { username: s
     serviceTitle: b.plan?.title ?? b.service,
     optionTitle: b.credit || !b.option ? "" : optionLabel(b.option),
     inPerson: b.mode === "IN_PERSON",
-    paid: b.credit ? null : formatPrice(b.amount, b.currency),
+    paid: b.credit ? null : b.amount === 0 ? "Free (promotion)" : formatPrice(b.amount, b.currency),
     sessionsLeft: left,
   };
   const [toClient, toRangika] = await Promise.all([

@@ -19,8 +19,10 @@ export async function POST(request: NextRequest) {
   const parsed = schema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Please check your details." }, { status: 400 });
   try {
-    const { clientSecret, paymentIntentId } = await startCoursePurchase(parsed.data);
-    return NextResponse.json({ client_secret: clientSecret, payment_intent_id: paymentIntentId });
+    const r = await startCoursePurchase(parsed.data);
+    // Free under a promotion: already enrolled, nothing to pay.
+    if (r.free) return NextResponse.json({ free: true, newAccount: r.newAccount });
+    return NextResponse.json({ client_secret: r.clientSecret, payment_intent_id: r.paymentIntentId });
   } catch (e) {
     if (e instanceof PurchaseError) return NextResponse.json({ error: e.message, owned: Boolean(e.opts.owned), suggest: e.opts.suggest ?? [] }, { status: 409 });
     console.error("Course enrolment checkout failed:", e);
