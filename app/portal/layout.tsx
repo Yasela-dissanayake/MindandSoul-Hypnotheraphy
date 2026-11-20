@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/authz";
 import { Toaster } from "@/components/ui/sonner";
 import { PortalNav } from "@/components/portal/portal-nav";
+import { SignOutButton } from "@/components/portal/sign-out-button";
 import { TimezoneSync } from "@/components/timezone-sync";
 import { getAreas } from "@/lib/plans";
 import { db } from "@/lib/db";
@@ -36,11 +37,15 @@ export default async function PortalLayout({ children }: { children: React.React
             <Image src="/logo.jpeg" alt="" width={36} height={36} className="rounded-full" />
             <span className="font-serif text-lg text-stone-800">Heal With Rangika</span>
           </Link>
-          {showNav && (
-            <Suspense fallback={null}>
-              <Nav userId={session.user.id} variant="top" />
-            </Suspense>
-          )}
+          <div className="flex items-center gap-1">
+            {showNav && (
+              <Suspense fallback={null}>
+                <Nav userId={session.user.id} variant="top" />
+              </Suspense>
+            )}
+            <span className="mx-1 hidden h-5 w-px bg-stone-200 md:block" aria-hidden />
+            <SignOutButton />
+          </div>
         </div>
       </header>
       <TimezoneSync saved={session.user.timezone} />
