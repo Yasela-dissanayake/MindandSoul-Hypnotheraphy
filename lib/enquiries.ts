@@ -9,4 +9,3 @@ export const openEnquiryWhere = { handledAt: null };
 // Shared per page render (menu badge + Overview banner).
 export const countOpenEnquiries = cache(() => db.enquiry.count({ where: openEnquiryWhere }));
 
-export const countPendingRequests = cache(() => db.accessRequest.count({ where: { status: "PENDING" } }));

@@ -53,12 +53,6 @@ enum Recurrence {
   DAILY
 }
 
-enum RequestStatus {
-  PENDING
-  APPROVED
-  DECLINED
-}
-
 enum VoiceMode {
   COMPUTER
   RECORDED
@@ -490,30 +484,8 @@ model PrivateNote {
 }
 
 // ---------------------------------------------------------------------------
-// Access requests, encouragement, settings, email bookkeeping
+// Encouragement, settings, email bookkeeping
 // ---------------------------------------------------------------------------
-
-// Someone signed in with Google but has no account yet: Rangika approves or declines.
-model AccessRequest {
-  id        String        @id @default(cuid())
-  email     String        @unique
-  name      String?
-  image     String?
-  provider  String        @default("google")
-  status    RequestStatus @default(PENDING)
-  attempts  Int           @default(1)
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  decidedAt DateTime?
-
-  // What they asked for on the "Request access" form (null = sent before the form existed)
-  wants         String? // "SESSIONS" | "COURSE" | "UNSURE"
-  wantsService  String? // for sessions: HYPNOTHERAPY | REIKI_HEALING | ANIMAL_REIKI
-  wantsCourseId String? // for a course
-  message       String?
-  phone         String?
-  detailsAt     DateTime? // when they sent the form; Rangika is emailed then
-}
 
 model VoiceClip {
   id         String   @id @default(cuid())

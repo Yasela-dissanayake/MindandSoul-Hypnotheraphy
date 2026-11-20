@@ -35,7 +35,7 @@ export function NewTemplateDialog() {
         <div className="space-y-4">
           <div className="grid grid-cols-3 gap-2">
             {SERVICES.map((s) => (
-              <button
+              <button suppressHydrationWarning
                 key={s.id}
                 type="button"
                 onClick={() => setF({ ...f, service: s.id })}

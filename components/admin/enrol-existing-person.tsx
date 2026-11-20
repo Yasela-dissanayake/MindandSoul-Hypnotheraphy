@@ -16,7 +16,7 @@ export function EnrolExistingPerson({ people, courses }: { people: { id: string;
   if (!people.length || !courses.length) return null;
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <select value={userId} onChange={(e) => setUserId(e.target.value)} className={selectCls} aria-label="Person">
+      <select suppressHydrationWarning value={userId} onChange={(e) => setUserId(e.target.value)} className={selectCls} aria-label="Person">
         <option value="">Someone who already has an account…</option>
         {people.map((p) => (
           <option key={p.id} value={p.id}>
@@ -24,7 +24,7 @@ export function EnrolExistingPerson({ people, courses }: { people: { id: string;
           </option>
         ))}
       </select>
-      <select value={courseId} onChange={(e) => setCourseId(e.target.value)} className={selectCls} aria-label="Class">
+      <select suppressHydrationWarning value={courseId} onChange={(e) => setCourseId(e.target.value)} className={selectCls} aria-label="Class">
         <option value="">Choose a class…</option>
         {courses.map((c) => (
           <option key={c.id} value={c.id}>

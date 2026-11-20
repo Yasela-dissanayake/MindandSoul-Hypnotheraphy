@@ -142,7 +142,7 @@ export function LibraryPicker(props: {
               [true, "Extras (bonus)"],
             ] as const
           ).map(([v, l]) => (
-            <button
+            <button suppressHydrationWarning
               key={l}
               type="button"
               onClick={() => setExtra(v)}
@@ -156,7 +156,7 @@ export function LibraryPicker(props: {
       {!extra && props.targets.length > 0 && (
         <div className="space-y-1">
           <Label>Put in</Label>
-          <select className={selectCls} value={target} onChange={(e) => setTarget(e.target.value)}>
+          <select suppressHydrationWarning className={selectCls} value={target} onChange={(e) => setTarget(e.target.value)}>
             <option value="">No {props.targetLabel.toLowerCase()}</option>
             {props.targets.map((t) => (
               <option key={t.id} value={t.id}>
@@ -184,7 +184,7 @@ export function LibraryPicker(props: {
               ["link", "Add a link"],
             ] as const
           ).map(([t, l]) => (
-            <button key={t} type="button" onClick={() => setTab(t)} className={`rounded-md py-1.5 ${tab === t ? "bg-white shadow-sm" : "text-stone-600"}`}>
+            <button suppressHydrationWarning key={t} type="button" onClick={() => setTab(t)} className={`rounded-md py-1.5 ${tab === t ? "bg-white shadow-sm" : "text-stone-600"}`}>
               {l}
             </button>
           ))}
@@ -222,14 +222,14 @@ export function LibraryPicker(props: {
 
         {tab === "upload" && (
           <div className="space-y-3">
-            <button
+            <button suppressHydrationWarning
               type="button"
               onClick={() => fileRef.current?.click()}
               className="flex w-full flex-col items-center gap-2 rounded-xl border-2 border-dashed border-stone-300 p-6 text-stone-600 hover:bg-stone-50"
             >
               <Upload className="h-6 w-6 text-sage-600" />
               <span className="text-sm">{files.length ? `${files.length} file${files.length === 1 ? "" : "s"} chosen` : "Choose recordings, videos, PDFs, Word documents or images"}</span>
-              <input ref={fileRef} type="file" multiple accept={ACCEPT_FILES} className="hidden" onChange={(e) => setFiles(Array.from(e.target.files ?? []))} />
+              <input suppressHydrationWarning ref={fileRef} type="file" multiple accept={ACCEPT_FILES} className="hidden" onChange={(e) => setFiles(Array.from(e.target.files ?? []))} />
             </button>
             {files.length > 0 && (
               <ul className="space-y-1 text-sm text-stone-600">

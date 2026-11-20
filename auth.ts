@@ -4,7 +4,6 @@ import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import type { Role, UserStatus } from "@prisma/client";
 import { db } from "@/lib/db";
-import { makeRequestToken } from "@/lib/request-token";
 import { getUserRow } from "@/lib/request-cache";
 import { verifyPassword } from "@/lib/passwords";
 import { sendMail, welcomeEmail } from "@/lib/mail";
@@ -12,8 +11,9 @@ import { REMEMBER_HOURS, rememberChoice, SHORT_SESSION_HOURS } from "@/lib/remem
 
 // Sign-in rules
 // 1. Username (or email) + password: accounts the admin created. 5 wrong tries locks the account for 15 minutes.
-// 2. Google: allowed only for the admin emails and for people the admin created or approved.
-//    Anyone else becomes an "access request" the admin can approve or decline.
+// 2. Google: only for people who already have an account (the admin, people Rangika added, and anyone who
+//    booked or bought with that email). No account is ever made just by signing in: someone new is sent to
+//    the public "Get started" page, which shows what Rangika offers. Booking or buying makes their account.
 // Sessions are signed cookies (JWT). Every request re-checks the account in the database, so
 // finishing an account or resetting its password signs that person out straight away.
 // "Remember me" (login page): ticked = 30 days; not ticked = until the browser closes, 12 hours at most.
@@ -106,6 +106,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     error(error) {
       const type = (error as { type?: string }).type ?? error.name;
       if (type === "CredentialsSignin" || type === "JWTSessionError") return;
+      // One clear line to search for in the terminal / Netlify function logs, then the details.
+      const cause = (error as { cause?: { err?: unknown } }).cause?.err ?? (error as { cause?: unknown }).cause;
+      console.error(`[sign-in error] ${type}: ${error.message}${cause instanceof Error ? ` | cause: ${cause.message}` : ""}`);
       console.error(error);
     },
   },
@@ -129,19 +132,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       const existing = await db.user.findUnique({ where: { email } });
       if (existing) return existing.status === "FINISHED" ? "/login?error=AccountClosed" : true;
 
-      // Unknown Google account: they tell Rangika what they're here for, then the request is sent.
-      const request = await db.accessRequest.findUnique({ where: { email } });
-      if (request?.status === "DECLINED") return "/login?error=RequestDeclined";
-      if (request?.status === "PENDING" && request.detailsAt) {
-        await db.accessRequest.update({ where: { email }, data: { attempts: { increment: 1 }, name: user.name, image: user.image } });
-        return "/login?error=RequestPending";
-      }
-      await db.accessRequest.upsert({
-        where: { email },
-        update: { status: "PENDING", name: user.name, image: user.image, decidedAt: null },
-        create: { email, name: user.name, image: user.image, provider: "google" },
-      });
-      return `/request-access?t=${encodeURIComponent(makeRequestToken(email))}`;
+      // New here: no account is made (anyone could otherwise create one). Show them what's on offer instead.
+      return "/get-started?from=google";
     },
 
     async jwt({ token: rawToken, user }) {

@@ -97,7 +97,7 @@ export default function ManageBookingPage() {
               <CardContent className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-stone-700 mb-2">Email Address</label>
-                  <input
+                  <input suppressHydrationWarning
                     type="email"
                     value={searchEmail}
                     onChange={(e) => setSearchEmail(e.target.value)}
@@ -110,7 +110,7 @@ export default function ManageBookingPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-stone-700 mb-2">Booking ID</label>
-                  <input
+                  <input suppressHydrationWarning
                     type="text"
                     value={searchBookingId}
                     onChange={(e) => setSearchBookingId(e.target.value)}

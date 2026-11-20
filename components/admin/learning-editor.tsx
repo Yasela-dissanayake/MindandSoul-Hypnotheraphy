@@ -273,7 +273,7 @@ function LessonDialog({
           {sections.length > 0 && (
             <div className="space-y-1.5">
               <Label htmlFor="ls-section">Section</Label>
-              <select id="ls-section" className={selectCls} value={f.sectionId} onChange={(e) => setF({ ...f, sectionId: e.target.value })}>
+              <select suppressHydrationWarning id="ls-section" className={selectCls} value={f.sectionId} onChange={(e) => setF({ ...f, sectionId: e.target.value })}>
                 <option value="">No section</option>
                 {sections.map((s) => (
                   <option key={s.id} value={s.id}>
@@ -285,7 +285,7 @@ function LessonDialog({
           )}
           <div className="space-y-1.5">
             <Label htmlFor="ls-resource">Video, audio or file from the Library (optional)</Label>
-            <select id="ls-resource" className={selectCls} value={f.resourceId} onChange={(e) => setF({ ...f, resourceId: e.target.value })}>
+            <select suppressHydrationWarning id="ls-resource" className={selectCls} value={f.resourceId} onChange={(e) => setF({ ...f, resourceId: e.target.value })}>
               <option value="">None</option>
               {options.map((r) => (
                 <option key={r.id} value={r.id}>
@@ -300,7 +300,7 @@ function LessonDialog({
                   <Upload className="mr-1.5 h-3.5 w-3.5" /> {uploadPct !== null ? `Uploading… ${Math.round(uploadPct)}%` : "Upload a file"}
                 </Button>
                 <span className="text-xs text-stone-500">Audio, PDF, Word or image</span>
-                <input ref={fileRef} type="file" accept={ACCEPT_FILES} className="hidden" onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])} />
+                <input suppressHydrationWarning ref={fileRef} type="file" accept={ACCEPT_FILES} className="hidden" onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])} />
               </div>
               {uploadPct !== null && <Progress value={uploadPct} className="h-1.5" />}
               <div className="flex gap-2">
@@ -503,7 +503,7 @@ export function LessonsEditor({ packageId, sections, lessons, library }: { packa
                   library={library}
                   sectionId={section.id}
                   trigger={
-                    <button type="button" className="flex items-center gap-1 px-1 text-sm text-sage-700 hover:underline">
+                    <button suppressHydrationWarning type="button" className="flex items-center gap-1 px-1 text-sm text-sage-700 hover:underline">
                       <Plus className="h-4 w-4" /> Add lesson to {section.title}
                     </button>
                   }
@@ -556,7 +556,7 @@ export function LearningCertificateUpload({ enrollmentId, hasCertificate }: { en
       <Button size="sm" variant={hasCertificate ? "ghost" : "outline"} disabled={pending || pct !== null} onClick={() => ref.current?.click()}>
         <Upload className="mr-1.5 h-3.5 w-3.5" /> {hasCertificate ? "Replace" : "Upload certificate"}
       </Button>
-      <input
+      <input suppressHydrationWarning
         ref={ref}
         type="file"
         accept="application/pdf,.pdf,image/*,.jpg,.jpeg,.png"

@@ -66,7 +66,7 @@ export function ClientDetailsForm({ client }: { client: Client }) {
           </div>
           <div className="space-y-2">
             <Label>Reminder time</Label>
-            <select className={selectCls} value={f.reminderHour} onChange={(e) => setF({ ...f, reminderHour: Number(e.target.value) })}>
+            <select suppressHydrationWarning className={selectCls} value={f.reminderHour} onChange={(e) => setF({ ...f, reminderHour: Number(e.target.value) })}>
               {Array.from({ length: 24 }, (_, h) => (
                 <option key={h} value={h}>
                   {formatHour(h)}
@@ -110,7 +110,10 @@ export function ClientDetailsForm({ client }: { client: Client }) {
 
       <section className="space-y-3 rounded-2xl border border-red-200 bg-red-50/40 p-5">
         <h2 className="font-serif text-xl text-red-800">Remove completely</h2>
-        <p className="text-sm text-stone-600">Deletes their account, plans, progress, journal, voice messages and personal recordings. This can&apos;t be undone.</p>
+        <p className="text-sm text-stone-600">
+          Deletes their account and everything about them: plans, progress, journal, voice messages, recordings and uploads, class and course
+          access, session bookings, purchase records and enquiries. Payments stay in your Stripe account. This can&apos;t be undone.
+        </p>
         <AlertDialog onOpenChange={() => setConfirm("")}>
           <AlertDialogTrigger asChild>
             <Button variant="outline" className="border-red-300 text-red-700 hover:bg-red-50">

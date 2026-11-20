@@ -44,6 +44,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const Comp = asChild ? Slot : "button"
     return (
       <Comp
+        suppressHydrationWarning // browser extensions add attributes (e.g. fdprocessedid) before React loads
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         {...props}

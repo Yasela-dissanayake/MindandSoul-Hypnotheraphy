@@ -61,14 +61,14 @@ export function ServiceImageSlider({
       ))}
 
       {/* Navigation buttons */}
-      <button
+      <button suppressHydrationWarning
         onClick={goToPrevious}
         className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 backdrop-blur-sm z-10"
         aria-label="Previous image"
       >
         <ChevronLeft className="h-6 w-6 text-stone-800" />
       </button>
-      <button
+      <button suppressHydrationWarning
         onClick={goToNext}
         className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 backdrop-blur-sm z-10"
         aria-label="Next image"
@@ -79,7 +79,7 @@ export function ServiceImageSlider({
       {/* Indicators */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
         {images.map((_, index) => (
-          <button
+          <button suppressHydrationWarning
             key={index}
             onClick={() => setCurrentIndex(index)}
             className={cn(

@@ -58,7 +58,7 @@ export function LibraryUpload({ personalFor, tags = [] }: { personalFor?: { id: 
         <Upload className="h-8 w-8 text-sage-600" />
         <p className="font-medium text-stone-700">{personalFor ? `Upload something made for ${personalFor.name}` : "Drop files here"}</p>
         <p className="text-sm text-stone-500">Recordings, videos, PDFs, Word documents or images. Tap to choose.</p>
-        <input ref={inputRef} type="file" multiple accept={ACCEPT_FILES} className="hidden" onChange={(e) => (add(e.target.files), (e.target.value = ""))} />
+        <input suppressHydrationWarning ref={inputRef} type="file" multiple accept={ACCEPT_FILES} className="hidden" onChange={(e) => (add(e.target.files), (e.target.value = ""))} />
       </div>
 
       {files.length > 0 && (

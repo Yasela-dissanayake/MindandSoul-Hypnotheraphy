@@ -83,7 +83,7 @@ export function SlotPicker({
     <div className="space-y-4">
       <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
         {dates.map((d) => (
-          <button
+          <button suppressHydrationWarning
             key={d}
             type="button"
             onClick={() => (onDate(d), onSlot(null))}
@@ -99,7 +99,7 @@ export function SlotPicker({
       </div>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {days[current].map((s) => (
-          <button
+          <button suppressHydrationWarning
             key={s.start}
             type="button"
             onClick={() => (onDate(current), onSlot(s))}

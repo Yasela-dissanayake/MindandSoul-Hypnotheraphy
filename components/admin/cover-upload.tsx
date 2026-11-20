@@ -48,7 +48,7 @@ export function CoverUpload({ kind, id, url }: { kind: "course" | "package" | "s
       <div className="space-y-2">
         <p className="text-sm text-stone-600">Cover photo for the website (JPG, PNG or WebP, wide works best).</p>
         <div className="flex flex-wrap gap-2">
-          <input ref={input} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => e.target.files?.[0] && pick(e.target.files[0])} />
+          <input suppressHydrationWarning ref={input} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => e.target.files?.[0] && pick(e.target.files[0])} />
           <Button size="sm" variant="outline" disabled={busy} onClick={() => input.current?.click()}>
             <Upload className="mr-1.5 h-3.5 w-3.5" />
             {progress !== null ? `Uploading ${progress}%` : url ? "Change photo" : "Add photo"}

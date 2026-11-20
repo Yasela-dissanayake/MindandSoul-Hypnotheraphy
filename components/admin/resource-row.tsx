@@ -166,7 +166,7 @@ export function ResourceRow({ r, tags = [] }: { r: R; tags?: string[] }) {
             {!isLink && (
               <div className="space-y-1.5">
                 <Label>Replace the file (optional)</Label>
-                <input ref={fileRef} type="file" accept={ACCEPT_FILES} onChange={(e) => setReplaceFile(e.target.files?.[0] ?? null)} className="block w-full text-sm" />
+                <input suppressHydrationWarning ref={fileRef} type="file" accept={ACCEPT_FILES} onChange={(e) => setReplaceFile(e.target.files?.[0] ?? null)} className="block w-full text-sm" />
                 <p className="text-xs text-stone-500">Everyone who has this item will get the new version.</p>
                 {progress !== null && <Progress value={progress} className="h-1.5" />}
               </div>

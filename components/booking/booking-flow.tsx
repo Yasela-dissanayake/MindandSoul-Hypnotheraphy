@@ -87,7 +87,7 @@ export function BookingFlow({ services, initial }: { services: BookingService[];
               const from = s.options.reduce((m, o) => (o.price < m.price ? o : m), s.options[0]);
               const active = s.id === serviceId;
               return (
-                <button
+                <button suppressHydrationWarning
                   key={s.id}
                   type="button"
                   onClick={() => pickService(s.id)}
@@ -119,7 +119,7 @@ export function BookingFlow({ services, initial }: { services: BookingService[];
                       o.id === optionId ? "bg-sage-50 ring-2 ring-sage-500" : "ring-stone-200 hover:ring-sage-300",
                     )}
                   >
-                    <input type="radio" name="option" className="mt-1" checked={o.id === optionId} onChange={() => (setOptionId(o.id), setSlot(null))} />
+                    <input suppressHydrationWarning type="radio" name="option" className="mt-1" checked={o.id === optionId} onChange={() => (setOptionId(o.id), setSlot(null))} />
                     <span className="min-w-0 flex-1">
                       <span className="flex flex-wrap items-baseline justify-between gap-2">
                         <span className="font-medium text-stone-800">{o.title}</span>
@@ -145,7 +145,7 @@ export function BookingFlow({ services, initial }: { services: BookingService[];
                 {modes.map((m) => {
                   const M = MODE_TEXT[m];
                   return (
-                    <button
+                    <button suppressHydrationWarning
                       key={m}
                       type="button"
                       onClick={() => (setMode(m), setSlot(null), setDate(null))}
@@ -349,7 +349,7 @@ function DetailsAndPay({ service, option, mode, slot, onSlotTaken }: { service: 
         </div>
       </div>
       <label className="flex items-start gap-2 text-sm text-stone-600">
-        <input type="checkbox" className="mt-1" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
+        <input suppressHydrationWarning type="checkbox" className="mt-1" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
         <span>
           I agree to the{" "}
           <a href="/terms" target="_blank" rel="noreferrer" className="text-sage-700 underline">

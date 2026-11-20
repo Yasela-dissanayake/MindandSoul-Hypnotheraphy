@@ -648,13 +648,13 @@ export default function HomePage() {
                     onSubmit={(e) => handleSubmit(e, "consultation")}
                     className="space-y-4"
                   >
-                    <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
+                    <input suppressHydrationWarning type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-stone-700 mb-2">
                           First Name *
                         </label>
-                        <input
+                        <input suppressHydrationWarning
                           type="text"
                           required
                           name="firstName"
@@ -666,7 +666,7 @@ export default function HomePage() {
                         <label className="block text-sm font-medium text-stone-700 mb-2">
                           Last Name *
                         </label>
-                        <input
+                        <input suppressHydrationWarning
                           type="text"
                           required
                           name="lastName"
@@ -680,7 +680,7 @@ export default function HomePage() {
                       <label className="block text-sm font-medium text-stone-700 mb-2">
                         Email Address *
                       </label>
-                      <input
+                      <input suppressHydrationWarning
                         type="email"
                         required
                         name="email"
@@ -693,7 +693,7 @@ export default function HomePage() {
                       <label className="block text-sm font-medium text-stone-700 mb-2">
                         Phone Number *
                       </label>
-                      <input
+                      <input suppressHydrationWarning
                         type="tel"
                         required
                         name="phone"
@@ -706,7 +706,7 @@ export default function HomePage() {
                       <label className="block text-sm font-medium text-stone-700 mb-2">
                         Preferred Contact Method
                       </label>
-                      <select
+                      <select suppressHydrationWarning
                         name="contactMethod"
                         className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                       >
@@ -720,7 +720,7 @@ export default function HomePage() {
                       <label className="block text-sm font-medium text-stone-700 mb-2">
                         What would you like to work on?
                       </label>
-                      <select
+                      <select suppressHydrationWarning
                         name="workOn"
                         className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                       >
@@ -738,7 +738,7 @@ export default function HomePage() {
                       <label className="block text-sm font-medium text-stone-700 mb-2">
                         Tell me more about your situation
                       </label>
-                      <textarea
+                      <textarea suppressHydrationWarning
                         name="details"
                         rows={4}
                         className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"

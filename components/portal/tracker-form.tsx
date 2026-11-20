@@ -54,7 +54,7 @@ export function TrackerForm({
             <div>
               <div className="grid grid-cols-11 gap-1">
                 {Array.from({ length: 11 }, (_, n) => (
-                  <button
+                  <button suppressHydrationWarning
                     key={n}
                     type="button"
                     onClick={() => set(f.id, n)}
@@ -83,7 +83,7 @@ export function TrackerForm({
                   [false, "No"],
                 ] as const
               ).map(([v, l]) => (
-                <button
+                <button suppressHydrationWarning
                   key={l}
                   type="button"
                   onClick={() => set(f.id, v)}

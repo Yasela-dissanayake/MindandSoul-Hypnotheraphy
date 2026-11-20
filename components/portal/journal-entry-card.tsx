@@ -40,7 +40,7 @@ export function JournalEntryCard({ entry, timezone, editable }: { entry: Entry; 
           {entry.readAt && <span className="ml-2 text-sage-600">· Read by Rangika</span>}
         </p>
         {editable && !editing && (
-          <button onClick={() => setEditing(true)} className="inline-flex items-center gap-1 text-xs text-sage-700 hover:underline">
+          <button suppressHydrationWarning onClick={() => setEditing(true)} className="inline-flex items-center gap-1 text-xs text-sage-700 hover:underline">
             <Pencil className="h-3 w-3" /> Edit
           </button>
         )}

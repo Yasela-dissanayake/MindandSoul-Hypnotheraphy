@@ -4,12 +4,12 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, CalendarDays, LayoutDashboard, Library, LogOut, Menu, Settings, Users, ClipboardList, UserCheck, GraduationCap, ShoppingBag, Inbox, Layers, ChevronDown } from "lucide-react";
+import { BookOpen, CalendarDays, LayoutDashboard, Library, LogOut, Menu, Settings, Users, ClipboardList, GraduationCap, ShoppingBag, Inbox, Layers, ChevronDown } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { SubmitButton } from "@/components/submit-button";
 
-type Badges = { requests: number; questions: number; sales: number; enquiries: number };
+type Badges = { questions: number; sales: number; enquiries: number };
 
 type Item = { href: string; label: string; icon: typeof Users; also?: string[]; badge?: keyof Badges };
 type Group = { group: string; icon: typeof Users; children: Item[] };
@@ -17,7 +17,6 @@ type Group = { group: string; icon: typeof Users; children: Item[] };
 const items: (Item | Group)[] = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard },
   { href: "/admin/clients", label: "All users", icon: Users },
-  { href: "/admin/requests", label: "Access requests", icon: UserCheck, badge: "requests" },
   {
     group: "Services",
     icon: Layers,
@@ -35,9 +34,7 @@ const items: (Item | Group)[] = [
 ];
 
 const badgeLabel = (key: keyof Badges, n: number) =>
-  key === "requests"
-    ? `${n} access request${n === 1 ? "" : "s"} waiting`
-    : key === "sales"
+  key === "sales"
       ? `${n} new booking${n === 1 ? "" : "s"} or enrolment${n === 1 ? "" : "s"}`
       : key === "enquiries"
         ? `${n} enquir${n === 1 ? "y" : "ies"} waiting for a reply`
@@ -59,7 +56,7 @@ function CountBadge({ count, label }: { count: number; label: string }) {
 /** Keeps the badge numbers fresh: every 30 s, on page change, and when the tab is shown again. */
 function useBadges(initial: Badges, pathname: string) {
   const [counts, setCounts] = useState(initial);
-  useEffect(() => setCounts(initial), [initial.requests, initial.questions, initial.sales, initial.enquiries]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => setCounts(initial), [initial.questions, initial.sales, initial.enquiries]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     let stop = false;
     const load = async () => {
@@ -74,7 +71,7 @@ function useBadges(initial: Badges, pathname: string) {
         }
         if (!res.ok || stop) return;
         const j = await res.json();
-        setCounts({ requests: j.requests ?? 0, questions: j.questions ?? 0, sales: j.sales ?? 0, enquiries: j.enquiries ?? 0 });
+        setCounts({ questions: j.questions ?? 0, sales: j.sales ?? 0, enquiries: j.enquiries ?? 0 });
       } catch {}
     };
     void load();
@@ -90,11 +87,11 @@ function useBadges(initial: Badges, pathname: string) {
   return counts;
 }
 
-export function AdminNav({ name, logout, badges = { requests: 0, questions: 0, sales: 0, enquiries: 0 } }: { name: string; logout: () => Promise<void>; badges?: Badges }) {
+export function AdminNav({ name, logout, badges = { questions: 0, sales: 0, enquiries: 0 } }: { name: string; logout: () => Promise<void>; badges?: Badges }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const counts = useBadges(badges, pathname);
-  const waiting = counts.requests + counts.questions + counts.sales + counts.enquiries;
+  const waiting = counts.questions + counts.sales + counts.enquiries;
   const active = (i: Item) =>
     i.href === "/admin" ? pathname === i.href : [i.href, ...(i.also ?? [])].some((h) => pathname.startsWith(h));
   // Groups start open; one you're inside always stays open. Closing one is remembered on this device.
@@ -139,7 +136,7 @@ export function AdminNav({ name, logout, badges = { requests: 0, questions: 0, s
         const hidden = i.children.reduce((n, c) => n + (c.badge ? counts[c.badge] : 0), 0);
         return (
           <div key={i.group}>
-            <button
+            <button suppressHydrationWarning
               type="button"
               onClick={() => !inside && toggle(i.group)}
               aria-expanded={isOpen}

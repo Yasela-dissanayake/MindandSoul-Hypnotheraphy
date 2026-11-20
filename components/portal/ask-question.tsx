@@ -36,7 +36,7 @@ export function AskQuestion({
 
   if (!open) {
     return (
-      <button type="button" onClick={() => setOpen(true)} className={cn("inline-flex items-center gap-1.5 text-sm text-sage-700 hover:underline", className)}>
+      <button suppressHydrationWarning type="button" onClick={() => setOpen(true)} className={cn("inline-flex items-center gap-1.5 text-sm text-sage-700 hover:underline", className)}>
         <MessageCircleQuestion className="h-4 w-4" /> {label}
       </button>
     );

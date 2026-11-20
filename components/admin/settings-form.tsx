@@ -30,14 +30,14 @@ export function SettingsForm({ initial }: { initial: S }) {
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label>When a client finishes a task, email me</Label>
-          <select className={selectCls} value={s.notifyMode} onChange={(e) => setS({ ...s, notifyMode: e.target.value as S["notifyMode"] })}>
+          <select suppressHydrationWarning className={selectCls} value={s.notifyMode} onChange={(e) => setS({ ...s, notifyMode: e.target.value as S["notifyMode"] })}>
             <option value="IMMEDIATE">Straight away</option>
             <option value="DAILY_DIGEST">One summary per day (9 pm)</option>
           </select>
         </div>
         <div className="space-y-2">
           <Label>Default reminder time for new clients</Label>
-          <select className={selectCls} value={s.defaultReminderHour} onChange={(e) => setS({ ...s, defaultReminderHour: Number(e.target.value) })}>
+          <select suppressHydrationWarning className={selectCls} value={s.defaultReminderHour} onChange={(e) => setS({ ...s, defaultReminderHour: Number(e.target.value) })}>
             {Array.from({ length: 24 }, (_, h) => (
               <option key={h} value={h}>
                 {formatHour(h)} (their time)
@@ -46,7 +46,7 @@ export function SettingsForm({ initial }: { initial: S }) {
           </select>
         </div>
         <label className="flex items-start gap-3 rounded-lg bg-stone-50 p-3 text-sm text-stone-700 sm:col-span-2">
-          <input
+          <input suppressHydrationWarning
             type="checkbox"
             checked={s.activityEmails}
             onChange={(e) => setS({ ...s, activityEmails: e.target.checked })}

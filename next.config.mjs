@@ -25,6 +25,9 @@ const nextConfig = {
       { source: "/portal/learning/:path*", destination: "/portal/courses/:path*", permanent: true },
       { source: "/admin/learning", destination: "/admin/courses", permanent: true },
       { source: "/admin/learning/:path*", destination: "/admin/courses/:path*", permanent: true },
+      // Access requests were replaced by free accounts for new Google sign-ins.
+      { source: "/admin/requests", destination: "/admin/clients", permanent: false },
+      { source: "/request-access", destination: "/get-started", permanent: false },
     ];
   },
 };

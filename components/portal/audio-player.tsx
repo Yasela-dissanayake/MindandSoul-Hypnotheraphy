@@ -99,7 +99,7 @@ export function AudioPlayer({ resourceId, src, title, subtitle, rememberPosition
     >
       <audio ref={ref} src={source} preload="metadata" controlsList="nodownload" />
       <div className="flex items-center gap-4">
-        <button
+        <button suppressHydrationWarning
           onClick={toggle}
           aria-label={playing ? "Pause" : "Play"}
           className={cn(
@@ -116,7 +116,7 @@ export function AudioPlayer({ resourceId, src, title, subtitle, rememberPosition
           {error && <p className="text-xs text-red-500">This audio can't be played right now.</p>}
         </div>
         {nightToggle && (
-          <button
+          <button suppressHydrationWarning
             onClick={() => setNight(!night)}
             aria-label={night ? "Day mode" : "Night mode"}
             className={cn("rounded-full p-2", dark ? "text-stone-300 hover:bg-stone-800" : "text-stone-500 hover:bg-stone-100")}
@@ -126,12 +126,12 @@ export function AudioPlayer({ resourceId, src, title, subtitle, rememberPosition
         )}
       </div>
       <div className={cn("flex items-center gap-2", compact ? "mt-2" : "mt-4")}>
-        <button onClick={() => skip(-15)} aria-label="Back 15 seconds" className="relative rounded-full p-1.5 opacity-80 hover:opacity-100">
+        <button suppressHydrationWarning onClick={() => skip(-15)} aria-label="Back 15 seconds" className="relative rounded-full p-1.5 opacity-80 hover:opacity-100">
           <RotateCcw className="h-5 w-5" />
           <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold">15</span>
         </button>
         <span className="w-10 text-right text-xs tabular-nums opacity-70">{formatDuration(time)}</span>
-        <input
+        <input suppressHydrationWarning
           type="range"
           min={0}
           max={duration || 0}
@@ -144,7 +144,7 @@ export function AudioPlayer({ resourceId, src, title, subtitle, rememberPosition
           className={cn("h-1.5 flex-1 cursor-pointer", dark ? "accent-sage-300" : "accent-sage-600")}
         />
         <span className="w-10 text-xs tabular-nums opacity-70">{duration ? formatDuration(duration) : "--:--"}</span>
-        <button onClick={() => skip(30)} aria-label="Forward 30 seconds" className="relative rounded-full p-1.5 opacity-80 hover:opacity-100">
+        <button suppressHydrationWarning onClick={() => skip(30)} aria-label="Forward 30 seconds" className="relative rounded-full p-1.5 opacity-80 hover:opacity-100">
           <RotateCw className="h-5 w-5" />
           <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold">30</span>
         </button>

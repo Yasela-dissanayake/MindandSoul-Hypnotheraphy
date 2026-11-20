@@ -142,7 +142,7 @@ export function CalendarBlocker({ today, lastDay, days }: { today: string; lastD
           <p className="rounded-xl bg-stone-50 p-4 text-stone-500">You don&apos;t take bookings on this day, so there is nothing to block.</p>
         ) : (
           <>
-            <button
+            <button suppressHydrationWarning
               type="button"
               onClick={() => setAllDay(!allDay)}
               aria-pressed={allDay}
@@ -171,7 +171,7 @@ export function CalendarBlocker({ today, lastDay, days }: { today: string; lastD
                           const b = bookedIn(s);
                           const off = isBlocked(s);
                           return (
-                            <button
+                            <button suppressHydrationWarning
                               key={s.start}
                               type="button"
                               disabled={!!b}

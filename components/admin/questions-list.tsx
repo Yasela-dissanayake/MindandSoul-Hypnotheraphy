@@ -101,7 +101,7 @@ function QuestionCard({ q, timezone, showClient }: { q: QuestionRow; timezone: s
           />
           {!waiting && (
             <label className="flex items-center gap-2 text-sm text-stone-600">
-              <input type="checkbox" checked={emailAgain} onChange={(e) => setEmailAgain(e.target.checked)} className="h-4 w-4 accent-sage-600" />
+              <input suppressHydrationWarning type="checkbox" checked={emailAgain} onChange={(e) => setEmailAgain(e.target.checked)} className="h-4 w-4 accent-sage-600" />
               Email the changed answer to {q.clientName}
             </label>
           )}

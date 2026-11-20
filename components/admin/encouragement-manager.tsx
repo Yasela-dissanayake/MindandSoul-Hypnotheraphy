@@ -80,7 +80,7 @@ export function EncouragementManager({
             ["BOTH", "Both, mixed"],
           ] as const
         ).map(([m, l]) => (
-          <button
+          <button suppressHydrationWarning
             key={m}
             type="button"
             disabled={pending}
@@ -149,7 +149,7 @@ export function EncouragementManager({
           )}
           <label className="block text-xs text-stone-500">
             Or upload an audio file:{" "}
-            <input type="file" accept="audio/*" className="text-xs" onChange={(e) => e.target.files?.[0] && uploadClipFile(e.target.files[0])} />
+            <input suppressHydrationWarning type="file" accept="audio/*" className="text-xs" onChange={(e) => e.target.files?.[0] && uploadClipFile(e.target.files[0])} />
           </label>
           {uploadPct !== null && <Progress value={uploadPct} className="h-1.5" />}
         </div>

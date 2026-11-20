@@ -235,8 +235,8 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* Contact Forms */}
-      <section className="py-20 bg-stone-50">
+      {/* Contact Forms ("#enquiry" is linked from the client portal: "Not sure where to start?") */}
+      <section id="enquiry" className="scroll-mt-24 py-20 bg-stone-50">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <div className="text-center space-y-4 mb-16">
@@ -275,13 +275,13 @@ export default function ContactPage() {
                         onSubmit={(e) => handleSubmit(e, "consultation")}
                         className="space-y-4"
                       >
-                        <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
+                        <input suppressHydrationWarning type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm font-medium text-stone-700 mb-2">
                               First Name *
                             </label>
-                            <input
+                            <input suppressHydrationWarning
                               type="text"
                               required
                               name="firstName"
@@ -293,7 +293,7 @@ export default function ContactPage() {
                             <label className="block text-sm font-medium text-stone-700 mb-2">
                               Last Name *
                             </label>
-                            <input
+                            <input suppressHydrationWarning
                               type="text"
                               required
                               name="lastName"
@@ -307,7 +307,7 @@ export default function ContactPage() {
                           <label className="block text-sm font-medium text-stone-700 mb-2">
                             Email Address *
                           </label>
-                          <input
+                          <input suppressHydrationWarning
                             type="email"
                             required
                             name="email"
@@ -320,7 +320,7 @@ export default function ContactPage() {
                           <label className="block text-sm font-medium text-stone-700 mb-2">
                             Phone Number *
                           </label>
-                          <input
+                          <input suppressHydrationWarning
                             type="tel"
                             required
                             name="phone"
@@ -333,7 +333,7 @@ export default function ContactPage() {
                           <label className="block text-sm font-medium text-stone-700 mb-2">
                             Preferred Contact Method
                           </label>
-                          <select
+                          <select suppressHydrationWarning
                             name="contactMethod"
                             className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                           >
@@ -347,7 +347,7 @@ export default function ContactPage() {
                           <label className="block text-sm font-medium text-stone-700 mb-2">
                             What would you like to work on?
                           </label>
-                          <select
+                          <select suppressHydrationWarning
                             name="workOn"
                             className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                           >
@@ -365,7 +365,7 @@ export default function ContactPage() {
                           <label className="block text-sm font-medium text-stone-700 mb-2">
                             Tell me more about your situation
                           </label>
-                          <textarea
+                          <textarea suppressHydrationWarning
                             rows={4}
                             name="details"
                             className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
@@ -404,13 +404,13 @@ export default function ContactPage() {
                         onSubmit={(e) => handleSubmit(e, "question")}
                         className="space-y-4"
                       >
-                        <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
+                        <input suppressHydrationWarning type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm font-medium text-stone-700 mb-2">
                               Name *
                             </label>
-                            <input
+                            <input suppressHydrationWarning
                               type="text"
                               required
                               name="name"
@@ -422,7 +422,7 @@ export default function ContactPage() {
                             <label className="block text-sm font-medium text-stone-700 mb-2">
                               Email *
                             </label>
-                            <input
+                            <input suppressHydrationWarning
                               type="email"
                               required
                               name="email"
@@ -436,7 +436,7 @@ export default function ContactPage() {
                           <label className="block text-sm font-medium text-stone-700 mb-2">
                             Subject
                           </label>
-                          <input
+                          <input suppressHydrationWarning
                             type="text"
                             name="subject"
                             className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
@@ -448,7 +448,7 @@ export default function ContactPage() {
                           <label className="block text-sm font-medium text-stone-700 mb-2">
                             Your Question *
                           </label>
-                          <textarea
+                          <textarea suppressHydrationWarning
                             rows={6}
                             required
                             name="question"
@@ -490,7 +490,7 @@ export default function ContactPage() {
                             <label className="block text-sm font-medium text-stone-700 mb-2">
                               First Name *
                             </label>
-                            <input
+                            <input suppressHydrationWarning
                               type="text"
                               required
                               className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
@@ -501,7 +501,7 @@ export default function ContactPage() {
                             <label className="block text-sm font-medium text-stone-700 mb-2">
                               Last Name *
                             </label>
-                            <input
+                            <input suppressHydrationWarning
                               type="text"
                               required
                               className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
@@ -514,7 +514,7 @@ export default function ContactPage() {
                           <label className="block text-sm font-medium text-stone-700 mb-2">
                             Service Needed *
                           </label>
-                          <select
+                          <select suppressHydrationWarning
                             required
                             className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                           >
@@ -533,7 +533,7 @@ export default function ContactPage() {
                             <label className="block text-sm font-medium text-stone-700 mb-2">
                               Preferred Date
                             </label>
-                            <input
+                            <input suppressHydrationWarning
                               type="date"
                               className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                             />
@@ -542,7 +542,7 @@ export default function ContactPage() {
                             <label className="block text-sm font-medium text-stone-700 mb-2">
                               Preferred Time
                             </label>
-                            <select className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500">
+                            <select suppressHydrationWarning className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500">
                               <option>Morning (9AM-12PM)</option>
                               <option>Afternoon (12PM-5PM)</option>
                               <option>Evening (5PM-7PM)</option>
@@ -554,7 +554,7 @@ export default function ContactPage() {
                           <label className="block text-sm font-medium text-stone-700 mb-2">
                             Session Type
                           </label>
-                          <select className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500">
+                          <select suppressHydrationWarning className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500">
                             <option>In-Person (Perth)</option>
                             <option>Online Session</option>
                           </select>
@@ -564,7 +564,7 @@ export default function ContactPage() {
                           <label className="block text-sm font-medium text-stone-700 mb-2">
                             Additional Information
                           </label>
-                          <textarea
+                          <textarea suppressHydrationWarning
                             rows={3}
                             className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                             placeholder="Any specific concerns or goals you'd like to share..."

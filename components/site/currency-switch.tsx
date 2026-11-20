@@ -39,7 +39,7 @@ export function CurrencySwitch({ current, className }: { current: Currency; clas
         <span>Prices in</span>
         <div className="inline-flex rounded-full bg-white p-0.5 ring-1 ring-stone-200" role="group" aria-label="Currency">
           {(["aud", "aed"] as const).map((c) => (
-            <button
+            <button suppressHydrationWarning
               key={c}
               type="button"
               onClick={() => choose(c)}

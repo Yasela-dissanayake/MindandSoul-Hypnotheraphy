@@ -14,7 +14,7 @@ export function GiveCourse({ userId, courses }: { userId: string; courses: { id:
   if (!courses.length) return null;
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <select value={pick} onChange={(e) => setPick(e.target.value)} className="h-10 min-w-0 flex-1 rounded-md border border-input bg-white px-3 text-sm sm:max-w-sm" aria-label="Course">
+      <select suppressHydrationWarning value={pick} onChange={(e) => setPick(e.target.value)} className="h-10 min-w-0 flex-1 rounded-md border border-input bg-white px-3 text-sm sm:max-w-sm" aria-label="Course">
         <option value="">Give them a course…</option>
         {courses.map((c) => (
           <option key={c.id} value={c.id}>

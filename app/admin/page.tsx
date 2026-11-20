@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { countWaitingQuestions } from "@/lib/questions";
 import { countNewSales } from "@/lib/sales";
-import { countOpenEnquiries, countPendingRequests } from "@/lib/enquiries";
+import { countOpenEnquiries } from "@/lib/enquiries";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { viewerTimezone } from "@/lib/viewer-tz";
@@ -17,9 +17,8 @@ export default async function AdminOverview() {
   await requireAdminPage();
   const since = new Date(Date.now() - DAY);
   // All at once: one database trip instead of three in a row.
-  const [settings, pendingRequests, waitingQuestions, counts, recent, unread, unreadCount, sales, openEnquiries] = await Promise.all([
+  const [settings, waitingQuestions, counts, recent, unread, unreadCount, sales, openEnquiries] = await Promise.all([
     getSettings(),
-    countPendingRequests(), // shared with the menu badge
     countWaitingQuestions(),
     Promise.all([
       db.user.count({ where: { role: "CLIENT", status: { in: ["ACTIVE", "INVITED"] }, plans: { some: { completedAt: null } } } }),
@@ -105,15 +104,6 @@ export default async function AdminOverview() {
             <strong>{waitingQuestions}</strong> {waitingQuestions === 1 ? "question is" : "questions are"} waiting for your answer.
           </span>
           <span className="text-sm font-medium text-red-900">Answer →</span>
-        </Link>
-      )}
-
-      {pendingRequests > 0 && (
-        <Link href="/admin/requests" className="flex items-center justify-between gap-3 rounded-xl bg-amber-50 p-4 ring-1 ring-amber-200 hover:bg-amber-100">
-          <span className="text-amber-900">
-            <strong>{pendingRequests}</strong> {pendingRequests === 1 ? "person is" : "people are"} waiting for access approval.
-          </span>
-          <span className="text-sm font-medium text-amber-900">Review →</span>
         </Link>
       )}
 

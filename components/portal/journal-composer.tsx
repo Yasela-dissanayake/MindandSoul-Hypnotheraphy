@@ -54,7 +54,7 @@ export function JournalComposer({ prompt }: { prompt: string | null }) {
           <p className="text-xs uppercase tracking-wide text-sage-700">Today&apos;s prompt</p>
           <p className="mt-1 font-serif text-lg text-stone-700">{prompt}</p>
           <label className="mt-2 flex items-center gap-2 text-xs text-stone-500">
-            <input type="checkbox" checked={usePrompt} onChange={(e) => setUsePrompt(e.target.checked)} className="accent-sage-600" />
+            <input suppressHydrationWarning type="checkbox" checked={usePrompt} onChange={(e) => setUsePrompt(e.target.checked)} className="accent-sage-600" />
             I&apos;m answering this prompt
           </label>
         </div>

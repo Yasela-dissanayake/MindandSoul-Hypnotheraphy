@@ -11,6 +11,7 @@ export function RememberMe({ mirrorId }: { mirrorId?: string }) {
   return (
     <label className="flex cursor-pointer select-none items-center gap-2 text-sm text-stone-600">
       <input
+        suppressHydrationWarning
         type="checkbox"
         name="remember"
         value="1"

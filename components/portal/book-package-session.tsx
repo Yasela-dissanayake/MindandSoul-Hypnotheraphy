@@ -72,7 +72,7 @@ export function BookPackageSession({ planId, serviceSlug, modes, left }: { planI
           <p className="text-sm font-medium text-stone-700">In person or online?</p>
           <div className="grid gap-2 sm:grid-cols-2">
             {modes.map((m) => (
-              <button
+              <button suppressHydrationWarning
                 key={m}
                 type="button"
                 onClick={() => (setMode(m), setSlot(null), setDate(null))}

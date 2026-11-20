@@ -144,7 +144,7 @@ export function SessionServiceForm({ service }: { service: EditorService }) {
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="ss-plan">Client plan type</Label>
-          <select id="ss-plan" className={selectCls} value={f.planService} onChange={set("planService")}>
+          <select suppressHydrationWarning id="ss-plan" className={selectCls} value={f.planService} onChange={set("planService")}>
             <option value="HYPNOTHERAPY">Hypnotherapy</option>
             <option value="REIKI_HEALING">Reiki / energy healing</option>
             <option value="ANIMAL_REIKI">Animal Reiki</option>
@@ -154,13 +154,13 @@ export function SessionServiceForm({ service }: { service: EditorService }) {
       </div>
       <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-stone-700">
         <label className="flex items-center gap-2">
-          <input type="checkbox" checked={f.inPerson} onChange={tick("inPerson")} /> In person (Perth)
+          <input suppressHydrationWarning type="checkbox" checked={f.inPerson} onChange={tick("inPerson")} /> In person (Perth)
         </label>
         <label className="flex items-center gap-2">
-          <input type="checkbox" checked={f.online} onChange={tick("online")} /> Online / distance
+          <input suppressHydrationWarning type="checkbox" checked={f.online} onChange={tick("online")} /> Online / distance
         </label>
         <label className="flex items-center gap-2">
-          <input type="checkbox" checked={f.enquiryOnly} onChange={tick("enquiryOnly")} /> Enquiry only (no online booking)
+          <input suppressHydrationWarning type="checkbox" checked={f.enquiryOnly} onChange={tick("enquiryOnly")} /> Enquiry only (no online booking)
         </label>
       </div>
       <div className="flex flex-wrap items-center gap-2">
@@ -230,7 +230,7 @@ function OptionForm({ serviceId, option, onDone }: { serviceId: string; option: 
         </div>
         <div className="space-y-1">
           <Label>For</Label>
-          <select className={selectCls} value={f.mode} onChange={set("mode")}>
+          <select suppressHydrationWarning className={selectCls} value={f.mode} onChange={set("mode")}>
             <option value="">In person and online</option>
             <option value="IN_PERSON">In person only</option>
             <option value="DISTANCE">Online / distance only</option>

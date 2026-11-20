@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { AskQuestion } from "@/components/portal/ask-question";
 import { db } from "@/lib/db";
 import { getLearnerPackages } from "@/lib/learning";
+import { ExploreServices } from "@/components/portal/explore-services";
 
 export default async function TodayPage() {
   const user = await requireClientPage();
@@ -48,12 +49,8 @@ export default async function TodayPage() {
         </Link>
       )}
 
-      {nothing && (
-        <div className="rounded-2xl bg-white p-6 text-center ring-1 ring-stone-200">
-          <p className="font-serif text-lg text-stone-700">Rangika is getting your space ready.</p>
-          <p className="mt-2 text-sm text-stone-500">Your sessions work or class material will appear here soon.</p>
-        </div>
-      )}
+      {/* Nothing booked or bought yet (e.g. just signed up with Google): show what Rangika offers. */}
+      {nothing && <ExploreServices firstName={firstName} />}
 
       {learning.map((p) => (
         <Link

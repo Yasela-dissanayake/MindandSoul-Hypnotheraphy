@@ -13,7 +13,7 @@ export function ExistingClientSessions({ people }: { people: { id: string; name:
   if (!people.length) return null;
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <select
+      <select suppressHydrationWarning
         value={id}
         onChange={(e) => setId(e.target.value)}
         className="h-10 min-w-0 flex-1 rounded-md border border-input bg-white px-3 text-sm sm:max-w-xs"

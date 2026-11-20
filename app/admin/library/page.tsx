@@ -82,7 +82,7 @@ export default async function LibraryPage({ searchParams }: { searchParams: Prom
       <section className="space-y-3">
         <form className="flex flex-wrap gap-2" action="/admin/library">
           <Input name="q" defaultValue={q} placeholder="Search" className="h-10 w-full sm:w-56" />
-          <select name="kind" defaultValue={sp.kind ?? ""} className={selectCls}>
+          <select suppressHydrationWarning name="kind" defaultValue={sp.kind ?? ""} className={selectCls}>
             <option value="">All types</option>
             {KINDS.map((k) => (
               <option key={k} value={k}>
@@ -90,7 +90,7 @@ export default async function LibraryPage({ searchParams }: { searchParams: Prom
               </option>
             ))}
           </select>
-          <select name="tag" defaultValue={sp.tag ?? ""} className={selectCls}>
+          <select suppressHydrationWarning name="tag" defaultValue={sp.tag ?? ""} className={selectCls}>
             <option value="">All tags</option>
             {tags.map((t) => (
               <option key={t} value={t}>
@@ -98,7 +98,7 @@ export default async function LibraryPage({ searchParams }: { searchParams: Prom
               </option>
             ))}
           </select>
-          <select name="show" defaultValue={sp.show ?? ""} className={selectCls}>
+          <select suppressHydrationWarning name="show" defaultValue={sp.show ?? ""} className={selectCls}>
             <option value="">Shared items</option>
             <option value="personal">Made for one client</option>
             <option value="all">Everything</option>

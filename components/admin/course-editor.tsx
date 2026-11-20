@@ -175,7 +175,7 @@ export function CourseMaterialEditor({ course, library }: { course: EditorCourse
             {!item.extra && !item.moduleId && course.modules.length ? " · not in a module" : ""}
           </p>
         </div>
-        <select
+        <select suppressHydrationWarning
           className="h-8 max-w-[12rem] rounded-md border border-input bg-white px-2 text-xs"
           value={item.extra ? "__extra" : (item.moduleId ?? "")}
           disabled={pending}
@@ -284,7 +284,7 @@ export function CertificateUpload({ enrollmentId, hasCertificate }: { enrollment
       <Button size="sm" variant={hasCertificate ? "ghost" : "outline"} disabled={pending || pct !== null} onClick={() => ref.current?.click()}>
         <Upload className="mr-1.5 h-3.5 w-3.5" /> {hasCertificate ? "Replace" : "Upload certificate"}
       </Button>
-      <input ref={ref} type="file" accept="application/pdf,.pdf,image/*,.jpg,.jpeg,.png" className="hidden" onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])} />
+      <input suppressHydrationWarning ref={ref} type="file" accept="application/pdf,.pdf,image/*,.jpg,.jpeg,.png" className="hidden" onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])} />
       {pct !== null && <Progress value={pct} className="h-1.5 w-24" />}
     </div>
   );
@@ -318,7 +318,7 @@ export function CourseStudents({
   return (
     <Section title={`Students (${students.length})`} hint="Only these people can see this class. Upload each student's signed certificate when they finish.">
       <div className="flex flex-wrap gap-2">
-        <select className={`${selectCls} max-w-xs`} value={pick} onChange={(e) => setPick(e.target.value)}>
+        <select suppressHydrationWarning className={`${selectCls} max-w-xs`} value={pick} onChange={(e) => setPick(e.target.value)}>
           <option value="">Add an existing person…</option>
           {candidates.map((c) => (
             <option key={c.id} value={c.id}>
@@ -414,7 +414,7 @@ export function PersonCourses({
       ))}
       {available.length > 0 && (
         <div className="flex flex-wrap gap-2 rounded-2xl border-2 border-dashed border-sage-200 bg-white p-4">
-          <select className={`${selectCls} max-w-xs`} value={pick} onChange={(e) => setPick(e.target.value)}>
+          <select suppressHydrationWarning className={`${selectCls} max-w-xs`} value={pick} onChange={(e) => setPick(e.target.value)}>
             <option value="">Enrol in a class…</option>
             {available.map((c) => (
               <option key={c.id} value={c.id}>
@@ -564,7 +564,7 @@ export function CourseWebsiteForm({ course, classOptions }: { course: EditorCour
           <div className="grid gap-2 sm:grid-cols-2">
             {bundleChoices.map((c) => (
               <label key={c.id} className="flex items-center gap-2 text-sm text-stone-700">
-                <input type="checkbox" checked={includeIds.includes(c.id)} onChange={() => toggleInclude(c.id)} />
+                <input suppressHydrationWarning type="checkbox" checked={includeIds.includes(c.id)} onChange={() => toggleInclude(c.id)} />
                 {c.title}
               </label>
             ))}

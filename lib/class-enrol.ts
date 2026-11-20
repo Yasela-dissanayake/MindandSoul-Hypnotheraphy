@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 
 // Enrolling someone in a class. A bundle (e.g. "Reiki Level 1 & 2") has no content of its own:
 // it enrols them in each class it includes instead, so they see each level's material.
-// Used by website payments, the admin "Enrol" buttons and approved access requests.
+// Used by website payments and the admin "Enrol" / "Give access" buttons.
 
 /** The classes a person actually gets when given this class (the bundle's classes, or the class itself). */
 export async function classesFor(courseId: string): Promise<string[]> {

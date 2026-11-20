@@ -68,7 +68,7 @@ export function SessionPlanFields({
     <div className="grid gap-3 sm:grid-cols-2">
       <div className="space-y-1">
         <Label>Session</Label>
-        <select
+        <select suppressHydrationWarning
           className={selectCls}
           value={value.serviceId}
           onChange={(e) => {
@@ -85,7 +85,7 @@ export function SessionPlanFields({
       </div>
       <div className="space-y-1">
         <Label>Package</Label>
-        <select className={selectCls} value={value.optionId} onChange={(e) => set({ optionId: e.target.value })}>
+        <select suppressHydrationWarning className={selectCls} value={value.optionId} onChange={(e) => set({ optionId: e.target.value })}>
           {service?.options.map((o) => (
             <option key={o.id} value={o.id}>
               {o.title} · {o.sessions} session{o.sessions === 1 ? "" : "s"}
@@ -116,7 +116,7 @@ export function SessionPlanFields({
         <p className="text-xs text-stone-500">Empty = {service?.title ?? "the session's name"}.</p>
       </div>
       <label className="flex items-start gap-2 text-sm text-stone-700 sm:col-span-2">
-        <input type="checkbox" className="mt-1" checked={value.bookOnline} onChange={(e) => set({ bookOnline: e.target.checked })} />
+        <input suppressHydrationWarning type="checkbox" className="mt-1" checked={value.bookOnline} onChange={(e) => set({ bookOnline: e.target.checked })} />
         <span>
           Let them book these sessions online from their private space
           <span className="block text-xs text-stone-500">Untick if you&apos;ll arrange the session times with them yourself.</span>

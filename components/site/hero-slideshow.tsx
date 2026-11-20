@@ -49,7 +49,7 @@ export function HeroSlideshow({ images, interval = 6000 }: { images: { src: stri
       {images.length > 1 && (
         <div className="absolute inset-x-0 bottom-5 z-10 flex justify-center gap-2">
           {images.map((img, i) => (
-            <button
+            <button suppressHydrationWarning
               key={img.src}
               type="button"
               onClick={() => setIndex(i)}

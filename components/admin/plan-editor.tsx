@@ -137,7 +137,7 @@ export function PlanDetails({ plan, services }: { plan: EditorPlan; services?: {
           ) : (
             <p className="text-sm text-amber-700">
               No Zoom link yet.{" "}
-              <button type="button" className="underline" onClick={() => setEditing(true)}>
+              <button suppressHydrationWarning type="button" className="underline" onClick={() => setEditing(true)}>
                 Add one
               </button>{" "}
               so it shows on their page.
@@ -164,7 +164,7 @@ export function PlanDetails({ plan, services }: { plan: EditorPlan; services?: {
         {pickSession ? (
           <div className="space-y-2">
             <Label>Session</Label>
-            <select className={selectCls} value={f.sessionServiceId} onChange={(e) => setF({ ...f, sessionServiceId: e.target.value })}>
+            <select suppressHydrationWarning className={selectCls} value={f.sessionServiceId} onChange={(e) => setF({ ...f, sessionServiceId: e.target.value })}>
               <option value="">Not one of your sessions ({serviceLabel(f.service)})</option>
               {services!.map((s) => (
                 <option key={s.id} value={s.id}>
@@ -176,7 +176,7 @@ export function PlanDetails({ plan, services }: { plan: EditorPlan; services?: {
         ) : (
           <div className="space-y-2">
             <Label>Service</Label>
-            <select className={selectCls} value={f.service} onChange={(e) => setF({ ...f, service: e.target.value as typeof f.service })}>
+            <select suppressHydrationWarning className={selectCls} value={f.service} onChange={(e) => setF({ ...f, service: e.target.value as typeof f.service })}>
               {SERVICES.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.label}
@@ -201,7 +201,7 @@ export function PlanDetails({ plan, services }: { plan: EditorPlan; services?: {
             </div>
             {pickSession && f.sessionServiceId && (
               <label className="flex items-start gap-2 text-sm text-stone-700 sm:col-span-2">
-                <input type="checkbox" className="mt-1" checked={f.bookOnline} onChange={(e) => setF({ ...f, bookOnline: e.target.checked })} />
+                <input suppressHydrationWarning type="checkbox" className="mt-1" checked={f.bookOnline} onChange={(e) => setF({ ...f, bookOnline: e.target.checked })} />
                 <span>
                   Let them book their sessions online from their private space
                   <span className="block text-xs text-stone-500">They can book as many as the number of sessions above. Untick if you arrange the times yourself.</span>
@@ -357,7 +357,7 @@ export function MaterialsEditor({ plan, library }: { plan: EditorPlan; library: 
                 </p>
               </div>
               {plan.modules.length > 0 && (
-                <select
+                <select suppressHydrationWarning
                   className="h-8 max-w-[11rem] rounded-md border border-input bg-white px-2 text-xs"
                   value={item.moduleId ?? ""}
                   disabled={pending}
@@ -527,7 +527,7 @@ export function TasksEditor({ plan, library }: { plan: EditorPlan; library: Libr
               </div>
               <div className="space-y-2">
                 <Label>Linked material (optional)</Label>
-                <select className={selectCls} value={form.resourceId} onChange={(e) => setForm({ ...form, resourceId: e.target.value })}>
+                <select suppressHydrationWarning className={selectCls} value={form.resourceId} onChange={(e) => setForm({ ...form, resourceId: e.target.value })}>
                   <option value="">None</option>
                   {linkable.map((r) => (
                     <option key={r.id} value={r.id}>
@@ -539,7 +539,7 @@ export function TasksEditor({ plan, library }: { plan: EditorPlan; library: Libr
               {plan.modules.length > 0 && (
                 <div className="space-y-2">
                   <Label>Show under</Label>
-                  <select className={selectCls} value={form.moduleId} onChange={(e) => setForm({ ...form, moduleId: e.target.value })}>
+                  <select suppressHydrationWarning className={selectCls} value={form.moduleId} onChange={(e) => setForm({ ...form, moduleId: e.target.value })}>
                     <option value="">No week section</option>
                     {plan.modules.map((m) => (
                       <option key={m.id} value={m.id}>
@@ -551,7 +551,7 @@ export function TasksEditor({ plan, library }: { plan: EditorPlan; library: Libr
               )}
               <div className="grid grid-cols-2 gap-2">
                 {(["DAILY", "ONCE"] as const).map((r) => (
-                  <button
+                  <button suppressHydrationWarning
                     key={r}
                     type="button"
                     onClick={() => setForm({ ...form, recurrence: r })}
@@ -757,7 +757,7 @@ export function TrackersEditor({ plan }: { plan: EditorPlan }) {
                 {form.fields.map((f, i) => (
                   <div key={f.id} className="flex flex-wrap items-center gap-2 rounded-lg bg-stone-50 p-2">
                     <Input className="min-w-[10rem] flex-1" value={f.label} onChange={(e) => setField(i, { label: e.target.value })} placeholder="Question, e.g. Weight" />
-                    <select className="h-10 rounded-md border border-input bg-white px-2 text-sm" value={f.type} onChange={(e) => setField(i, { type: e.target.value as TrackerFieldType })}>
+                    <select suppressHydrationWarning className="h-10 rounded-md border border-input bg-white px-2 text-sm" value={f.type} onChange={(e) => setField(i, { type: e.target.value as TrackerFieldType })}>
                       {(Object.keys(FIELD_TYPE_LABEL) as TrackerFieldType[]).map((t) => (
                         <option key={t} value={t}>
                           {FIELD_TYPE_LABEL[t]}

@@ -83,7 +83,7 @@ export function UsersList({ rows, q: initialQ, area, status }: { rows: UserRow[]
             autoFocus={Boolean(initialQ)}
           />
           {text && (
-            <button
+            <button suppressHydrationWarning
               type="button"
               onClick={() => type("")}
               aria-label="Clear search"
@@ -93,13 +93,13 @@ export function UsersList({ rows, q: initialQ, area, status }: { rows: UserRow[]
             </button>
           )}
         </div>
-        <select value={area} onChange={(e) => reload({ area: e.target.value })} className={selectCls} aria-label="Show">
+        <select suppressHydrationWarning value={area} onChange={(e) => reload({ area: e.target.value })} className={selectCls} aria-label="Show">
           <option value="">Everyone</option>
           <option value="sessions">Session clients</option>
           <option value="courses">Class students</option>
           <option value="learning">Course students</option>
         </select>
-        <select value={status} onChange={(e) => reload({ status: e.target.value })} className={selectCls} aria-label="Status">
+        <select suppressHydrationWarning value={status} onChange={(e) => reload({ status: e.target.value })} className={selectCls} aria-label="Status">
           <option value="active">Active</option>
           <option value="finished">Finished</option>
           <option value="all">All</option>

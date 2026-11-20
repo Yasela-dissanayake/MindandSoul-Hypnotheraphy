@@ -69,7 +69,7 @@ export function SubmissionUpload({ plans }: { plans: { id: string; title: string
             ["record", "Record audio"],
           ] as const
         ).map(([m, l]) => (
-          <button
+          <button suppressHydrationWarning
             key={m}
             type="button"
             onClick={() => setMode(m)}
@@ -81,14 +81,14 @@ export function SubmissionUpload({ plans }: { plans: { id: string; title: string
       </div>
 
       {mode === "file" ? (
-        <button
+        <button suppressHydrationWarning
           type="button"
           onClick={() => fileRef.current?.click()}
           className="flex w-full items-center justify-center gap-3 rounded-xl border-2 border-dashed border-sage-300 px-4 py-5 text-sage-700 hover:bg-sage-50"
         >
           <FileUp className="h-5 w-5" />
           <span className="truncate font-medium">{file ? `${file.name} (${formatBytes(file.size)})` : "Choose a worksheet, photo or recording"}</span>
-          <input
+          <input suppressHydrationWarning
             ref={fileRef}
             type="file"
             accept={ACCEPT}
@@ -107,7 +107,7 @@ export function SubmissionUpload({ plans }: { plans: { id: string; title: string
       <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title, e.g. Week 2 worksheet" className="h-11" />
       <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="A note for Rangika (optional)" className="min-h-[70px]" />
       {plans.length > 1 && (
-        <select value={planId} onChange={(e) => setPlanId(e.target.value)} className="h-11 w-full rounded-md border border-input bg-white px-3 text-sm">
+        <select suppressHydrationWarning value={planId} onChange={(e) => setPlanId(e.target.value)} className="h-11 w-full rounded-md border border-input bg-white px-3 text-sm">
           {plans.map((p) => (
             <option key={p.id} value={p.id}>
               For: {p.title}

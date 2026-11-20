@@ -132,44 +132,6 @@ You can change your password after signing in, under Profile.`,
   };
 }
 
-/** To Rangika: someone signed in with Google and is waiting for approval. */
-export function accessRequestEmail(opts: { name?: string | null; email: string; wants?: string | null; message?: string | null; phone?: string | null }) {
-  const who = opts.name ? `${opts.name} (${opts.email})` : opts.email;
-  const url = `${SITE_URL}/admin/requests`;
-  const rows = [
-    opts.wants ? `<p style="margin:0 0 8px"><strong>Asking for:</strong> ${escapeHtml(opts.wants)}</p>` : "",
-    opts.phone ? `<p style="margin:0 0 8px"><strong>Phone:</strong> ${escapeHtml(opts.phone)}</p>` : "",
-    opts.message ? `<p style="margin:0 0 8px"><strong>Message:</strong></p>${quote(opts.message)}` : "",
-  ].join("");
-  return {
-    subject: `Access request: ${opts.name || opts.email}${opts.wants ? ` (${opts.wants})` : ""}`,
-    html: layout(
-      `<p style="margin:0 0 16px"><strong>${escapeHtml(who)}</strong> is asking for access to your client area.</p>${rows}<p style="margin:16px 0">Approve or decline with one click. What they asked for is already selected.</p>${button(url, "Review request")}`,
-    ),
-    text: `${who} is asking for access.${opts.wants ? `
-Asking for: ${opts.wants}` : ""}${opts.phone ? `
-Phone: ${opts.phone}` : ""}${opts.message ? `
-Message: ${opts.message}` : ""}
-Review: ${url}`,
-  };
-}
-
-/** To the person: their Google access request was approved. */
-export function accessApprovedEmail(opts: { name?: string | null }) {
-  const hello = `Hello${opts.name ? ` ${opts.name}` : ""},`;
-  const url = `${SITE_URL}/login`;
-  const body = `Good news: Rangika has approved your access to your private space. Sign in with the same Google account you used before.`;
-  return {
-    subject: "Your access has been approved",
-    html: layout(`<p style="margin:0 0 16px">${escapeHtml(hello)}</p>${paragraphs(body)}${button(url, "Sign in with Google")}`),
-    text: `${hello}
-
-${body}
-
-${url}`,
-  };
-}
-
 export function welcomeEmail(opts: { name?: string | null }) {
   const hello = `Welcome${opts.name ? `, ${opts.name}` : ""}!`;
   const url = `${SITE_URL}/portal`;
@@ -269,7 +231,7 @@ export function packagePurchasedEmail(opts: { name: string; packageTitle: string
     ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px;background:#f6f7f6;border-radius:8px;font-family:Arial,sans-serif;font-size:15px">
 <tr><td style="padding:12px 16px 4px;color:#78716c">Username</td><td style="padding:12px 16px 4px"><strong>${escapeHtml(opts.login.username)}</strong></td></tr>
 <tr><td style="padding:4px 16px 12px;color:#78716c">Password</td><td style="padding:4px 16px 12px"><strong>${escapeHtml(opts.login.password)}</strong></td></tr></table>`
-    : `<p style="margin:0 0 16px">Sign in with your usual username and password. You'll find it under <strong>My courses</strong>.</p>`;
+    : `<p style="margin:0 0 16px">Sign in as usual (with Google or your username and password). You'll find it under <strong>My courses</strong>.</p>`;
   return {
     subject: `Your course is ready: ${opts.packageTitle}`,
     html: layout(
@@ -281,7 +243,7 @@ export function packagePurchasedEmail(opts: { name: string; packageTitle: string
 
 ${intro}
 
-${opts.login ? `Username: ${opts.login.username}\nPassword: ${opts.login.password}` : "Sign in with your usual username and password. You'll find it under My courses."}
+${opts.login ? `Username: ${opts.login.username}\nPassword: ${opts.login.password}` : "Sign in as usual (with Google or your username and password). You'll find it under My courses."}
 
 Sign in: ${url}`,
   };
@@ -343,7 +305,7 @@ export function courseEnrolledEmail(opts: {
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px;background:#f6f7f6;border-radius:8px;font-family:Arial,sans-serif;font-size:15px">
 <tr><td style="padding:12px 16px 4px;color:#78716c">Username</td><td style="padding:12px 16px 4px"><strong>${escapeHtml(opts.login.username)}</strong></td></tr>
 <tr><td style="padding:4px 16px 12px;color:#78716c">Password</td><td style="padding:4px 16px 12px"><strong>${escapeHtml(opts.login.password)}</strong></td></tr></table>`
-    : `<p style="margin:0 0 16px">Sign in with your usual username and password. You'll find the class under <strong>My classes</strong>.</p>`;
+    : `<p style="margin:0 0 16px">Sign in as usual (with Google or your username and password). You'll find the class under <strong>My classes</strong>.</p>`;
   return {
     subject: `You're enrolled: ${opts.courseTitle}`,
     html: layout(
@@ -355,7 +317,7 @@ export function courseEnrolledEmail(opts: {
 
 ${intro}
 ${when ? `\nWhen and where: ${when}\n` : ""}
-${opts.login ? `Username: ${opts.login.username}\nPassword: ${opts.login.password}` : "Sign in with your usual username and password. You'll find the class under My classes."}
+${opts.login ? `Username: ${opts.login.username}\nPassword: ${opts.login.password}` : "Sign in as usual (with Google or your username and password). You'll find the class under My classes."}
 
 Sign in: ${url}`,
   };
@@ -448,7 +410,7 @@ export function sessionBookedEmail(opts: SessionMail & { login?: { username: str
         ["Username", opts.login.username],
         ["Password", opts.login.password],
       ])}`
-    : `<p style="margin:0 0 16px">Sign in with your usual username and password to see your session details.</p>`;
+    : `<p style="margin:0 0 16px">Sign in as usual (with Google or your username and password) to see your session details.</p>`;
   return {
     subject: opts.paid ? `Your session is booked: ${opts.serviceTitle}` : `Session booked: ${opts.serviceTitle}`,
     html: layout(
@@ -460,7 +422,7 @@ ${intro}
 
 ${rows.map(([k, v]) => `${k}: ${v}`).join("\n")}
 ${left ? `\n${left}\n` : ""}
-${opts.login ? `Username: ${opts.login.username}\nPassword: ${opts.login.password}` : "Sign in with your usual username and password to see your session details."}
+${opts.login ? `Username: ${opts.login.username}\nPassword: ${opts.login.password}` : "Sign in as usual (with Google or your username and password) to see your session details."}
 
 Sign in: ${url}
 

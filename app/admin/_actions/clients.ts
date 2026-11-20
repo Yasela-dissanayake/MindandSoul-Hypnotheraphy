@@ -72,8 +72,6 @@ export async function createClientAccount(input: z.input<typeof createSchema>): 
     },
   });
   await giveAccess(user.id, access, todayIn(timezone));
-  // If this person had asked for access with Google, that request is now settled.
-  await db.accessRequest.updateMany({ where: { email, status: "PENDING" }, data: { status: "APPROVED", decidedAt: new Date() } });
   refreshAll();
   return { ok: true, data: { id: user.id, username, password, email, name } };
 }
@@ -206,7 +204,13 @@ export async function setClientFinished(userId: string, finished: boolean): Prom
   return { ok: true };
 }
 
-/** Remove completely: account, journal, voice messages, personal recordings. */
+/**
+ * Remove completely: the account and everything about this person, so nothing is left in the admin panel.
+ * - Linked to the account (deleted with it): plans, progress, journal, notes, uploads, class/course access, Google sign-in link.
+ * - Kept under their email (deleted here): session bookings, class and course purchases, enquiries.
+ * - Their files in storage: journal voice messages, personal recordings, uploads.
+ * Payments stay in Stripe (that's the payment record; refunds are done there).
+ */
 export async function deleteClient(userId: string, confirmEmail: string): Promise<ActionResult> {
   await requireAdmin();
   const user = await db.user.findUnique({
@@ -214,13 +218,27 @@ export async function deleteClient(userId: string, confirmEmail: string): Promis
     include: {
       journal: { select: { audioKey: true } },
       personalFiles: { select: { storageKey: true } },
+      submissions: { select: { storageKey: true } },
     },
   });
   if (!user || user.role !== "CLIENT") return fail("Not found.");
   if (confirmEmail.trim().toLowerCase() !== user.email) return fail("Type the person's email exactly to confirm.");
-  const keys = [...user.journal.map((j) => j.audioKey), ...user.personalFiles.map((f) => f.storageKey)];
-  await db.user.delete({ where: { id: userId } });
-  await Promise.all(keys.map((k) => deleteObject(k)));
+  const keys = [
+    ...user.journal.map((j) => j.audioKey),
+    ...user.personalFiles.map((f) => f.storageKey),
+    ...user.submissions.map((s) => s.storageKey),
+  ].filter((k): k is string => Boolean(k));
+
+  // Records saved under their email (bookings and purchases can be made before the account exists).
+  const email = { equals: user.email, mode: "insensitive" as const };
+  await db.$transaction([
+    db.booking.deleteMany({ where: { OR: [{ userId }, { clientEmail: email }] } }),
+    db.coursePurchase.deleteMany({ where: { OR: [{ userId }, { email }] } }),
+    db.packagePurchase.deleteMany({ where: { OR: [{ userId }, { email }] } }),
+    db.enquiry.deleteMany({ where: { email } }),
+    db.user.delete({ where: { id: userId } }),
+  ]);
+  await Promise.all(keys.map((k) => deleteObject(k).catch(() => {})));
   refreshAll();
   return { ok: true };
 }

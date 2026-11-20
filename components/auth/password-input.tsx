@@ -12,6 +12,7 @@ export function PasswordInput({ className, ...props }: React.ComponentProps<type
     <div className="relative">
       <Input {...props} type={show ? "text" : "password"} className={cn("pr-12", className)} />
       <button
+        suppressHydrationWarning
         type="button"
         onClick={() => setShow(!show)}
         aria-label={show ? "Hide password" : "Show password"}

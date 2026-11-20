@@ -67,7 +67,7 @@ export function MyQuestions({ items, timezone }: { items: MyQuestion[]; timezone
 function TakeBack({ id }: { id: string }) {
   const [pending, start] = useBusyTransition();
   return (
-    <button
+    <button suppressHydrationWarning
       type="button"
       disabled={pending}
       className="inline-flex items-center gap-1 text-xs text-stone-500 hover:text-red-700 disabled:opacity-50"

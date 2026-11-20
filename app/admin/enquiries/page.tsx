@@ -98,18 +98,18 @@ export default async function EnquiriesPage({ searchParams }: { searchParams: Pr
       </div>
 
       <form action="/admin/enquiries" className="flex items-center gap-2">
-        {show === "done" && <input type="hidden" name="show" value="done" />}
-        {kind && <input type="hidden" name="kind" value={kind} />}
+        {show === "done" && <input suppressHydrationWarning type="hidden" name="show" value="done" />}
+        {kind && <input suppressHydrationWarning type="hidden" name="kind" value={kind} />}
         <div className="relative min-w-0 flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
-          <input
+          <input suppressHydrationWarning
             name="q"
             defaultValue={q}
             placeholder="Search by name, email, phone or message"
             className="h-10 w-full rounded-lg border border-stone-200 bg-white pl-9 pr-3 text-sm outline-none focus:border-sage-400 focus:ring-2 focus:ring-sage-100"
           />
         </div>
-        <button type="submit" className="h-10 rounded-lg bg-sage-600 px-4 text-sm font-medium text-white hover:bg-sage-700">
+        <button suppressHydrationWarning type="submit" className="h-10 rounded-lg bg-sage-600 px-4 text-sm font-medium text-white hover:bg-sage-700">
           Search
         </button>
         {q && (

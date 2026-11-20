@@ -177,12 +177,12 @@ function BuyForm({
       </div>
       {prerequisite && (
         <label className="flex items-start gap-2 rounded-lg bg-sage-50 p-3 text-sm text-stone-700 ring-1 ring-sage-200">
-          <input type="checkbox" className="mt-1" required checked={prereqDone} onChange={(e) => setPrereqDone(e.target.checked)} />
+          <input suppressHydrationWarning type="checkbox" className="mt-1" required checked={prereqDone} onChange={(e) => setPrereqDone(e.target.checked)} />
           <span>I have completed {prerequisite} (with Rangika or another Reiki teacher).</span>
         </label>
       )}
       <label className="flex items-start gap-2 text-sm text-stone-600">
-        <input type="checkbox" className="mt-1" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
+        <input suppressHydrationWarning type="checkbox" className="mt-1" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
         <span>
           I agree to the{" "}
           <a href="/terms" target="_blank" rel="noreferrer" className="text-sage-700 underline">

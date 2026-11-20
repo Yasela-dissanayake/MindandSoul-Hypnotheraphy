@@ -99,7 +99,7 @@ export function VoiceRecorder({
   return (
     <div className="space-y-2">
       {recording ? (
-        <button
+        <button suppressHydrationWarning
           type="button"
           onClick={stop}
           className="flex w-full items-center justify-center gap-3 rounded-xl bg-red-50 px-4 py-4 text-red-700 ring-1 ring-red-200"
@@ -113,7 +113,7 @@ export function VoiceRecorder({
           <span className="text-sm">Tap to stop</span>
         </button>
       ) : (
-        <button
+        <button suppressHydrationWarning
           type="button"
           onClick={start}
           disabled={disabled}

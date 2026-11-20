@@ -8,13 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/auth/password-input";
 import { SubmitButton } from "@/components/submit-button";
-import { RequestStatusDialog, type RequestStatus } from "@/components/auth/request-status-dialog";
 import { RememberMe } from "@/components/auth/remember-me";
 import { makeSessionCookiesTemporary, saveRememberChoice } from "@/lib/remember-me";
 import { AlertCircle, Info } from "lucide-react";
-
-// Google access-request outcomes are shown as a pop-up instead of a line of text.
-const REQUEST_STATUSES: RequestStatus[] = ["RequestSent", "RequestPending", "RequestDeclined"];
 
 export const metadata: Metadata = { title: "Sign in · Heal With Rangika", robots: { index: false } };
 
@@ -26,12 +22,6 @@ const MESSAGES: Record<string, { text: string; tone: "error" | "info" }> = {
   },
   closed: { tone: "error", text: "This account is closed. Please contact Rangika if you need access again." },
   AccountClosed: { tone: "error", text: "This account is closed. Please contact Rangika if you need access again." },
-  RequestSent: {
-    tone: "info",
-    text: "Thank you. Your request has been sent to Rangika. You'll get an email as soon as she approves it.",
-  },
-  RequestPending: { tone: "info", text: "Your request is still waiting for Rangika's approval. You'll get an email when it's approved." },
-  RequestDeclined: { tone: "error", text: "Your access request wasn't approved. Please contact Rangika if you think this is a mistake." },
   AccessDenied: { tone: "error", text: "We couldn't sign you in with that Google account." },
   OAuthAccountNotLinked: { tone: "error", text: "Please sign in with your username and password." },
 };
@@ -42,9 +32,12 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   if (session?.user) redirect(session.user.role === "ADMIN" ? "/admin" : "/portal");
 
   const key = sp.code ?? sp.error;
-  const requestStatus = REQUEST_STATUSES.find((s) => s === key);
+  // Unknown codes (e.g. "Configuration" when the server couldn't finish a Google sign-in) show the code,
+  // so the matching line in the server log is easy to find.
   const message =
-    key && !requestStatus ? (MESSAGES[key] ?? { tone: "error" as const, text: "Something went wrong signing in. Please try again." }) : null;
+    key
+      ? (MESSAGES[key] ?? { tone: "error" as const, text: `Something went wrong signing in. Please try again. (Error: ${key.slice(0, 40)})` })
+      : null;
 
   async function google(formData: FormData) {
     "use server";
@@ -82,8 +75,6 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <h1 className="mt-4 font-serif text-2xl text-stone-800">Welcome back</h1>
           <p className="mt-1 text-sm text-stone-500">Sign in to your private space</p>
         </div>
-
-        {requestStatus && <RequestStatusDialog status={requestStatus} />}
 
         {message && (
           <p
@@ -135,7 +126,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
               <span className="h-px flex-1 bg-stone-200" />
             </div>
             <form action={google}>
-              <input type="hidden" id="google-remember" name="remember" defaultValue="0" />
+              <input suppressHydrationWarning type="hidden" id="google-remember" name="remember" defaultValue="0" />
               <SubmitButton variant="outline" className="h-12 w-full gap-3 text-base" pendingText="Opening Google…">
                 <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
                   <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.3-1.6 3.9-5.5 3.9-3.3 0-6-2.7-6-6.1s2.7-6.1 6-6.1c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.3 14.6 2.4 12 2.4 6.7 2.4 2.4 6.7 2.4 12s4.3 9.6 9.6 9.6c5.5 0 9.2-3.9 9.2-9.4 0-.6-.1-1.1-.2-1.6H12z" />
@@ -144,7 +135,10 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
               </SubmitButton>
             </form>
             <p className="mt-2 text-center text-xs text-stone-500">
-              Bought a course or class? Use Google with the same email you paid with. Otherwise, new Google sign-ins need Rangika&apos;s approval.
+              Use Google with the same email you booked or paid with. New here?{" "}
+              <Link href="/get-started" className="text-sage-700 underline">
+                See what Rangika offers
+              </Link>
             </p>
           </>
         )}

@@ -52,7 +52,7 @@ export function TaskList({ tasks, encourage }: { tasks: Task[]; encourage: Encou
           return (
             <li key={t.id} className={cn("rounded-2xl bg-white ring-1 transition", t.done ? "ring-sage-200" : "ring-stone-200")}>
               <div className="flex items-start gap-4 p-4">
-                <button
+                <button suppressHydrationWarning
                   onClick={() => toggle(t)}
                   aria-label={t.done ? `Mark "${t.title}" as not done` : `Mark "${t.title}" as done`}
                   className={cn(
@@ -67,7 +67,7 @@ export function TaskList({ tasks, encourage }: { tasks: Task[]; encourage: Encou
                   <p className={cn("font-medium", t.done ? "text-stone-400 line-through" : "text-stone-800")}>{t.title}</p>
                   {t.instructions && <p className="mt-1 whitespace-pre-line text-sm text-stone-600">{t.instructions}</p>}
                   {t.resource && (
-                    <button
+                    <button suppressHydrationWarning
                       onClick={() => setOpen(expanded ? null : t.id)}
                       className="mt-2 inline-flex items-center gap-1.5 text-sm text-sage-700 hover:underline"
                     >

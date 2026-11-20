@@ -37,11 +37,11 @@ function Row({ label, value, secret }: { label: string; value: string; secret?: 
       <span className="w-20 shrink-0 text-xs uppercase tracking-wide text-stone-500">{label}</span>
       <span className="min-w-0 flex-1 truncate font-mono text-sm text-stone-800">{show ? value : "•".repeat(Math.min(value.length, 14))}</span>
       {secret && (
-        <button type="button" onClick={() => setShow(!show)} className="rounded p-1.5 text-stone-500 hover:bg-stone-100" aria-label={show ? "Hide" : "Show"}>
+        <button suppressHydrationWarning type="button" onClick={() => setShow(!show)} className="rounded p-1.5 text-stone-500 hover:bg-stone-100" aria-label={show ? "Hide" : "Show"}>
           {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </button>
       )}
-      <button
+      <button suppressHydrationWarning
         type="button"
         onClick={() => {
           void copy(value, label);

@@ -27,7 +27,7 @@ export function ClientSessionFilter({
   return (
     <label className={cn("flex items-center gap-2 text-sm text-stone-600", pending && "opacity-60")}>
       {label}
-      <select
+      <select suppressHydrationWarning
         value={current}
         onChange={(e) => {
           const v = e.target.value;
