@@ -9,6 +9,7 @@ import { VIDEO_TYPES } from "@/lib/catalog";
 // - voice:       admin uploads an encouragement voice clip
 // - certificate: admin uploads a scanned, signed certificate (PDF or image)
 // - journal:     a client records a voice message for their journal
+// - journal-reply: Rangika records a voice reply to a journal entry
 // - submission:  a client sends their work (worksheet, recording, photo). Videos are admin-only.
 // - cover:       admin uploads a cover photo for a course or online package (shown on the website)
 
@@ -26,12 +27,13 @@ const RULES = {
   voice: { admin: true, types: AUDIO, max: 5 * MB, folder: () => "voice" },
   certificate: { admin: true, types: ["application/pdf", ...IMAGES], max: 20 * MB, folder: () => "certificates" },
   journal: { admin: false, types: AUDIO, max: 25 * MB, folder: (id: string) => `journal/${id}` },
+  "journal-reply": { admin: true, types: AUDIO, max: 25 * MB, folder: () => "journal-replies" },
   submission: { admin: false, types: [...AUDIO, ...DOCS, ...IMAGES], max: 50 * MB, folder: (id: string) => `submissions/${id}` }, // no videos: only Rangika uploads those
   cover: { admin: true, types: ["image/jpeg", "image/png", "image/webp"], max: 10 * MB, folder: () => "covers" },
 } as const;
 
 const schema = z.object({
-  purpose: z.enum(["library", "voice", "certificate", "journal", "submission", "cover"]),
+  purpose: z.enum(["library", "voice", "certificate", "journal", "journal-reply", "submission", "cover"]),
   filename: z.string().min(1).max(200),
   contentType: z.string().max(150), // may be empty: some devices send no type for Word files
   size: z.number().int().positive(),

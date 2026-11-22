@@ -458,17 +458,24 @@ model ModuleProgress {
 // ---------------------------------------------------------------------------
 
 model JournalEntry {
-  id           String    @id @default(cuid())
-  userId       String
-  prompt       String?
-  body         String? // typed text
-  audioKey     String? // voice message (R2 object key)
-  audioType    String?
-  audioSeconds Int?
-  audioBytes   Int?
-  readAt       DateTime? // when Rangika read it
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id                String    @id @default(cuid())
+  userId            String
+  prompt            String?
+  body              String? // typed text
+  audioKey          String? // voice message (R2 object key)
+  audioType         String?
+  audioSeconds      Int?
+  audioBytes        Int?
+  readAt            DateTime? // when Rangika read it
+  // Rangika's reply to this entry (typed, a voice message, or both). The client sees it under the entry.
+  replyText         String?
+  replyAudioKey     String? // R2 object key
+  replyAudioType    String?
+  replyAudioSeconds Int?
+  repliedAt         DateTime?
+  replySeenAt       DateTime? // when the client saw the reply (clears the "new reply" dot)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

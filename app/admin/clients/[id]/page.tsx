@@ -27,7 +27,8 @@ import { LoginDetailsPanel } from "@/components/admin/login-details-panel";
 import { getLoginDetails } from "@/app/admin/_actions/clients";
 import { SITE_URL } from "@/lib/mail";
 import { NotesPanel } from "@/components/admin/notes-panel";
-import { MarkJournalRead } from "@/components/admin/mark-journal-read";
+import { JournalReadButton, MarkAllJournalReadButton } from "@/components/admin/journal-read-button";
+import { JournalReply } from "@/components/admin/journal-reply";
 import { formatDuration } from "@/lib/format";
 import { loadQuestions } from "@/lib/questions";
 import { QuestionsList } from "@/components/admin/questions-list";
@@ -437,14 +438,23 @@ async function TasksTab({ clientId }: { clientId: string }) {
 
 async function JournalTab({ clientId }: { clientId: string }) {
   const tz = await viewerTimezone();
-  const [entries, settings] = await Promise.all([
+  const [entries, settings, client] = await Promise.all([
     db.journalEntry.findMany({ where: { userId: clientId }, orderBy: { createdAt: "desc" }, take: 200 }),
     getSettings(),
+    getClient(clientId),
   ]);
-  const hasUnread = entries.some((e) => !e.readAt);
+  const unreadCount = entries.filter((e) => !e.readAt).length;
+  const clientName = client?.name?.split(" ")[0] || "the client";
   return (
     <div className="space-y-3">
-      {hasUnread && <MarkJournalRead clientId={clientId} />}
+      {unreadCount > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-sage-50 px-4 py-3 text-sm text-stone-700 ring-1 ring-sage-200">
+          <span>
+            <strong>{unreadCount}</strong> new {unreadCount === 1 ? "entry" : "entries"}. Tick each one once you&apos;ve read it.
+          </span>
+          {unreadCount > 1 && <MarkAllJournalReadButton clientId={clientId} count={unreadCount} />}
+        </div>
+      )}
       {entries.length === 0 && <p className="rounded-xl bg-white p-5 text-stone-500 ring-1 ring-stone-200">No journal entries yet.</p>}
       {entries.map((e) => (
         <article key={e.id} className={cn("space-y-2 rounded-2xl bg-white p-4 ring-1", e.readAt ? "ring-stone-200" : "ring-2 ring-sage-400")}>
@@ -452,7 +462,10 @@ async function JournalTab({ clientId }: { clientId: string }) {
             <span>
               {e.createdAt.toLocaleString("en-AU", { timeZone: tz, weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}
             </span>
-            {!e.readAt && <span className="rounded-full bg-sage-100 px-2 py-0.5 font-medium text-sage-800">New</span>}
+            <span className="flex items-center gap-2">
+              {!e.readAt && <span className="rounded-full bg-sage-100 px-2 py-0.5 font-medium text-sage-800">New</span>}
+              <JournalReadButton entryId={e.id} read={Boolean(e.readAt)} />
+            </span>
           </div>
           {e.prompt && <p className="text-sm italic text-sage-700">{e.prompt}</p>}
           {e.audioKey && (
@@ -462,6 +475,23 @@ async function JournalTab({ clientId }: { clientId: string }) {
             </div>
           )}
           {e.body && <p className="whitespace-pre-line text-stone-700">{e.body}</p>}
+          <div className="border-t border-stone-100 pt-3">
+            <JournalReply
+              entryId={e.id}
+              clientName={clientName}
+              reply={
+                e.repliedAt
+                  ? {
+                      text: e.replyText,
+                      hasAudio: Boolean(e.replyAudioKey),
+                      audioSeconds: e.replyAudioSeconds,
+                      repliedAt: e.repliedAt.toISOString(),
+                      seen: Boolean(e.replySeenAt),
+                    }
+                  : null
+              }
+            />
+          </div>
         </article>
       ))}
     </div>

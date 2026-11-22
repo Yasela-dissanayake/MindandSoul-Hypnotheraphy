@@ -326,6 +326,17 @@ export async function deleteMyQuestion(id: string): Promise<ActionResult> {
   return { ok: true };
 }
 
+/** The client has opened their journal and seen Rangika's new replies (clears the dot on the menu). */
+export async function markJournalRepliesSeen(): Promise<ActionResult> {
+  const user = await currentUser();
+  const res = await db.journalEntry.updateMany({
+    where: { userId: user.id, repliedAt: { not: null }, replySeenAt: null },
+    data: { replySeenAt: new Date() },
+  });
+  if (res.count) revalidatePath("/portal", "layout");
+  return { ok: true };
+}
+
 /** The client has seen their new answers (clears the dot on the menu). */
 export async function markAnswersSeen(): Promise<ActionResult> {
   const user = await currentUser();

@@ -9,6 +9,7 @@ import { countOpenEnquiries } from "@/lib/enquiries";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { viewerTimezone } from "@/lib/viewer-tz";
+import { JournalReadButton } from "@/components/admin/journal-read-button";
 
 const DAY = 86400000;
 
@@ -144,22 +145,34 @@ export default async function AdminOverview() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className={unreadCount > 0 ? "border-amber-300 bg-amber-50/60 ring-2 ring-amber-200" : undefined}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 font-serif text-xl font-normal">
-              <NotebookPen className="h-5 w-5 text-sage-600" /> New journal entries
+              <NotebookPen className={`h-5 w-5 ${unreadCount > 0 ? "text-amber-600" : "text-sage-600"}`} /> New journal entries
+              {unreadCount > 0 && (
+                <span className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-amber-500 px-2.5 py-0.5 font-sans text-xs font-semibold text-white">
+                  <span className="relative flex h-2 w-2" aria-hidden>
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-white" />
+                  </span>
+                  {unreadCount} new
+                </span>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {unread.length === 0 && <p className="text-sm text-stone-500">You&apos;re all caught up.</p>}
             {unread.map((j) => (
-              <Link key={j.id} href={`/admin/clients/${j.user.id}?tab=journal`} className="block rounded-lg p-2 text-sm hover:bg-stone-50">
-                <div className="flex justify-between gap-3">
-                  <span className="font-medium text-stone-800">{display(j.user)}</span>
-                  <span className="shrink-0 text-xs text-stone-400">{time(j.createdAt)}</span>
-                </div>
-                <p className="line-clamp-2 text-stone-600">{j.body || (j.audioKey ? "🎙️ Voice message" : "")}</p>
-              </Link>
+              <div key={j.id} className="flex items-center gap-2 rounded-lg bg-white p-2 pr-3 text-sm ring-1 ring-amber-200 transition hover:bg-amber-100/60">
+                <Link href={`/admin/clients/${j.user.id}?tab=journal`} className="min-w-0 flex-1 rounded-md p-1">
+                  <div className="flex justify-between gap-3">
+                    <span className="font-medium text-stone-800">{display(j.user)}</span>
+                    <span className="shrink-0 text-xs text-stone-400">{time(j.createdAt)}</span>
+                  </div>
+                  <p className="line-clamp-2 text-stone-600">{j.body || (j.audioKey ? "🎙️ Voice message" : "")}</p>
+                </Link>
+                <JournalReadButton entryId={j.id} read={false} compact />
+              </div>
             ))}
           </CardContent>
         </Card>

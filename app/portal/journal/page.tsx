@@ -5,6 +5,7 @@ import { formatDate } from "@/lib/dates";
 import { JournalComposer } from "@/components/portal/journal-composer";
 import { JournalEntryCard } from "@/components/portal/journal-entry-card";
 import { AskQuestion } from "@/components/portal/ask-question";
+import { MarkRepliesSeen } from "@/components/portal/mark-replies-seen";
 
 const EDIT_WINDOW_MS = 24 * 60 * 60 * 1000;
 
@@ -15,6 +16,7 @@ export default async function JournalPage() {
     db.journalEntry.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 100 }),
   ]);
   const now = Date.now();
+  const newReplies = entries.filter((e) => e.repliedAt && !e.replySeenAt).length;
 
   return (
     <div className="space-y-8">
@@ -28,6 +30,17 @@ export default async function JournalPage() {
           Rangika&apos;s journal prompts start on {formatDate(upcoming[0].startDate, { weekday: "long", day: "numeric", month: "long" })}. You can still write anything you like.
         </p>
       )}
+      {newReplies > 0 && (
+        <>
+          <MarkRepliesSeen />
+          <a href="#past-entries" className="flex items-center justify-between gap-3 rounded-xl bg-sage-50 p-4 text-sm text-stone-800 ring-1 ring-sage-200 hover:bg-sage-100">
+            <span>
+              Rangika replied to {newReplies === 1 ? "one of your entries" : `${newReplies} of your entries`}.
+            </span>
+            <span className="shrink-0 font-medium text-sage-800">Read it ↓</span>
+          </a>
+        </>
+      )}
       <JournalComposer prompt={prompt} />
       {hasPlans && (
         <AskQuestion
@@ -38,7 +51,7 @@ export default async function JournalPage() {
         />
       )}
 
-      <section className="space-y-3">
+      <section id="past-entries" className="scroll-mt-24 space-y-3">
         <h2 className="font-serif text-xl text-stone-800">Past entries</h2>
         {entries.length === 0 ? (
           <p className="text-stone-500">Your entries will appear here.</p>
@@ -54,6 +67,15 @@ export default async function JournalPage() {
                 audioSeconds: e.audioSeconds,
                 createdAt: e.createdAt.toISOString(),
                 readAt: e.readAt?.toISOString() ?? null,
+                reply: e.repliedAt
+                  ? {
+                      text: e.replyText,
+                      hasAudio: Boolean(e.replyAudioKey),
+                      audioSeconds: e.replyAudioSeconds,
+                      repliedAt: e.repliedAt.toISOString(),
+                      isNew: !e.replySeenAt,
+                    }
+                  : null,
               }}
               timezone={user.timezone}
               editable={now - e.createdAt.getTime() < EDIT_WINDOW_MS}

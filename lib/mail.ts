@@ -182,6 +182,29 @@ export function answerEmail(opts: { name?: string | null; topic?: string | null;
   };
 }
 
+/** To the client: Rangika replied to one of their journal entries. */
+export function journalReplyEmail(opts: { name?: string | null; reply?: string | null; voice: boolean }) {
+  const hello = `Hello${opts.name ? ` ${opts.name}` : ""},`;
+  const url = `${SITE_URL}/portal/journal`;
+  const what = opts.voice && !opts.reply ? "sent you a voice reply to your journal entry" : "replied to your journal entry";
+  const voiceNote = opts.voice && opts.reply ? "There's a voice message with it too." : opts.voice ? "Open your journal to listen to it." : "";
+  return {
+    subject: "Rangika replied to your journal",
+    html: layout(
+      `<p style="margin:0 0 16px">${escapeHtml(hello)}</p><p style="margin:0 0 16px">Rangika ${what}.</p>${opts.reply ? quote(opts.reply) : ""}${voiceNote ? `<p style="margin:0 0 16px;color:#78716c">${voiceNote}</p>` : ""}${button(url, "Open my journal")}`,
+    ),
+    text: `${hello}
+
+Rangika ${what}.
+${opts.reply ? `
+${opts.reply}
+` : ""}${voiceNote ? `
+${voiceNote}
+` : ""}
+${url}`,
+  };
+}
+
 /** To Rangika: a client sent something (journal entry, tracker answers, an upload). */
 export function activityEmail(opts: { clientName: string; what: string; preview?: string | null; clientId: string; tab: string }) {
   const url = `${SITE_URL}/admin/clients/${opts.clientId}?tab=${opts.tab}`;

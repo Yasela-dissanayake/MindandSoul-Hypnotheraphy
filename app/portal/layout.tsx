@@ -15,12 +15,16 @@ export const metadata: Metadata = { title: "My space · Mind & Soul Works", robo
 
 /** The menu (which areas they have + the "new answer" dot). Streams in, so the page never waits for it. */
 const navData = cache((userId: string) =>
-  Promise.all([getAreas(userId), db.question.count({ where: { userId, answeredAt: { not: null }, answerSeenAt: null } })]),
+  Promise.all([
+    getAreas(userId),
+    db.question.count({ where: { userId, answeredAt: { not: null }, answerSeenAt: null } }),
+    db.journalEntry.count({ where: { userId, repliedAt: { not: null }, replySeenAt: null } }),
+  ]),
 );
 
 async function Nav({ userId, variant }: { userId: string; variant: "top" | "bottom" }) {
-  const [areas, newAnswers] = await navData(userId); // shared by the top and bottom menus
-  return <PortalNav {...areas} newAnswers={newAnswers} variant={variant} />;
+  const [areas, newAnswers, newReplies] = await navData(userId); // shared by the top and bottom menus
+  return <PortalNav {...areas} newAnswers={newAnswers} newReplies={newReplies} variant={variant} />;
 }
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {

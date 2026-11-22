@@ -2,7 +2,7 @@
 
 import { useBusyTransition } from "@/components/use-busy-transition";
 import { useState } from "react";
-import { Pencil } from "lucide-react";
+import { MessageCircleHeart, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,6 +17,8 @@ type Entry = {
   audioSeconds: number | null;
   createdAt: string;
   readAt: string | null;
+  /** Rangika's reply, if she has written one. */
+  reply: { text: string | null; hasAudio: boolean; audioSeconds: number | null; repliedAt: string; isNew: boolean } | null;
 };
 
 export function JournalEntryCard({ entry, timezone, editable }: { entry: Entry; timezone: string; editable: boolean }) {
@@ -78,6 +80,30 @@ export function JournalEntryCard({ entry, timezone, editable }: { entry: Entry; 
         </div>
       ) : (
         entry.body && <p className="whitespace-pre-line text-stone-700">{entry.body}</p>
+      )}
+      {entry.reply && (
+        <div className={`space-y-2 rounded-xl p-3 ring-1 ${entry.reply.isNew ? "bg-sage-50 ring-2 ring-sage-400" : "bg-sage-50/70 ring-sage-200"}`}>
+          <p className="flex flex-wrap items-center gap-1.5 text-xs font-medium text-sage-800">
+            <MessageCircleHeart className="h-4 w-4" aria-hidden /> Rangika&apos;s reply
+            <span className="font-normal text-stone-500">
+              ·{" "}
+              {new Date(entry.reply.repliedAt).toLocaleString("en-AU", { timeZone: timezone, day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}
+            </span>
+            {entry.reply.isNew && <span className="rounded-full bg-sage-600 px-2 py-0.5 text-[11px] font-semibold text-white">New</span>}
+          </p>
+          {entry.reply.hasAudio && (
+            <div className="flex items-center gap-2">
+              <audio
+                src={`/api/files/journal-reply/${entry.id}?v=${encodeURIComponent(entry.reply.repliedAt)}`}
+                controls
+                preload="none"
+                className="h-10 w-full"
+              />
+              {entry.reply.audioSeconds ? <span className="text-xs text-stone-500">{formatDuration(entry.reply.audioSeconds)}</span> : null}
+            </div>
+          )}
+          {entry.reply.text && <p className="whitespace-pre-line text-sm text-stone-700">{entry.reply.text}</p>}
+        </div>
       )}
     </article>
   );

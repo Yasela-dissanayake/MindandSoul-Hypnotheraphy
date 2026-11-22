@@ -8,6 +8,7 @@ import { clientCanAccessResource } from "@/lib/plans";
 // by redirecting to a link that expires in 10 minutes.
 //   /api/files/resource/:id     library file (?download=1 to save it)
 //   /api/files/journal/:id      journal voice message (owner or admin)
+//   /api/files/journal-reply/:id  Rangika's voice reply to a journal entry (owner or admin)
 //   /api/files/voice/:id        encouragement voice clip (any signed-in user)
 //   /api/files/submission/:id   work a client sent (owner or admin)
 //   /api/files/certificate/:id  enrolment certificate (the student or admin)
@@ -56,6 +57,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ type
     if (!j?.audioKey) return notFound();
     if (!isAdmin && j.userId !== session.user.id) return notFound();
     key = j.audioKey;
+  } else if (type === "journal-reply") {
+    const j = await db.journalEntry.findUnique({ where: { id } });
+    if (!j?.replyAudioKey) return notFound();
+    if (!isAdmin && j.userId !== session.user.id) return notFound();
+    key = j.replyAudioKey;
   } else if (type === "voice") {
     const c = await db.voiceClip.findUnique({ where: { id } });
     if (!c) return notFound();

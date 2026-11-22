@@ -15,12 +15,13 @@ import { ExploreServices } from "@/components/portal/explore-services";
 
 export default async function TodayPage() {
   const user = await requireClientPage();
-  const [{ today, tasks, trackers, prompt, tonightAudio, upcoming, hasPlans }, courses, enc, newAnswers, learning] = await Promise.all([
+  const [{ today, tasks, trackers, prompt, tonightAudio, upcoming, hasPlans }, courses, enc, newAnswers, learning, newReplies] = await Promise.all([
     getToday(user.id, user.timezone),
     getStudentCourses(user.id),
     getEncouragements(),
     db.question.count({ where: { userId: user.id, answeredAt: { not: null }, answerSeenAt: null } }),
     getLearnerPackages(user.id),
+    db.journalEntry.count({ where: { userId: user.id, repliedAt: { not: null }, replySeenAt: null } }),
   ]);
   const done = tasks.filter((t) => t.done).length;
   const firstName = user.name?.split(" ")[0];
@@ -173,6 +174,12 @@ export default async function TodayPage() {
           <div className="flex-1">
             <h2 className="font-serif text-lg text-stone-800">{prompt ? "Today's journal prompt" : "Your journal"}</h2>
             <p className="mt-1 text-stone-600">{prompt ?? "How are you feeling today? Write or record a short message."}</p>
+            {newReplies > 0 && (
+              <Link href="/portal/journal#past-entries" className="mt-3 flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-medium text-sage-800 ring-1 ring-sage-300 hover:bg-sage-100">
+                <span className="h-2 w-2 shrink-0 rounded-full bg-sage-600" aria-hidden />
+                Rangika replied to your journal. Read it →
+              </Link>
+            )}
             <Link href="/portal/journal" className="mt-3 inline-flex rounded-full bg-sage-600 px-4 py-2 text-sm text-white hover:bg-sage-700">
               Write or speak
             </Link>

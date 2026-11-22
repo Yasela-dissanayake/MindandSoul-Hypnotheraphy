@@ -10,21 +10,23 @@ export function PortalNav({
   hasCourses,
   hasLearning = false,
   newAnswers = 0,
+  newReplies = 0,
   variant,
 }: {
   hasSessions: boolean;
   hasCourses: boolean;
   hasLearning?: boolean;
   newAnswers?: number;
+  newReplies?: number;
   variant: "top" | "bottom";
 }) {
   const pathname = usePathname();
-  const items: { href: string; label: string; icon: typeof Home; dot?: boolean }[] = [
+  const items: { href: string; label: string; icon: typeof Home; dot?: boolean; dotLabel?: string }[] = [
     { href: "/portal", label: "Today", icon: Home },
-    ...(hasSessions ? [{ href: "/portal/sessions", label: "My sessions", icon: Sparkles, dot: newAnswers > 0 }] : []),
+    ...(hasSessions ? [{ href: "/portal/sessions", label: "My sessions", icon: Sparkles, dot: newAnswers > 0, dotLabel: "new answer from Rangika" }] : []),
     ...(hasCourses ? [{ href: "/portal/classes", label: "My classes", icon: GraduationCap }] : []),
     ...(hasLearning ? [{ href: "/portal/courses", label: "My courses", icon: BookOpen }] : []),
-    { href: "/portal/journal", label: "Journal", icon: NotebookPen },
+    { href: "/portal/journal", label: "Journal", icon: NotebookPen, dot: newReplies > 0, dotLabel: "new reply from Rangika" },
     { href: "/portal/profile", label: "Profile", icon: User },
   ];
   const active = (href: string) => (href === "/portal" ? pathname === href : pathname.startsWith(href));
@@ -40,7 +42,7 @@ export function PortalNav({
               "relative rounded-full px-3 py-1.5 text-sm transition-colors",
               active(i.href) ? "bg-sage-100 text-sage-800" : "text-stone-600 hover:bg-stone-100",
             )}
-            aria-label={i.dot ? `${i.label}, new answer from Rangika` : undefined}
+            aria-label={i.dot ? `${i.label}, ${i.dotLabel}` : undefined}
           >
             {i.label}
             {i.dot && <span className="absolute right-0.5 top-0.5 h-2.5 w-2.5 rounded-full bg-red-600 ring-2 ring-white" aria-hidden />}
@@ -59,7 +61,7 @@ export function PortalNav({
           <Link
             key={i.href}
             href={i.href}
-            aria-label={i.dot ? `${i.label}, new answer from Rangika` : undefined}
+            aria-label={i.dot ? `${i.label}, ${i.dotLabel}` : undefined}
             className={cn(
               "flex flex-col items-center gap-1 py-2.5 text-[11px]",
               active(i.href) ? "text-sage-700" : "text-stone-500",

@@ -216,7 +216,7 @@ export async function deleteClient(userId: string, confirmEmail: string): Promis
   const user = await db.user.findUnique({
     where: { id: userId },
     include: {
-      journal: { select: { audioKey: true } },
+      journal: { select: { audioKey: true, replyAudioKey: true } },
       personalFiles: { select: { storageKey: true } },
       submissions: { select: { storageKey: true } },
     },
@@ -224,7 +224,7 @@ export async function deleteClient(userId: string, confirmEmail: string): Promis
   if (!user || user.role !== "CLIENT") return fail("Not found.");
   if (confirmEmail.trim().toLowerCase() !== user.email) return fail("Type the person's email exactly to confirm.");
   const keys = [
-    ...user.journal.map((j) => j.audioKey),
+    ...user.journal.flatMap((j) => [j.audioKey, j.replyAudioKey]),
     ...user.personalFiles.map((f) => f.storageKey),
     ...user.submissions.map((s) => s.storageKey),
   ].filter((k): k is string => Boolean(k));
@@ -259,9 +259,3 @@ export async function deletePrivateNote(id: string): Promise<ActionResult> {
   return { ok: true };
 }
 
-export async function markJournalRead(userId: string): Promise<ActionResult> {
-  await requireAdmin();
-  await db.journalEntry.updateMany({ where: { userId, readAt: null }, data: { readAt: new Date() } });
-  // No refresh here on purpose: "New" highlights stay visible until Rangika leaves the page.
-  return { ok: true };
-}
