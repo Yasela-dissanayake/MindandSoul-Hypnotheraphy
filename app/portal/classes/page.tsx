@@ -3,6 +3,8 @@ import { Award, GraduationCap } from "lucide-react";
 import { requireClientPage } from "@/lib/authz";
 import { getStudentCourses } from "@/lib/material";
 import { Progress } from "@/components/ui/progress";
+import { upcomingClassTimes } from "@/lib/class-dates";
+import { ClassDates } from "@/components/site/class-dates";
 
 export default async function CoursesPage() {
   const user = await requireClientPage();
@@ -31,6 +33,8 @@ export default async function CoursesPage() {
                 {c.course.description && <p className="text-sm text-stone-500">{c.course.description}</p>}
               </div>
             </div>
+            {/* upcoming class days, in their own time zone */}
+            {!c.completedAt && <ClassDates dates={upcomingClassTimes(c.course)} note={c.course.schedule} />}
             {total > 0 && (
               <div className="space-y-1">
                 <Progress value={(c.modulesDone / total) * 100} className="h-2 bg-sage-100 [&>div]:bg-sage-500" />

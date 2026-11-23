@@ -70,7 +70,9 @@ function BuyForm({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
-          kind === "course" ? { itemId: packageId, name, email, phone, currency, prerequisiteDone: prereqDone } : { packageId, name, email },
+          kind === "course"
+            ? { itemId: packageId, name, email, phone, currency, prerequisiteDone: prereqDone, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone }
+            : { packageId, name, email },
         ),
       });
       const start = await res.json();

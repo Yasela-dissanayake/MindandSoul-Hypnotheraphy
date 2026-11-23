@@ -35,6 +35,7 @@ export async function getStudentCourses(userId: string) {
         include: {
           modules: { orderBy: [{ order: "asc" }, { title: "asc" }] },
           items: { orderBy: [{ order: "asc" }, { createdAt: "asc" }], include: { resource: { select: resourceSelect } } },
+          dates: { orderBy: { startsAt: "asc" } },
         },
       },
     },

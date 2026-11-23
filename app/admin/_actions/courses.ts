@@ -9,6 +9,7 @@ import { isSiteImage } from "@/lib/covers";
 import { uniqueCourseSlug } from "@/lib/course-sales";
 import { enrollInClass } from "@/lib/class-enroll";
 import { blank, fail, refreshAll, type ActionResult } from "./common";
+import { DATE_RE, TIME_RE, perthMoment } from "@/lib/booking";
 
 // Courses are shared: content added here is seen by every enrolled student.
 
@@ -62,6 +63,11 @@ const websiteSchema = z.object({
   includeIds: z.array(z.string().min(1).max(50)).max(20).optional(),
   seats: z.number().int().min(0).max(10000).nullable(),
   published: z.boolean(),
+  // The class days, in Perth time. Left out = keep the days as they are.
+  dates: z
+    .array(z.object({ date: z.string().regex(DATE_RE, "Pick a date for every class day."), start: z.string().regex(TIME_RE, "Pick a start time for every class day."), end: z.string().regex(TIME_RE, "Pick an end time for every class day.") }))
+    .max(30, "That's a lot of class days. Please keep it to 30.")
+    .optional(),
 });
 
 /** Price, dates and text for the class's Reiki Training page, and whether it is on the website. */
@@ -90,6 +96,7 @@ export async function updateCourseWebsite(id: string, input: z.input<typeof webs
     if (parts.some((p) => p._count.includes)) return fail("A bundle can't include another bundle.");
   }
   if (d.published && price < 50) return fail("Add a price before putting the class on the website.");
+  for (const x of d.dates ?? []) if (x.end <= x.start) return fail(`The class on ${x.date} ends before it starts.`);
   if (d.published && course.archived) return fail("This class is hidden. Show it to students again first.");
   const slug = course.slug ?? (await uniqueCourseSlug(course.title, id));
   await db.course.update({
@@ -110,6 +117,13 @@ export async function updateCourseWebsite(id: string, input: z.input<typeof webs
       ...(d.includeIds ? { includes: { set: includeIds.map((x) => ({ id: x })) } } : {}),
     },
   });
+  if (d.dates) {
+    // Replace the class days. Perth has no daylight saving, so a Perth date + time is always one exact moment.
+    const rows = [...d.dates]
+      .sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start))
+      .map((x) => ({ courseId: id, date: x.date, start: x.start, end: x.end, startsAt: perthMoment(x.date, x.start), endsAt: perthMoment(x.date, x.end) }));
+    await db.$transaction([db.classDate.deleteMany({ where: { courseId: id } }), db.classDate.createMany({ data: rows })]);
+  }
   refreshAll();
   revalidatePath("/reiki-training", "layout");
   return { ok: true, data: { slug } };

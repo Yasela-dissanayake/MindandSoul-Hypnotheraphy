@@ -400,6 +400,23 @@ model Course {
   includes   Course[]    @relation("ClassBundle")
   includedIn Course[]    @relation("ClassBundle")
   promotions Promotion[]
+  dates      ClassDate[] // the class days, in Perth time
+}
+
+// One day of a live Reiki Training class. Rangika enters Perth dates and times; startsAt/endsAt are the
+// real moments, so every visitor sees the time in their own time zone (daylight saving handled).
+model ClassDate {
+  id       String   @id @default(cuid())
+  courseId String
+  date     String // Perth date, "YYYY-MM-DD"
+  start    String // Perth time, "HH:MM"
+  end      String // Perth time, "HH:MM"
+  startsAt DateTime
+  endsAt   DateTime
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([courseId, startsAt])
 }
 
 model CourseModule {
@@ -760,6 +777,7 @@ model CoursePurchase {
   newAccount      Boolean        @default(false)
   paidAt          DateTime?
   seenAt          DateTime? // Rangika has seen this new enrollment in the dashboard
+  timezone        String? // the buyer's device time zone, so the email shows class times in their own time
   createdAt       DateTime       @default(now())
 
   course Course @relation(fields: [courseId], references: [id], onDelete: Restrict)

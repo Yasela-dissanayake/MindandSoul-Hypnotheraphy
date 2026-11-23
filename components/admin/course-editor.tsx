@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowDown, ArrowUp, Award, ExternalLink, Globe, Pencil, Plus, Sparkles, Upload, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Award, CalendarDays, ExternalLink, Globe, Pencil, Plus, Sparkles, Trash2, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import type { EditorCourse, LibraryOption } from "@/lib/admin-plans";
 import { KIND_LABEL } from "@/lib/catalog";
+import { formatClassTime } from "@/lib/class-dates";
 import { uploadFile } from "@/lib/upload-client";
 import {
   addCourseItems,
@@ -448,6 +449,7 @@ export function CourseWebsiteForm({ course, classOptions }: { course: EditorCour
     published: w.published,
   });
   const [includeIds, setIncludeIds] = useState<string[]>(course.includes.map((c) => c.id));
+  const [dates, setDates] = useState<ClassDay[]>(w.dates);
   const [slug, setSlug] = useState(w.slug);
   const { pending, run } = useAction();
   // Classes that can go in a bundle: ordinary classes other than this one.
@@ -470,6 +472,8 @@ export function CourseWebsiteForm({ course, classOptions }: { course: EditorCour
           seats: f.seats.trim() === "" ? null : Math.max(0, Math.floor(Number(f.seats))),
           published,
           includeIds,
+          // A bundle uses the days of the classes it includes.
+          dates: includeIds.length ? [] : dates,
         }),
       published && !w.published ? "Published. People can enroll on the website now." : !published && w.published ? "Taken off the website" : "Saved",
       (r) => {
@@ -528,15 +532,22 @@ export function CourseWebsiteForm({ course, classOptions }: { course: EditorCour
           <Input id="cw-seats" type="number" min={0} step={1} placeholder="No limit" value={f.seats} onChange={set("seats")} />
         </div>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-1.5">
-          <Label htmlFor="cw-format">Where and how long</Label>
-          <Input id="cw-format" maxLength={120} placeholder="e.g. Online live group class · 2 days, 3 hours each" value={f.format} onChange={set("format")} />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="cw-schedule">Next dates</Label>
-          <Input id="cw-schedule" maxLength={200} placeholder="e.g. Sat 14 & Sun 15 December, 6–9pm (Perth time)" value={f.schedule} onChange={set("schedule")} />
-        </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="cw-format">Where and how long</Label>
+        <Input id="cw-format" maxLength={120} placeholder="e.g. Online live group class · 2 days, 3 hours each" value={f.format} onChange={set("format")} />
+      </div>
+      {includeIds.length ? (
+        <p className="flex items-start gap-2 rounded-xl bg-stone-50 p-4 text-sm text-stone-600 ring-1 ring-stone-200">
+          <CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-sage-600" />
+          This is a bundle, so the website shows the class days of the classes it includes. Add the days in each of those classes.
+        </p>
+      ) : (
+        <ClassDaysEditor dates={dates} onChange={setDates} />
+      )}
+      <div className="space-y-1.5">
+        <Label htmlFor="cw-schedule">Note about dates (optional)</Label>
+        <Input id="cw-schedule" maxLength={200} placeholder="e.g. More dates coming soon. Ask about a private class." value={f.schedule} onChange={set("schedule")} />
+        <p className="text-xs text-stone-500">Shown under the class days, or on its own when there are no days yet.</p>
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="cw-prereq">Before you join (optional)</Label>
@@ -608,6 +619,75 @@ export function CourseWebsiteForm({ course, classOptions }: { course: EditorCour
           </Button>
         )}
       </div>
+    </div>
+  );
+}
+
+type ClassDay = { date: string; start: string; end: string };
+
+/** A Perth date + time as a real moment. Perth is UTC+8 all year (no daylight saving). */
+const perthAt = (date: string, time: string) => new Date(`${date}T${time}:00+08:00`);
+
+/** The class days, typed in Perth time, with what that is in Sydney/Melbourne and Dubai (daylight saving included). */
+function ClassDaysEditor({ dates, onChange }: { dates: ClassDay[]; onChange: (d: ClassDay[]) => void }) {
+  const update = (i: number, k: keyof ClassDay, v: string) => onChange(dates.map((d, j) => (j === i ? { ...d, [k]: v } : d)));
+  const add = () => {
+    const last = dates[dates.length - 1];
+    // Next day after the last one, same times; or tomorrow 6–9 pm.
+    const base = last?.date ? new Date(`${last.date}T12:00:00Z`) : new Date();
+    base.setUTCDate(base.getUTCDate() + 1);
+    onChange([...dates, { date: base.toISOString().slice(0, 10), start: last?.start || "18:00", end: last?.end || "21:00" }]);
+  };
+  const today = new Date().toISOString().slice(0, 10);
+  return (
+    <div className="space-y-3 rounded-xl bg-stone-50 p-4 ring-1 ring-stone-200">
+      <div>
+        <p className="flex items-center gap-2 font-medium text-stone-800">
+          <CalendarDays className="h-4 w-4 text-sage-600" /> Class days (Perth time)
+        </p>
+        <p className="text-xs text-stone-500">
+          Enter each day in Perth time. Visitors see the times in their own time zone, with daylight saving worked out for them. Past days are hidden on the
+          website automatically.
+        </p>
+      </div>
+      {dates.length === 0 && <p className="text-sm text-stone-500">No class days yet.</p>}
+      <ul className="space-y-2">
+        {dates.map((d, i) => {
+          const ok = d.date && d.start && d.end && d.end > d.start;
+          const t = ok ? { startsAt: perthAt(d.date, d.start), endsAt: perthAt(d.date, d.end) } : null;
+          return (
+            <li key={i} className="space-y-1.5 rounded-lg bg-white p-3 ring-1 ring-stone-200">
+              <div className="flex flex-wrap items-end gap-2">
+                <div className="space-y-1">
+                  <Label className="text-xs text-stone-500">Day {i + 1}</Label>
+                  <Input type="date" className="w-40" value={d.date} min={today} onChange={(e) => update(i, "date", e.target.value)} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-stone-500">From</Label>
+                  <Input type="time" className="w-28" value={d.start} onChange={(e) => update(i, "start", e.target.value)} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-stone-500">To</Label>
+                  <Input type="time" className="w-28" value={d.end} onChange={(e) => update(i, "end", e.target.value)} />
+                </div>
+                <Button type="button" variant="ghost" size="icon" className="text-stone-400 hover:text-red-600" aria-label={`Remove day ${i + 1}`} onClick={() => onChange(dates.filter((_, j) => j !== i))}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+              {t ? (
+                <p className="text-xs text-stone-500">
+                  Sydney / Melbourne: {formatClassTime(t, "Australia/Sydney")} · Dubai: {formatClassTime(t, "Asia/Dubai")}
+                </p>
+              ) : (
+                d.date && d.start && d.end && <p className="text-xs text-red-600">The end time must be after the start time.</p>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+      <Button type="button" variant="outline" size="sm" onClick={add}>
+        <Plus className="mr-1.5 h-4 w-4" /> Add a class day
+      </Button>
     </div>
   );
 }

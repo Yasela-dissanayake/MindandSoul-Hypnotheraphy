@@ -12,6 +12,8 @@ const schema = z.object({
   currency: z.enum(["aud", "aed"]).optional(),
   // "I have completed Reiki Level 1" for classes with a prerequisite.
   prerequisiteDone: z.boolean().optional(),
+  // Their device's time zone, so the enrollment email shows the class days in their own time.
+  timezone: z.string().max(64).optional(),
 });
 
 /** Starts paying for a place on a taught course. The price comes from the database, not from the browser. */

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { ArrowLeft, Award, BadgeCheck, BookOpen, CalendarDays, CheckCircle, Info, Layers, MessageCircle, MonitorPlay, Users } from "lucide-react";
+import { ArrowLeft, Award, BadgeCheck, BookOpen, CheckCircle, Info, Layers, MessageCircle, MonitorPlay, Users } from "lucide-react";
 import { db } from "@/lib/db";
 import { onSaleWhere } from "@/lib/course-sales";
 import { BuyPackage } from "@/components/learn/buy-package";
@@ -13,6 +13,8 @@ import { getActivePromotion, promotionLink, freeOptionOf } from "@/lib/promotion
 import { PromoNote } from "@/components/site/promo-note";
 import { RichText } from "@/components/site/rich-text";
 import { TRACK, classHref, enquiryHref } from "@/lib/site-routes";
+import { upcomingClassTimes } from "@/lib/class-dates";
+import { ClassDates } from "@/components/site/class-dates";
 
 export const dynamic = "force-dynamic";
 
@@ -21,9 +23,10 @@ async function load(slug: string) {
     where: { ...onSaleWhere, slug },
     include: {
       modules: { orderBy: [{ order: "asc" }, { title: "asc" }], select: { id: true, title: true, description: true } },
+      dates: { orderBy: { startsAt: "asc" } },
       includes: {
         orderBy: { order: "asc" },
-        select: { id: true, title: true, summary: true, slug: true, published: true, archived: true, price: true, priceAed: true },
+        select: { id: true, title: true, summary: true, slug: true, published: true, archived: true, price: true, priceAed: true, dates: { orderBy: { startsAt: "asc" } } },
       },
     },
   });
@@ -167,15 +170,12 @@ export default async function ClassPage({ params }: { params: Promise<{ slug: st
                 {saving && !free && <p className="text-sm font-medium text-sage-700">You save {formatPrice(saving, price.currency)}</p>}
               </div>
               <CurrencySwitch current={currency} />
+              {/* class days in the visitor's own time zone (daylight saving included) */}
+              <ClassDates dates={upcomingClassTimes(c)} note={c.schedule} className="border-y border-stone-100 py-4" />
               <ul className="space-y-2 text-sm text-stone-600">
                 {c.format && (
                   <li className="flex items-start gap-2">
                     <MonitorPlay className="mt-0.5 h-4 w-4 shrink-0 text-sage-600" /> {c.format}
-                  </li>
-                )}
-                {c.schedule && (
-                  <li className="flex items-start gap-2">
-                    <CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-sage-600" /> {c.schedule}
                   </li>
                 )}
                 {c.seats !== null && !full && (

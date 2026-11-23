@@ -318,8 +318,17 @@ export function courseEnrolledEmail(opts: {
   schedule?: string | null;
   format?: string | null;
   login?: { username: string; password: string } | null;
+  // The class days, already written out in the buyer's own time zone.
+  classDays?: { zone: string; lines: string[] } | null;
 }) {
   const hello = `Hello ${opts.name},`;
+  const days = opts.classDays?.lines.length ? opts.classDays : null;
+  const daysHtml = days
+    ? `<p style="margin:0 0 6px"><strong>Your class days</strong> (${escapeHtml(days.zone)}):</p><ul style="margin:0 0 16px;padding-left:20px">${days.lines
+        .map((l) => `<li style="margin:0 0 4px">${escapeHtml(l)}</li>`)
+        .join("")}</ul>`
+    : "";
+  const daysText = days ? `\nYour class days (${days.zone}):\n${days.lines.map((l) => `- ${l}`).join("\n")}\n` : "";
   const intro = `Thank you for enrolling in ${opts.courseTitle}. Your place is booked, and Rangika will be in touch with everything you need before the class.`;
   const when = [opts.schedule, opts.format].filter(Boolean).join(" · ");
   const url = `${SITE_URL}/login?bought=1`; // shows the "use the details we emailed you" note
@@ -334,12 +343,12 @@ export function courseEnrolledEmail(opts: {
     html: layout(
       `<p style="margin:0 0 16px">${escapeHtml(hello)}</p>${paragraphs(intro)}${
         when ? `<p style="margin:0 0 16px"><strong>When and where:</strong> ${escapeHtml(when)}</p>` : ""
-      }${details}${button(url, "Sign in")}`,
+      }${daysHtml}${details}${button(url, "Sign in")}`,
     ),
     text: `${hello}
 
 ${intro}
-${when ? `\nWhen and where: ${when}\n` : ""}
+${when ? `\nWhen and where: ${when}\n` : ""}${daysText}
 ${opts.login ? `Username: ${opts.login.username}\nPassword: ${opts.login.password}` : "Sign in as usual (with Google or your username and password). You'll find the class under My classes."}
 
 Sign in: ${url}`,

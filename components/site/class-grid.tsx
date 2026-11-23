@@ -7,9 +7,12 @@ import { bundleSaving } from "@/lib/class-display";
 import { classHref } from "@/lib/site-routes";
 import { cn } from "@/lib/utils";
 import { OfferBadge, promotedCard } from "@/components/site/offer-badge";
+import { upcomingClassTimes } from "@/lib/class-dates";
+import { ClassStartLine } from "@/components/site/class-dates";
 
 export const classCardInclude = {
-  includes: { select: { title: true, price: true, priceAed: true }, orderBy: { order: "asc" } },
+  dates: { orderBy: { startsAt: "asc" } },
+  includes: { select: { title: true, price: true, priceAed: true, dates: { orderBy: { startsAt: "asc" } } }, orderBy: { order: "asc" } },
 } satisfies Prisma.CourseInclude;
 type ClassCard = Prisma.CourseGetPayload<{ include: typeof classCardInclude }>;
 
@@ -59,9 +62,9 @@ export function ClassGrid({ classes, currency, promotedId, promoFree }: { classe
                         <MonitorPlay className="h-3.5 w-3.5 shrink-0 text-sage-600" /> {c.format}
                       </p>
                     )}
-                    {c.schedule && (
+                    {(c.schedule || upcomingClassTimes(c).length > 0) && (
                       <p className="flex items-center gap-1.5">
-                        <CalendarDays className="h-3.5 w-3.5 shrink-0 text-sage-600" /> {c.schedule}
+                        <CalendarDays className="h-3.5 w-3.5 shrink-0 text-sage-600" /> <ClassStartLine dates={upcomingClassTimes(c)} note={c.schedule} />
                       </p>
                     )}
                     {c.includes.length > 0 && (

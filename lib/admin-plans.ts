@@ -76,6 +76,7 @@ export async function loadCourseForEditor(courseId: string) {
       _count: { select: { enrollments: true, purchases: true } },
       includes: { select: { id: true, title: true }, orderBy: { order: "asc" } },
       includedIn: { select: { id: true, title: true }, orderBy: { order: "asc" } },
+      dates: { orderBy: { startsAt: "asc" }, select: { date: true, start: true, end: true } },
     },
   });
   if (!c) return null;
@@ -93,6 +94,8 @@ export async function loadCourseForEditor(courseId: string) {
       details: c.details ?? "",
       format: c.format ?? "",
       schedule: c.schedule ?? "",
+      // The class days, in Perth time ("YYYY-MM-DD", "HH:MM").
+      dates: c.dates,
       price: c.price,
       priceAed: c.priceAed,
       prerequisite: c.prerequisite ?? "",

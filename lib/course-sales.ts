@@ -6,6 +6,21 @@ import { classPrice, type Currency } from "@/lib/currency";
 import { classesFor, enrollInClass } from "@/lib/class-enroll";
 import { promoFor } from "@/lib/promotions";
 import { classHref } from "@/lib/site-routes";
+import { classDatesInclude, formatClassTime, timeZoneName, upcomingClassTimes } from "@/lib/class-dates";
+import { isValidTimezone } from "@/lib/dates";
+
+const tzOf = (tz?: string | null) => (tz && isValidTimezone(tz) ? tz : null);
+
+/** The class days for the enrollment email, in the buyer's own time zone (Perth if we don't know it). */
+function classDaysForEmail(c: Parameters<typeof upcomingClassTimes>[0], timezone: string | null) {
+  const days = upcomingClassTimes(c);
+  if (!days.length) return null;
+  const tz = tzOf(timezone) ?? "Australia/Perth";
+  return {
+    zone: timeZoneName(tz),
+    lines: days.map((d) => `${d.label ? `${d.label}: ` : ""}${formatClassTime(d, tz, { year: true })}`),
+  };
+}
 
 // Taught courses (Reiki Level 1, 2, 3 ...) sold on the website at /courses.
 // Paying enrolls the person on the course straight away; Rangika then teaches the class.
@@ -34,6 +49,7 @@ export async function startCoursePurchase(input: {
   phone?: string;
   currency?: Currency;
   prerequisiteDone?: boolean;
+  timezone?: string;
 }) {
   const course = await db.course.findFirst({ where: { id: input.itemId, ...onSaleWhere } });
   if (!course) throw new PurchaseError("This class is not open for enrollment any more.");
@@ -113,14 +129,14 @@ export async function startCoursePurchase(input: {
   // Free while a promotion runs: no card. Same checks as above, then they're enrolled straight away.
   if ((await promoFor("class", course.id)).free) {
     const purchase = await db.coursePurchase.create({
-      data: { courseId: course.id, name: input.name.trim(), email, phone: input.phone?.trim() || null, amount: 0, currency: price.currency },
+      data: { courseId: course.id, name: input.name.trim(), email, phone: input.phone?.trim() || null, amount: 0, currency: price.currency, timezone: tzOf(input.timezone) },
     });
     const done = await completeCoursePurchase(purchase.id);
     return { free: true as const, newAccount: Boolean(done?.newAccount) };
   }
 
   const purchase = await db.coursePurchase.create({
-    data: { courseId: course.id, name: input.name.trim(), email, phone: input.phone?.trim() || null, amount: price.amount, currency: price.currency },
+    data: { courseId: course.id, name: input.name.trim(), email, phone: input.phone?.trim() || null, amount: price.amount, currency: price.currency, timezone: tzOf(input.timezone) },
   });
   try {
     const pi = await stripe().paymentIntents.create({
@@ -158,7 +174,7 @@ export async function fulfilCoursePurchase(paymentIntentId: string) {
  * and send the emails. Only the first caller does it.
  */
 async function completeCoursePurchase(purchaseId: string) {
-  const purchase = await db.coursePurchase.findUnique({ where: { id: purchaseId }, include: { course: true } });
+  const purchase = await db.coursePurchase.findUnique({ where: { id: purchaseId }, include: { course: { include: classDatesInclude } } });
   if (!purchase) return null;
   const claimed = await db.coursePurchase.updateMany({ where: { id: purchase.id, status: "PENDING" }, data: { status: "PAID", paidAt: new Date() } });
   if (claimed.count === 0) return db.coursePurchase.findUnique({ where: { id: purchase.id } });
@@ -173,7 +189,10 @@ async function completeCoursePurchase(purchaseId: string) {
 
   const c = purchase.course;
   const [toStudent, toRangika] = await Promise.all([
-    sendMail({ to: purchase.email, ...courseEnrolledEmail({ name: purchase.name, courseTitle: c.title, schedule: c.schedule, format: c.format, login }) }),
+    sendMail({
+      to: purchase.email,
+      ...courseEnrolledEmail({ name: purchase.name, courseTitle: c.title, schedule: c.schedule, format: c.format, login, classDays: classDaysForEmail(c, purchase.timezone) }),
+    }),
     sendMail({
       to: PRACTITIONER_EMAIL,
       replyTo: purchase.email,
