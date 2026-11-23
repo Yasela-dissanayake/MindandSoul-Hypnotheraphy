@@ -7,7 +7,7 @@ import { requireAdmin } from "@/lib/authz";
 import { deleteObject } from "@/lib/storage";
 import { isSiteImage } from "@/lib/covers";
 import { uniqueCourseSlug } from "@/lib/course-sales";
-import { enrolInClass } from "@/lib/class-enrol";
+import { enrollInClass } from "@/lib/class-enroll";
 import { blank, fail, refreshAll, type ActionResult } from "./common";
 
 // Courses are shared: content added here is seen by every enrolled student.
@@ -56,13 +56,15 @@ const websiteSchema = z.object({
   priceAed: z.number().min(0, "The price can't be negative.").max(500000).nullable().optional(),
   prerequisite: z.string().max(120).optional().nullable(),
   highlights: z.string().max(5000).optional().nullable(),
+  // Reiki Training menu: "Reiki" (Usui levels) or "Animal Reiki".
+  track: z.enum(["REIKI", "ANIMAL"]).optional(),
   // For a bundle: the classes it includes (empty = an ordinary class).
   includeIds: z.array(z.string().min(1).max(50)).max(20).optional(),
   seats: z.number().int().min(0).max(10000).nullable(),
   published: z.boolean(),
 });
 
-/** Price, dates and text for the public /classes page, and whether it is on the website. */
+/** Price, dates and text for the class's Reiki Training page, and whether it is on the website. */
 export async function updateCourseWebsite(id: string, input: z.input<typeof websiteSchema>): Promise<ActionResult<{ slug: string }>> {
   await requireAdmin();
   const parsed = websiteSchema.safeParse(input);
@@ -102,13 +104,14 @@ export async function updateCourseWebsite(id: string, input: z.input<typeof webs
       priceAed,
       prerequisite: blank(d.prerequisite),
       highlights: blank(d.highlights),
+      ...(d.track ? { track: d.track } : {}),
       seats: d.seats,
       published: d.published,
       ...(d.includeIds ? { includes: { set: includeIds.map((x) => ({ id: x })) } } : {}),
     },
   });
   refreshAll();
-  revalidatePath("/classes", "layout");
+  revalidatePath("/reiki-training", "layout");
   return { ok: true, data: { slug } };
 }
 
@@ -121,7 +124,7 @@ export async function deleteCourse(id: string): Promise<ActionResult> {
   await db.course.delete({ where: { id } });
   if (c.imageKey && !isSiteImage(c.imageKey)) await deleteObject(c.imageKey);
   refreshAll();
-  revalidatePath("/classes", "layout");
+  revalidatePath("/reiki-training", "layout");
   return { ok: true };
 }
 
@@ -134,7 +137,7 @@ export async function setCourseCover(id: string, key: string | null): Promise<Ac
   await db.course.update({ where: { id }, data: { imageKey: key } });
   if (c.imageKey && c.imageKey !== key && !isSiteImage(c.imageKey)) await deleteObject(c.imageKey);
   refreshAll();
-  revalidatePath("/classes", "layout");
+  revalidatePath("/reiki-training", "layout");
   return { ok: true };
 }
 
@@ -227,7 +230,7 @@ export async function enrollStudent(userId: string, courseId: string): Promise<A
   const user = await db.user.findUnique({ where: { id: userId } });
   if (!user || user.role !== "CLIENT") return fail("Person not found.");
   if (!(await db.course.findUnique({ where: { id: courseId }, select: { id: true } }))) return fail("Class not found.");
-  await enrolInClass(userId, courseId); // a bundle enrols them in each of its classes
+  await enrollInClass(userId, courseId); // a bundle enrolls them in each of its classes
   refreshAll();
   return { ok: true };
 }

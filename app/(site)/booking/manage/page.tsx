@@ -314,7 +314,7 @@ export default function ManageBookingPage() {
                 <CardContent className="p-6 space-y-3">
                   <Mail className="h-8 w-8 text-sage-600 mx-auto" />
                   <h3 className="font-semibold text-stone-800">Email Support</h3>
-                  <p className="text-sm text-stone-600">healwithrangika@gmail.com</p>
+                  <p className="text-sm text-stone-600">mindandsoulworks@gmail.com</p>
                   <p className="text-xs text-stone-500">Response within 24 hours</p>
                 </CardContent>
               </Card>

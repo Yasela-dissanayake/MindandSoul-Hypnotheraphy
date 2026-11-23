@@ -11,7 +11,7 @@ import { clientCanAccessResource } from "@/lib/plans";
 //   /api/files/journal-reply/:id  Rangika's voice reply to a journal entry (owner or admin)
 //   /api/files/voice/:id        encouragement voice clip (any signed-in user)
 //   /api/files/submission/:id   work a client sent (owner or admin)
-//   /api/files/certificate/:id  enrolment certificate (the student or admin)
+//   /api/files/certificate/:id  enrollment certificate (the student or admin)
 //   /api/files/learning-certificate/:id  online course certificate (the learner or admin)
 
 const EXT: Record<string, string> = {

@@ -32,6 +32,12 @@ enum Service {
   HYPNOTHERAPY
 }
 
+/// Reiki Training: the Usui Reiki levels, or Animal Reiki & Communication training.
+enum TrainingTrack {
+  REIKI
+  ANIMAL
+}
+
 enum UserStatus {
   INVITED // account created, has not signed in yet
   ACTIVE
@@ -202,6 +208,7 @@ model Plan {
   // Bought on the website: the service it's for (used to book the remaining sessions of a package).
   sessionServiceId String?
   sessionService   SessionService? @relation(fields: [sessionServiceId], references: [id], onDelete: SetNull)
+  selfPaced        Boolean         @default(false) // a recorded journey: Rangika adds the recordings, no live sessions to book
   bookings         Booking[]
 
   @@index([userId])
@@ -355,7 +362,7 @@ model Question {
 }
 
 // ---------------------------------------------------------------------------
-// COURSES: shared content, students enrol
+// COURSES: shared content, students enroll
 // ---------------------------------------------------------------------------
 
 model Course {
@@ -368,18 +375,19 @@ model Course {
   updatedAt   DateTime @updatedAt
 
   // Selling the class on the website (/classes/<slug>)
-  slug         String? @unique
+  slug         String?       @unique
   summary      String? // one line shown on the course list
   details      String? // "about this course" on the website; falls back to description
   format       String? // e.g. "In person in Perth · 2 days"
   schedule     String? // e.g. "Sat 14 & Sun 15 December, 9am-4pm"
-  price        Int     @default(0) // cents, AUD (everyone outside the UAE)
+  price        Int           @default(0) // cents, AUD (everyone outside the UAE)
   priceAed     Int? // fils (AED cents), shown to visitors in the UAE; null = they see the AUD price
-  currency     String  @default("aud")
+  currency     String        @default("aud")
   seats        Int? // places left; null = no limit
-  published    Boolean @default(false) // false = not on the website
+  published    Boolean       @default(false) // false = not on the website
   imageKey     String? // cover photo (R2 object key)
   prerequisite String? // e.g. "Reiki Level 1": shown on the website; buyers confirm they have completed it
+  track        TrainingTrack @default(REIKI) // Reiki Training menu: "Reiki" or "Animal Reiki"
   highlights   String? // "What you'll explore" on the website, one point per line
 
   modules     CourseModule[]
@@ -387,7 +395,7 @@ model Course {
   enrollments Enrollment[]
   purchases   CoursePurchase[]
 
-  // A bundle (e.g. "Reiki Level 1 & 2") includes other classes: buying it enrols the student in each of them,
+  // A bundle (e.g. "Reiki Level 1 & 2") includes other classes: buying it enrolls the student in each of them,
   // so the content is added once, in the individual classes.
   includes   Course[]    @relation("ClassBundle")
   includedIn Course[]    @relation("ClassBundle")
@@ -605,6 +613,7 @@ model Booking {
   planId            String?
   optionId          String? // the single session or package bought
   credit            Boolean        @default(false) // booked with a session left in their package (no payment)
+  recorded          Boolean        @default(false) // a self-paced recorded journey: paid, no live time (never blocks the calendar)
   user              User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
   plan              Plan?          @relation(fields: [planId], references: [id], onDelete: SetNull)
   option            SessionOption? @relation(fields: [optionId], references: [id], onDelete: SetNull)
@@ -750,7 +759,7 @@ model CoursePurchase {
   userId          String? // the account that was enrolled
   newAccount      Boolean        @default(false)
   paidAt          DateTime?
-  seenAt          DateTime? // Rangika has seen this new enrolment in the dashboard
+  seenAt          DateTime? // Rangika has seen this new enrollment in the dashboard
   createdAt       DateTime       @default(now())
 
   course Course @relation(fields: [courseId], references: [id], onDelete: Restrict)
@@ -792,6 +801,9 @@ model SessionService {
   details     String? // "About" on the service page
   highlights  String? // "How it can help", one point per line
   planService Service? // the kind of client session plan a booking creates (null for enquiry-only services)
+  category    Service  @default(HYPNOTHERAPY) // website tab: Clinical Hypnotherapy, or Reiki Energy Healing (Reiki / Animal)
+  tagline     String? // short line under the title, e.g. "Create space for positive change."
+  body        String? // the full page text: "## Heading", "- point", "**bold**" (see components/site/rich-text.tsx)
   minutes     Int? // length of a booking; null = the calendar's normal length for in-person / online
   lengthLabel String? // shown to visitors, e.g. "1 hour"; null = not shown
   inPerson    Boolean  @default(true) // can be booked in person in Perth
@@ -818,6 +830,7 @@ model SessionOption {
   priceAed  Int? // fils, shown to visitors in the UAE; null = they see AUD
   mode      BookingMode? // only for in-person or only for online; null = either
   note      String? // e.g. "Recommended for IBS · completed within 6 weeks"
+  recorded  Boolean      @default(false) // also sold as a self-paced recorded journey (same price, no live times)
   order     Int          @default(0)
   createdAt DateTime     @default(now())
 

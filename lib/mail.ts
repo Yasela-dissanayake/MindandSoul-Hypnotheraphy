@@ -352,7 +352,7 @@ export function courseSoldEmail(opts: { name: string; email: string; phone?: str
   const contact = [opts.email, opts.phone].filter(Boolean).join(" · ");
   const seats = opts.seatsLeft === null ? "" : `${opts.seatsLeft} place${opts.seatsLeft === 1 ? "" : "s"} left.`;
   return {
-    subject: `New enrolment: ${opts.courseTitle}`,
+    subject: `New enrollment: ${opts.courseTitle}`,
     html: layout(
       `<p style="margin:0 0 16px"><strong>${escapeHtml(opts.name)}</strong> (${escapeHtml(contact)}) paid ${escapeHtml(opts.amount)} for <strong>${escapeHtml(opts.courseTitle)}</strong>.</p><p style="margin:0 0 16px">They've been enrolled automatically. ${escapeHtml(seats)}</p>${button(url, "Open Courses")}`,
     ),
@@ -403,7 +403,10 @@ type SessionMail = {
   inPerson: boolean;
   paid: string | null; // e.g. "AUD 610"; null when booked with a session left in their package
   sessionsLeft: number; // still to book after this one
+  recorded?: boolean; // a self-paced recorded journey: no appointment, Rangika adds the recordings to their private space
 };
+
+const RECORDED_TEXT = "Self-paced recorded journey. No appointment needed: Rangika adds your recordings, workbooks and trackers to your private space.";
 
 function detailRows(rows: [string, string][]) {
   return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px;background:#f6f7f6;border-radius:8px;font-family:Arial,sans-serif;font-size:15px">${rows
@@ -414,15 +417,24 @@ function detailRows(rows: [string, string][]) {
 /** To the client: their session is booked (and their login details if the account is new). */
 export function sessionBookedEmail(opts: SessionMail & { login?: { username: string; password: string } | null }) {
   const hello = `Hello ${opts.name},`;
-  const intro = opts.paid
-    ? `Thank you for booking ${opts.serviceTitle}. Your payment went through and your session is confirmed.`
-    : `Your next ${opts.serviceTitle} session is booked.`;
-  const rows: [string, string][] = [
-    ["Session", [opts.serviceTitle, opts.optionTitle].filter(Boolean).join(" · ")],
-    ["When", opts.when],
-    ["Where", opts.inPerson ? "In person in Perth. Rangika will confirm the address with you." : "Online. Your session link will be in your private space."],
-    ...(opts.paid ? ([["Paid", opts.paid]] as [string, string][]) : []),
-  ];
+  const intro = opts.recorded
+    ? `Thank you for choosing the ${opts.serviceTitle} self-paced recorded journey. Your payment went through.`
+    : opts.paid
+      ? `Thank you for booking ${opts.serviceTitle}. Your payment went through and your session is confirmed.`
+      : `Your next ${opts.serviceTitle} session is booked.`;
+  const rows: [string, string][] = opts.recorded
+    ? [
+        ["Journey", [opts.serviceTitle, opts.optionTitle].filter(Boolean).join(" · ")],
+        ["Format", RECORDED_TEXT],
+        ...(opts.paid ? ([["Paid", opts.paid]] as [string, string][]) : []),
+      ]
+    : [
+        ["Session", [opts.serviceTitle, opts.optionTitle].filter(Boolean).join(" · ")],
+        ["When", opts.when],
+        ["Where", opts.inPerson ? "In person in Perth. Rangika will confirm the address with you." : "Online. Your session link will be in your private space."],
+        ...(opts.paid ? ([["Paid", opts.paid]] as [string, string][]) : []),
+      ];
+  const footer = opts.recorded ? "Any questions? Simply reply to this email." : "Need to change the time? Simply reply to this email.";
   const left =
     opts.sessionsLeft > 0
       ? `You have ${opts.sessionsLeft} more session${opts.sessionsLeft === 1 ? "" : "s"} in your package. Book ${opts.sessionsLeft === 1 ? "it" : "them"} whenever it suits you from your private space (My sessions → Book your next session).`
@@ -435,9 +447,13 @@ export function sessionBookedEmail(opts: SessionMail & { login?: { username: str
       ])}`
     : `<p style="margin:0 0 16px">Sign in as usual (with Google or your username and password) to see your session details.</p>`;
   return {
-    subject: opts.paid ? `Your session is booked: ${opts.serviceTitle}` : `Session booked: ${opts.serviceTitle}`,
+    subject: opts.recorded
+      ? `Your recorded journey: ${opts.serviceTitle}`
+      : opts.paid
+        ? `Your session is booked: ${opts.serviceTitle}`
+        : `Session booked: ${opts.serviceTitle}`,
     html: layout(
-      `<p style="margin:0 0 16px">${escapeHtml(hello)}</p>${paragraphs(intro)}${detailRows(rows)}${left ? paragraphs(left) : ""}${login}${button(url, "Sign in")}<p style="margin:0;color:#78716c;font-size:14px">Need to change the time? Simply reply to this email.</p>`,
+      `<p style="margin:0 0 16px">${escapeHtml(hello)}</p>${paragraphs(intro)}${detailRows(rows)}${left ? paragraphs(left) : ""}${login}${button(url, "Sign in")}<p style="margin:0;color:#78716c;font-size:14px">${footer}</p>`,
     ),
     text: `${hello}
 
@@ -449,7 +465,7 @@ ${opts.login ? `Username: ${opts.login.username}\nPassword: ${opts.login.passwor
 
 Sign in: ${url}
 
-Need to change the time? Simply reply to this email.`,
+${footer}`,
   };
 }
 
@@ -469,8 +485,12 @@ export function sessionBookedAdminEmail(
   const rows: [string, string][] = [
     ["Client", `${opts.name} · ${[opts.email, opts.phone].filter(Boolean).join(" · ")}`],
     ["Session", [opts.serviceTitle, opts.optionTitle].filter(Boolean).join(" · ")],
-    ["When (Perth time)", opts.when],
-    ["Where", opts.inPerson ? "In person" : "Online / distance"],
+    ...(opts.recorded
+      ? ([["Format", "Self-paced recorded journey (no appointment). Please add their recordings, workbooks and trackers to their plan."]] as [string, string][])
+      : ([
+          ["When (Perth time)", opts.when],
+          ["Where", opts.inPerson ? "In person" : "Online / distance"],
+        ] as [string, string][])),
     ...(opts.clientTimezone ? ([["Client's time zone", opts.clientTimezone.replace(/_/g, " ")]] as [string, string][]) : []),
     ["Payment", opts.paid ?? "Booked with a session left in their package"],
     ...(opts.sessionsLeft > 0 ? ([["Still to book", `${opts.sessionsLeft} session${opts.sessionsLeft === 1 ? "" : "s"}`]] as [string, string][]) : []),
@@ -485,7 +505,7 @@ export function sessionBookedAdminEmail(
     .map(([k, v]) => `<p style="margin:0 0 4px"><strong>${escapeHtml(k)}</strong></p>${quote(v!)}`)
     .join("");
   return {
-    subject: `New booking: ${opts.serviceTitle} · ${opts.name}`,
+    subject: `${opts.recorded ? "New recorded journey" : "New booking"}: ${opts.serviceTitle} · ${opts.name}`,
     html: layout(`${detailRows(rows)}${noteHtml}${button(url, "Open their page")}`),
     text: `${rows.map(([k, v]) => `${k}: ${v}`).join("\n")}\n\n${notes
       .filter(([, v]) => v?.trim())

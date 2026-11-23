@@ -14,17 +14,28 @@ import { SlotPicker, myTz, type Slot } from "@/components/booking/slot-picker";
 import { cn } from "@/lib/utils";
 
 // The booking page: pick a session (single or package) → in person or online → a time → your details → pay.
+// (Self-paced recorded journeys are the pre-built Courses, not booked here.)
 // The price shown comes from the server; the server works it out again when the payment starts.
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "");
 
 // free = free under the running promotion (the server checks this again when booking).
-export type BookingOption = { id: string; title: string; sessions: number; note: string | null; mode: "IN_PERSON" | "DISTANCE" | null; price: number; currency: "aud" | "aed"; free?: boolean };
+export type BookingOption = {
+  id: string;
+  title: string;
+  sessions: number;
+  note: string | null;
+  mode: "IN_PERSON" | "DISTANCE" | null;
+  price: number;
+  currency: "aud" | "aed";
+  free?: boolean;
+};
 export type BookingService = {
   id: string;
   slug: string;
   title: string;
   summary: string | null;
+  category: "HYPNOTHERAPY" | "REIKI_HEALING" | "ANIMAL_REIKI";
   lengthLabel: string | null;
   inPerson: boolean;
   online: boolean;
@@ -32,6 +43,12 @@ export type BookingService = {
   promoted?: boolean; // the running promotion is about this service
 };
 type Mode = "IN_PERSON" | "DISTANCE";
+
+const GROUPS: { category: BookingService["category"]; label: string }[] = [
+  { category: "HYPNOTHERAPY", label: "Clinical Hypnotherapy" },
+  { category: "REIKI_HEALING", label: "Reiki Energy Healing" },
+  { category: "ANIMAL_REIKI", label: "Animal Reiki & Communication" },
+];
 
 const money = (amount: number, currency: string) => {
   const v = amount / 100;
@@ -68,9 +85,17 @@ function Step({ n, title, done, children }: { n: number; title: string; done?: b
   );
 }
 
-export function BookingFlow({ services, initial }: { services: BookingService[]; initial: { service?: string; sessions?: number; mode?: string } }) {
+export function BookingFlow({
+  services,
+  initial,
+}: {
+  services: BookingService[];
+  initial: { service?: string; sessions?: number; mode?: string };
+}) {
   const start = services.find((s) => s.slug === initial.service) ?? null;
   const [serviceId, setServiceId] = useState<string | null>(start?.id ?? null);
+  // Arriving from a service's page: show just that service, with a way to choose another.
+  const [showAll, setShowAll] = useState(!start);
   const service = services.find((s) => s.id === serviceId) ?? null;
   const [optionId, setOptionId] = useState<string | null>(
     start ? (start.options.find((o) => o.sessions === initial.sessions) ?? (start.options.length === 1 ? start.options[0] : null))?.id ?? null : null,
@@ -88,14 +113,33 @@ export function BookingFlow({ services, initial }: { services: BookingService[];
     setOptionId(s.options.length === 1 ? s.options[0].id : null);
     setSlot(null);
     setDate(null);
+    setShowAll(false);
   };
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
       <div className="min-w-0 space-y-6">
         <Step n={1} title="Choose your session" done={Boolean(option && chosenMode)}>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {services.map((s) => {
+          {!showAll && service ? (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-sage-50 p-4 ring-2 ring-sage-500">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-sage-700">{GROUPS.find((g) => g.category === service.category)?.label}</p>
+                <p className="font-medium text-stone-800">{service.title}</p>
+              </div>
+              <button suppressHydrationWarning type="button" onClick={() => setShowAll(true)} className="text-sm text-sage-700 underline">
+                Choose a different session
+              </button>
+            </div>
+          ) : (
+          <div className="space-y-5">
+            {GROUPS.map((g) => {
+              const list = services.filter((s) => s.category === g.category);
+              if (!list.length) return null;
+              return (
+                <div key={g.category} className="space-y-2">
+                  <p className="text-sm font-medium text-stone-700">{g.label}</p>
+                  <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+            {list.map((s) => {
               const from = s.options.reduce((m, o) => (o.price < m.price ? o : m), s.options[0]);
               const active = s.id === serviceId;
               return (
@@ -105,7 +149,7 @@ export function BookingFlow({ services, initial }: { services: BookingService[];
                   onClick={() => pickService(s.id)}
                   aria-pressed={active}
                   className={cn(
-                    "space-y-1 rounded-xl p-4 text-left ring-1 transition",
+                    "space-y-1 rounded-xl p-3 text-left ring-1 transition",
                     active ? "bg-sage-50 ring-2 ring-sage-500" : "bg-white ring-stone-200 hover:ring-sage-300",
                   )}
                 >
@@ -128,7 +172,12 @@ export function BookingFlow({ services, initial }: { services: BookingService[];
                 </button>
               );
             })}
+                  </div>
+                </div>
+              );
+            })}
           </div>
+          )}
 
           {service && service.options.length > 1 && (
             <div className="space-y-2 border-t border-stone-100 pt-4">
@@ -243,7 +292,7 @@ export function BookingFlow({ services, initial }: { services: BookingService[];
           )}
           <p className="text-xs text-stone-500">
             Not sure which session is right for you?{" "}
-            <Link href="/contact" className="text-sage-700 underline">
+            <Link href={service ? `/contact?about=${encodeURIComponent(service.title)}#enquiry` : "/contact#enquiry"} className="text-sage-700 underline">
               Ask for a free consultation
             </Link>
             .

@@ -10,7 +10,7 @@ export default async function CoursesPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="font-serif text-3xl text-stone-800">My classes</h1>
+      <h1 className="font-serif text-3xl text-stone-800">My Reiki training</h1>
       {courses.length === 0 && (
         <p className="rounded-2xl bg-white p-6 text-stone-500 ring-1 ring-stone-200">You&apos;re not enrolled in a class yet.</p>
       )}

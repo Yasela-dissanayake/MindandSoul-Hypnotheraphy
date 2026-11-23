@@ -5,7 +5,7 @@ import { countNewSales } from "@/lib/sales";
 import { countOpenEnquiries } from "@/lib/enquiries";
 
 // Numbers for the red badges in the admin menu: unanswered questions,
-// new bookings / enrolments, and contact form enquiries waiting for a reply.
+// new bookings / enrollments, and contact form enquiries waiting for a reply.
 export const dynamic = "force-dynamic";
 
 export async function GET() {

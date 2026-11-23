@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ClipboardList, Video } from "lucide-react";
+import { ClipboardList, Headphones, Video } from "lucide-react";
 import { requireClientPage } from "@/lib/authz";
 import { db } from "@/lib/db";
 import { getSessionMaterial } from "@/lib/material";
@@ -27,6 +27,7 @@ export default async function SessionsPage() {
       select: {
         id: true,
         totalSessions: true,
+        selfPaced: true,
         sessionService: { select: { published: true, enquiryOnly: true } },
         bookings: { where: { status: "CONFIRMED" }, orderBy: { startsAt: "asc" }, select: { id: true, startsAt: true, endsAt: true, mode: true } },
       },
@@ -35,7 +36,7 @@ export default async function SessionsPage() {
   const now = new Date();
   const bookingsFor = (planId: string) => {
     const p = bookingInfo.find((x) => x.id === planId);
-    if (!p) return null;
+    if (!p || p.selfPaced) return null; // a recorded journey: nothing to book
     const upcoming = p.bookings.filter((b) => b.endsAt > now);
     return {
       upcoming,
@@ -75,7 +76,16 @@ export default async function SessionsPage() {
               {plan.description && <p className="whitespace-pre-line text-stone-600">{plan.description}</p>}
             </div>
 
-            {plan.totalSessions ? (
+            {plan.selfPaced ? (
+              <div className="flex gap-3 rounded-xl bg-amber-50 p-4 text-sm text-amber-900 ring-1 ring-amber-200">
+                <Headphones className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
+                <p>
+                  <span className="block font-medium">Self-paced recorded journey{plan.totalSessions ? ` · ${plan.totalSessions} sessions` : ""}</span>
+                  Your recordings, workbooks and trackers appear below as Rangika adds them. Listen and work through them at your own pace. No appointments
+                  needed.
+                </p>
+              </div>
+            ) : plan.totalSessions ? (
               <div className="space-y-2">
                 <div className="flex justify-between text-sm text-stone-600">
                   <span>

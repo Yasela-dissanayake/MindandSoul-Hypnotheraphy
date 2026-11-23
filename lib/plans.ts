@@ -90,7 +90,7 @@ export async function getToday(userId: string, timezone: string) {
   return { today, tasks, trackers, prompt, tonightAudio, upcoming, hasPlans: plans.length > 0 };
 }
 
-/** What a person has: session plans, course enrolments and/or online courses (for navigation). */
+/** What a person has: session plans, course enrollments and/or online courses (for navigation). */
 export async function getAreas(userId: string) {
   const [plans, courses, learning] = await Promise.all([
     db.plan.count({ where: { userId } }),

@@ -8,8 +8,8 @@ import { useAction } from "./use-action";
 
 const selectCls = "h-10 min-w-0 flex-1 rounded-md border border-input bg-white px-3 text-sm sm:max-w-xs";
 
-/** Enrol someone who already has an account (e.g. a session client) in a course. */
-export function EnrolExistingPerson({ people, courses }: { people: { id: string; name: string }[]; courses: { id: string; title: string }[] }) {
+/** Enroll someone who already has an account (e.g. a session client) in a course. */
+export function EnrollExistingPerson({ people, courses }: { people: { id: string; name: string }[]; courses: { id: string; title: string }[] }) {
   const [userId, setUserId] = useState("");
   const [courseId, setCourseId] = useState("");
   const { pending, run } = useAction();
@@ -49,7 +49,7 @@ export function EnrolExistingPerson({ people, courses }: { people: { id: string;
           )
         }
       >
-        <UserPlus className="mr-1.5 h-4 w-4" /> {pending ? "Enrolling…" : "Enrol"}
+        <UserPlus className="mr-1.5 h-4 w-4" /> {pending ? "Enrolling…" : "Enroll"}
       </Button>
     </div>
   );

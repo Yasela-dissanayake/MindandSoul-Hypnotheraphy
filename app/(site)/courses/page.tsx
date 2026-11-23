@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { BookOpen, Clock, Infinity as Always } from "lucide-react";
+import { BookOpen, Clock, Infinity as Always, Sparkles } from "lucide-react";
 import { db } from "@/lib/db";
 import { money } from "@/lib/learning";
 import { coverUrl } from "@/lib/covers";
@@ -37,9 +37,9 @@ export default async function LearnPage() {
             Self-paced courses by Rangika. Learn at home, one lesson at a time, whenever it suits you.
           </p>
           <p className="text-sm text-stone-500">
-            Looking for a class taught in person or live?{" "}
-            <Link href="/classes" className="text-sage-700 underline">
-              See classes
+            Looking for live Reiki training?{" "}
+            <Link href="/reiki-training" className="text-sage-700 underline">
+              See Reiki training
             </Link>
           </p>
           <div className="flex flex-wrap justify-center gap-4 pt-2 text-sm text-stone-600">
@@ -58,13 +58,35 @@ export default async function LearnPage() {
 
       <section className="container mx-auto px-4 pb-20">
         {packages.length === 0 ? (
-          <p className="mx-auto max-w-xl rounded-2xl bg-white p-8 text-center text-stone-600 ring-1 ring-stone-200">
-            New courses are coming soon. Meanwhile, you can{" "}
-            <Link href="/booking" className="text-sage-700 underline">
-              book a session
-            </Link>{" "}
-            with Rangika.
-          </p>
+          // No published courses yet: shown until Rangika publishes one, then the list appears by itself.
+          <div className="mx-auto max-w-2xl overflow-hidden rounded-3xl bg-white text-center shadow-sm ring-1 ring-sage-200">
+            <div className="bg-gradient-to-br from-sage-100 via-sage-50 to-amber-50 px-6 py-10 md:py-12">
+              <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-sage-200">
+                <Sparkles className="h-8 w-8 text-sage-600" aria-hidden />
+              </span>
+              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.25em] text-sage-700">Self-paced courses</p>
+              <h2 className="mt-2 font-serif text-4xl text-stone-800 md:text-5xl">Coming Soon</h2>
+            </div>
+            <div className="space-y-6 px-6 py-8 md:px-10">
+              <p className="text-stone-600">
+                Rangika is preparing new courses you can follow at home, at your own pace. Check back soon. In the meantime, you can work with Rangika one to one or join a Reiki training.
+              </p>
+              <div className="flex flex-col justify-center gap-3 sm:flex-row">
+                <Link href="/hypnotherapy" className="inline-flex items-center justify-center rounded-full bg-sage-600 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-sage-700">
+                  Clinical Hypnotherapy
+                </Link>
+                <Link href="/reiki-training" className="inline-flex items-center justify-center rounded-full border border-sage-300 px-6 py-2.5 text-sm font-medium text-sage-800 transition hover:bg-sage-50">
+                  Reiki Training
+                </Link>
+              </div>
+              <p className="text-sm text-stone-500">
+                Want to hear when courses open?{" "}
+                <Link href="/contact#enquiry" className="text-sage-700 underline">
+                  Let Rangika know
+                </Link>
+              </p>
+            </div>
+          </div>
         ) : (
           <div className="mx-auto grid max-w-7xl gap-6 md:grid-cols-2 lg:grid-cols-3 xl:gap-8">
             {packages.map((p) => {

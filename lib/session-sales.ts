@@ -15,9 +15,10 @@ import { modesFor, optionLabel, sessionTypeOf } from "@/lib/session-catalog";
 export class NoSessionsLeftError extends Error {}
 export class SessionSlotTakenError extends Error {}
 
-/** Sessions on a plan still to be booked: the plan's total minus its confirmed bookings. */
-export async function sessionsLeft(plan: { id: string; totalSessions: number | null }) {
-  const used = await db.booking.count({ where: { planId: plan.id, status: "CONFIRMED" } });
+/** Sessions on a plan still to be booked: the plan's total minus its confirmed bookings (none for a recorded journey). */
+export async function sessionsLeft(plan: { id: string; totalSessions: number | null; selfPaced?: boolean }) {
+  if (plan.selfPaced) return 0;
+  const used = await db.booking.count({ where: { planId: plan.id, status: "CONFIRMED", recorded: false } });
   return Math.max(0, (plan.totalSessions ?? 0) - used);
 }
 
@@ -40,8 +41,9 @@ export async function attachPaidBooking(bookingId: string) {
   const service = b.option.service;
   const { user, login } = await accountForBuyer(b.clientName, b.clientEmail);
 
+  // A recorded journey gets its own self-paced plan; live sessions are added to an open live plan.
   const open = await db.plan.findFirst({
-    where: { userId: user.id, sessionServiceId: service.id, completedAt: null },
+    where: { userId: user.id, sessionServiceId: service.id, completedAt: null, selfPaced: b.recorded },
     orderBy: { createdAt: "desc" },
   });
   const plan = open
@@ -49,9 +51,10 @@ export async function attachPaidBooking(bookingId: string) {
     : await db.plan.create({
         data: {
           userId: user.id,
-          title: service.title,
+          title: b.recorded ? `${service.title} · Recorded journey` : service.title,
           service: service.planService ?? "HYPNOTHERAPY",
           sessionServiceId: service.id,
+          selfPaced: b.recorded,
           totalSessions: b.option.sessions,
           currentSession: 1,
           startDate: b.date,
@@ -63,7 +66,7 @@ export async function attachPaidBooking(bookingId: string) {
 
 /** The confirmation emails for a session booking (to the client and to Rangika). */
 export async function sendSessionEmails(bookingId: string, login?: { username: string; password: string } | null) {
-  const b = await db.booking.findUnique({ where: { id: bookingId }, include: { option: true, plan: { select: { id: true, totalSessions: true, title: true } } } });
+  const b = await db.booking.findUnique({ where: { id: bookingId }, include: { option: true, plan: { select: { id: true, totalSessions: true, title: true, selfPaced: true } } } });
   if (!b) return;
   const left = b.plan ? await sessionsLeft(b.plan) : 0;
   const common = {
@@ -73,6 +76,7 @@ export async function sendSessionEmails(bookingId: string, login?: { username: s
     inPerson: b.mode === "IN_PERSON",
     paid: b.credit ? null : b.amount === 0 ? "Free (promotion)" : formatPrice(b.amount, b.currency),
     sessionsLeft: left,
+    recorded: b.recorded,
   };
   const [toClient, toRangika] = await Promise.all([
     sendMail({ to: b.clientEmail, ...sessionBookedEmail({ ...common, when: whenText(b, b.clientTimezone), login }) }),
@@ -106,13 +110,14 @@ export async function bookWithCredit(input: { userId: string; planId: string; mo
     include: { sessionService: true, user: { select: { name: true, email: true } } },
   });
   if (!plan?.sessionService || !plan.user) throw new NoSessionsLeftError("This plan can't be booked online. Please contact Rangika.");
+  if (plan.selfPaced) throw new NoSessionsLeftError("This is a self-paced recorded journey, so there are no live sessions to book.");
   const service = plan.sessionService;
   if (!modesFor(service).includes(input.mode)) throw new NoSessionsLeftError("That kind of session isn't available for this service.");
 
   const booking = await db.$transaction(
     async (tx) => {
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(7340211)`; // the same lock as paid bookings
-      const used = await tx.booking.count({ where: { planId: plan.id, status: "CONFIRMED" } });
+      const used = await tx.booking.count({ where: { planId: plan.id, status: "CONFIRMED", recorded: false } });
       if (used >= (plan.totalSessions ?? 0)) throw new NoSessionsLeftError("You've booked all the sessions in your package.");
       const data = await loadCalendar(input.date, input.date, tx);
       const slot = (freeSlots(data, input.mode, input.date, input.date, new Date(), service.minutes)[input.date] ?? []).find((s) => s.start === input.start);

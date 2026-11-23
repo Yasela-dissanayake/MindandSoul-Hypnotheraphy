@@ -3,11 +3,12 @@ import { PRACTITIONER_EMAIL, courseEnrolledEmail, courseSoldEmail, sendMail } fr
 import { stripe } from "@/lib/booking-payments";
 import { PurchaseError, accountForBuyer, money, settleOpenPayments, slugify } from "@/lib/learning";
 import { classPrice, type Currency } from "@/lib/currency";
-import { classesFor, enrolInClass } from "@/lib/class-enrol";
+import { classesFor, enrollInClass } from "@/lib/class-enroll";
 import { promoFor } from "@/lib/promotions";
+import { classHref } from "@/lib/site-routes";
 
 // Taught courses (Reiki Level 1, 2, 3 ...) sold on the website at /courses.
-// Paying enrols the person on the course straight away; Rangika then teaches the class.
+// Paying enrolls the person on the course straight away; Rangika then teaches the class.
 
 export async function uniqueCourseSlug(title: string, excludeId?: string) {
   const base = slugify(title);
@@ -35,7 +36,7 @@ export async function startCoursePurchase(input: {
   prerequisiteDone?: boolean;
 }) {
   const course = await db.course.findFirst({ where: { id: input.itemId, ...onSaleWhere } });
-  if (!course) throw new PurchaseError("This class is not open for enrolment any more.");
+  if (!course) throw new PurchaseError("This class is not open for enrollment any more.");
   if (course.seats !== null && course.seats <= 0) throw new PurchaseError("Sorry, this class is full. Please contact Rangika to join the waiting list.");
   if (course.prerequisite && !input.prerequisiteDone) {
     throw new PurchaseError(`This class is for people who have completed ${course.prerequisite}. Please tick the box to confirm.`);
@@ -45,7 +46,7 @@ export async function startCoursePurchase(input: {
   const wanted = await classesFor(course.id);
 
   // An unfinished payment for another class that overlaps this one (e.g. the Level 1 & 2 bundle in another tab):
-  // if it went through, enrol them first so the checks below see it; if it's still going through, wait;
+  // if it went through, enroll them first so the checks below see it; if it's still going through, wait;
   // otherwise cancel it, so they can't end up paying for the same class twice.
   const others = await db.coursePurchase.findMany({
     where: { email, status: "PENDING", courseId: { not: course.id } },
@@ -96,7 +97,7 @@ export async function startCoursePurchase(input: {
       `You already have ${owned}, so this bundle would charge you for ${have.length === 1 ? "it" : "them"} again. You only need ${need}.`,
       {
         owned: true,
-        suggest: missing.filter((m) => m.slug && m.published && !m.archived).map((m) => ({ title: m.title, href: `/classes/${m.slug}` })),
+        suggest: missing.filter((m) => m.slug && m.published && !m.archived).map((m) => ({ title: m.title, href: classHref(m) })),
       },
     );
   }
@@ -139,7 +140,7 @@ export async function startCoursePurchase(input: {
 }
 
 /**
- * After Stripe says the payment went through: create the account if needed, enrol them,
+ * After Stripe says the payment went through: create the account if needed, enroll them,
  * take one place off, and send the emails. Runs once, whether the browser or the webhook calls it.
  */
 export async function fulfilCoursePurchase(paymentIntentId: string) {
@@ -153,7 +154,7 @@ export async function fulfilCoursePurchase(paymentIntentId: string) {
 }
 
 /**
- * Paid (or free under a promotion): create the account if needed, enrol them, take one place off,
+ * Paid (or free under a promotion): create the account if needed, enroll them, take one place off,
  * and send the emails. Only the first caller does it.
  */
 async function completeCoursePurchase(purchaseId: string) {
@@ -164,8 +165,8 @@ async function completeCoursePurchase(purchaseId: string) {
 
   const { user, login } = await accountForBuyer(purchase.name, purchase.email);
 
-  // A bundle enrols them in each class it includes.
-  await enrolInClass(user.id, purchase.courseId, { reopen: true });
+  // A bundle enrolls them in each class it includes.
+  await enrollInClass(user.id, purchase.courseId, { reopen: true });
   await db.coursePurchase.update({ where: { id: purchase.id }, data: { userId: user.id, newAccount: Boolean(login) } });
   await db.course.updateMany({ where: { id: purchase.courseId, seats: { gt: 0 } }, data: { seats: { decrement: 1 } } });
   const seatsLeft = (await db.course.findUnique({ where: { id: purchase.courseId }, select: { seats: true } }))?.seats ?? null;
@@ -179,7 +180,7 @@ async function completeCoursePurchase(purchaseId: string) {
       ...courseSoldEmail({ name: purchase.name, email: purchase.email, phone: purchase.phone, courseTitle: c.title, amount: purchase.amount === 0 ? "Free (promotion)" : money(purchase.amount, purchase.currency), seatsLeft }),
     }),
   ]);
-  if (!toStudent.ok || !toRangika.ok) console.error("Course enrolment emails failed for", purchase.id);
+  if (!toStudent.ok || !toRangika.ok) console.error("Course enrollment emails failed for", purchase.id);
 
   return db.coursePurchase.findUnique({ where: { id: purchase.id } });
 }

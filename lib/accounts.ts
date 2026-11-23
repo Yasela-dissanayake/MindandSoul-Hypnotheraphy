@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { enrolInClass } from "@/lib/class-enrol";
+import { enrollInClass } from "@/lib/class-enroll";
 import { copyTemplateToUser } from "@/lib/plans";
 import { serviceLabel } from "@/lib/catalog";
 import { normaliseUsername, usernameFromName, usernameProblem } from "@/lib/passwords";
@@ -52,7 +52,7 @@ export const accessSchema = z
 
 export type AccessInput = z.input<typeof accessSchema>;
 
-/** Create their session plan (from a ready-made package or blank) and course enrolments. */
+/** Create their session plan (from a ready-made package or blank) and course enrollments. */
 export async function giveAccess(userId: string, access: z.output<typeof accessSchema>, startDate: string) {
   if (access.sessions) {
     const s = access.sessions;
@@ -87,6 +87,6 @@ export async function giveAccess(userId: string, access: z.output<typeof accessS
       });
     }
   }
-  // A bundle enrols them in each of its classes.
-  for (const courseId of access.courseIds) await enrolInClass(userId, courseId);
+  // A bundle enrolls them in each of its classes.
+  for (const courseId of access.courseIds) await enrollInClass(userId, courseId);
 }

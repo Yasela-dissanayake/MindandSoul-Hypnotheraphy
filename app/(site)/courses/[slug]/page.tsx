@@ -28,7 +28,7 @@ export default async function LearnPackagePage({ params }: { params: Promise<{ s
   const pkg = await load(slug);
   if (!pkg) {
     // Classes used to live at /courses/<slug>: send old links there.
-    if (await db.course.findUnique({ where: { slug }, select: { id: true } })) redirect(`/classes/${slug}`);
+    if (await db.course.findUnique({ where: { slug }, select: { id: true } })) redirect(`/reiki-training/${slug}`);
     notFound();
   }
   const lessons = orderLessons(pkg.sections, pkg.lessons);

@@ -44,7 +44,7 @@ export default async function CourseAdminPage({ params }: { params: Promise<{ id
       <section className="space-y-5 rounded-2xl bg-white p-5 ring-1 ring-stone-200">
         <CourseDetails course={course} />
         {isBundle ? (
-          // A bundle has no content or students of its own: buying it enrols people in these classes.
+          // A bundle has no content or students of its own: buying it enrolls people in these classes.
           <div className="space-y-2 rounded-xl bg-sage-50 p-4 text-sm text-stone-700 ring-1 ring-sage-200">
             <p className="flex items-center gap-2 font-medium text-stone-800">
               <Layers className="h-4 w-4 text-sage-700" /> This is a bundle

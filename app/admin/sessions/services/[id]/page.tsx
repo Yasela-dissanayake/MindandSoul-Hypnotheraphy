@@ -29,7 +29,16 @@ export default async function SessionServiceEditPage({ params }: { params: Promi
       <section className="rounded-2xl bg-white p-5 ring-1 ring-stone-200">
         <SessionOptionsEditor
           serviceId={s.id}
-          options={s.options.map((o) => ({ id: o.id, title: o.title, sessions: o.sessions, price: o.price, priceAed: o.priceAed, mode: o.mode, note: o.note ?? "" }))}
+          options={s.options.map((o) => ({
+            id: o.id,
+            title: o.title,
+            sessions: o.sessions,
+            price: o.price,
+            priceAed: o.priceAed,
+            mode: o.mode,
+            note: o.note ?? "",
+            recorded: o.recorded,
+          }))}
         />
       </section>
       <section className="space-y-5 rounded-2xl bg-white p-5 ring-1 ring-stone-200">
@@ -38,7 +47,10 @@ export default async function SessionServiceEditPage({ params }: { params: Promi
             id: s.id,
             slug: s.slug,
             title: s.title,
+            category: s.category,
+            tagline: s.tagline ?? "",
             summary: s.summary ?? "",
+            body: s.body ?? "",
             details: s.details ?? "",
             highlights: s.highlights ?? "",
             planService: s.planService ?? "HYPNOTHERAPY",

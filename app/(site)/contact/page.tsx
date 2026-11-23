@@ -17,12 +17,22 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { ENQUIRY_TOPICS } from "@/lib/enquiry-topics";
+
 
 export default function ContactPage() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [topics, setTopics] = useState(ENQUIRY_TOPICS);
+  const [workOn, setWorkOn] = useState(ENQUIRY_TOPICS[0]);
+  useEffect(() => {
+    const about = new URLSearchParams(window.location.search).get("about")?.trim().slice(0, 100);
+    if (!about) return;
+    if (!ENQUIRY_TOPICS.includes(about)) setTopics([about, ...ENQUIRY_TOPICS]);
+    setWorkOn(about);
+  }, []);
   // const [message, setMessage] = useState("");
 
   const handleSubmit = async (
@@ -181,10 +191,10 @@ export default function ContactPage() {
                 icon: Mail,
                 title: "Email",
                 description: "Send detailed questions anytime",
-                contact: "healwithrangika@gmail.com",
+                contact: "mindandsoulworks@gmail.com",
                 action: "Send Email",
                 available: "Response within 24 hours",
-                link: "mailto:healwithrangika@gmail.com",
+                link: "mailto:mindandsoulworks@gmail.com",
               },
               {
                 icon: MessageCircle,
@@ -349,15 +359,13 @@ export default function ContactPage() {
                           </label>
                           <select suppressHydrationWarning
                             name="workOn"
+                            value={workOn}
+                            onChange={(e) => setWorkOn(e.target.value)}
                             className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                           >
-                            <option>Anxiety & Stress Relief</option>
-                            <option>Confidence Building</option>
-                            <option>Habit Change</option>
-                            <option>Weight Management</option>
-                            <option>Sleep Improvement</option>
-                            <option>Pain Management</option>
-                            <option>Other</option>
+                            {topics.map((t) => (
+                              <option key={t}>{t}</option>
+                            ))}
                           </select>
                         </div>
 
@@ -639,7 +647,7 @@ export default function ContactPage() {
                   <div>
                     <div className="font-semibold text-stone-800">Email</div>
                     <div className="text-stone-600">
-                      healwithrangika@gmail.com
+                      mindandsoulworks@gmail.com
                     </div>
                   </div>
                 </div>

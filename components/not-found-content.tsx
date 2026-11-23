@@ -11,8 +11,8 @@ const HOME: Record<Area, { href: string; label: string }> = {
 };
 
 const SITE_LINKS = [
-  { href: "/sessions", label: "Sessions", text: "Hypnotherapy, Reiki and energy healing", icon: Sparkles },
-  { href: "/classes", label: "Classes", text: "Reiki classes taught by Rangika", icon: GraduationCap },
+  { href: "/hypnotherapy", label: "Clinical Hypnotherapy", text: "20 areas of support, in person or online", icon: Sparkles },
+  { href: "/reiki-training", label: "Reiki Training", text: "Usui Reiki and Animal Reiki training", icon: GraduationCap },
   { href: "/courses", label: "Courses", text: "Self-paced courses to learn at home", icon: BookOpen },
   { href: "/contact", label: "Contact", text: "Ask a question or book a free chat", icon: Mail },
 ];

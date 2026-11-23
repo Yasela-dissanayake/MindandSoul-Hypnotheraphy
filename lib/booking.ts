@@ -76,6 +76,7 @@ type Client = PrismaClient | Prisma.TransactionClient;
 
 /** Bookings that take up time: confirmed ones, and payments still in progress. */
 export const busyWhere = (now = new Date()): Prisma.BookingWhereInput => ({
+  recorded: false, // a self-paced recorded journey has no appointment
   OR: [{ status: "CONFIRMED" }, { status: "HELD", heldUntil: { gt: now } }],
 });
 

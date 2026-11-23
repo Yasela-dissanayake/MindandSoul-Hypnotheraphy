@@ -22,7 +22,7 @@ const items: (Item | Group)[] = [
     icon: Layers,
     children: [
       { href: "/admin/sessions", label: "Sessions", icon: ClipboardList, also: ["/admin/plans"], badge: "questions" },
-      { href: "/admin/classes", label: "Classes", icon: GraduationCap },
+      { href: "/admin/classes", label: "Reiki Training", icon: GraduationCap },
       { href: "/admin/courses", label: "Courses", icon: BookOpen },
     ],
   },
@@ -36,7 +36,7 @@ const items: (Item | Group)[] = [
 
 const badgeLabel = (key: keyof Badges, n: number) =>
   key === "sales"
-      ? `${n} new booking${n === 1 ? "" : "s"} or enrolment${n === 1 ? "" : "s"}`
+      ? `${n} new booking${n === 1 ? "" : "s"} or enrollment${n === 1 ? "" : "s"}`
       : key === "enquiries"
         ? `${n} enquir${n === 1 ? "y" : "ies"} waiting for a reply`
       : `${n} question${n === 1 ? "" : "s"} waiting for an answer`;

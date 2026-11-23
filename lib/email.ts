@@ -278,7 +278,7 @@ export async function sendClientBookingConfirmation({
                 <h3 style="color: #2d3748; margin: 0 0 15px 0; font-size: 16px;">Need to Contact Us?</h3>
                 <p style="color: #4a5568; margin: 0 0 10px 0;">
                   📞 <strong>Phone:</strong> +61 429 940 130<br>
-                  📧 <strong>Email:</strong> healwithrangika@gmail.com
+                  📧 <strong>Email:</strong> mindandsoulworks@gmail.com
                 </p>
                 <p style="color: #718096; margin: 0; font-size: 14px;">
                   Office Hours: Monday-Friday 8:00 AM - 6:00 PM

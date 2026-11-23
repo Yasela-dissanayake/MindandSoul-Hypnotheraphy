@@ -195,6 +195,7 @@ async function SessionsTab({ clientId, addPlan }: { clientId: string; addPlan: b
         id: true,
         totalSessions: true,
         sessionServiceId: true,
+        selfPaced: true,
         bookings: {
           where: { status: "CONFIRMED" },
           orderBy: { startsAt: "asc" },
@@ -219,6 +220,13 @@ async function SessionsTab({ clientId, addPlan }: { clientId: string; addPlan: b
           {(() => {
             const pb = planBookings.find((x) => x.id === plan.id);
             if (!pb) return null;
+            if (pb.selfPaced)
+              return (
+                <p className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900 ring-1 ring-amber-200">
+                  <span className="font-medium">Self-paced recorded journey.</span> No live sessions to book: add their recordings, workbooks and trackers
+                  below.
+                </p>
+              );
             const left = pb.sessionServiceId ? Math.max(0, (pb.totalSessions ?? 0) - pb.bookings.length) : 0;
             return <PlanBookingsAdmin bookings={pb.bookings} left={left} tz={tz} online={Boolean(pb.sessionServiceId)} />;
           })()}

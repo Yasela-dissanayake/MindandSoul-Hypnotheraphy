@@ -91,6 +91,16 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+  /* Buttons that jump to a section on the same page (#areas, #packages, #levels...) glide there.
+     data-scroll-behavior on <html> lets Next.js switch this off while it changes pages. */
+  html {
+    scroll-behavior: smooth;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
 }
 
 /* Calendar improvements */

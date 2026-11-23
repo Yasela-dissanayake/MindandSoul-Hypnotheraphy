@@ -6,32 +6,24 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Leaf } from "lucide-react";
 import Image from "next/image";
-import { useIsActive } from "@/components/site/nav-links";
+import { SITE_NAV, useIsActive, useIsItemActive } from "@/components/site/nav-links";
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
   const isActive = useIsActive();
+  const isItemActive = useIsItemActive();
 
-  const navItems = [
-    { href: "/", label: "Home" },
-    { href: "/about", label: "About" },
-    { href: "/sessions", label: "Sessions" },
-    { href: "/classes", label: "Classes" },
-    { href: "/courses", label: "Courses" },
-    { href: "/testimonials", label: "Testimonials" },
-    { href: "/contact", label: "Contact" },
-    { href: "/login", label: "Client login" },
-  ];
+  const navItems = [{ href: "/", label: "Home" }, ...SITE_NAV];
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" className="lg:hidden p-2" size="sm">
+        <Button variant="ghost" className="xl:hidden p-2" size="sm">
           <Menu className="h-6 w-6 text-stone-600" />
           <span className="sr-only">Toggle menu</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+      <SheetContent side="right" className="w-[300px] overflow-y-auto sm:w-[400px]">
         <SheetTitle className="sr-only">Menu</SheetTitle>
         <div className="flex flex-col h-full">
           {/* Header */}
@@ -49,26 +41,47 @@ export function MobileNav() {
           </div>
 
           {/* Navigation Links */}
-          <nav className="flex flex-col space-y-4 mt-8">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-current={isActive(item.href) ? "page" : undefined}
-                className={`text-lg transition-colors py-2 px-4 rounded-lg border-l-4 ${
-                  isActive(item.href)
-                    ? "border-sage-600 bg-sage-50 font-medium text-sage-800"
-                    : "border-transparent text-stone-600 hover:text-sage-600 hover:bg-sage-50"
-                }`}
-                onClick={() => setOpen(false)}
-              >
-                {item.label}
-              </Link>
-            ))}
+          <nav className="mt-6 flex flex-col space-y-1 overflow-y-auto">
+            {navItems.map((item) =>
+              item.children ? (
+                <div key={item.href} className="space-y-1">
+                  <p className={`px-4 pt-2 pb-1 text-lg ${isItemActive(item) ? "font-medium text-sage-800" : "text-stone-600"}`}>{item.label}</p>
+                  {item.children.map((c) => (
+                    <Link
+                      key={c.href}
+                      href={c.href}
+                      aria-current={isActive(c.href, true) ? "page" : undefined}
+                      className={`ml-4 block rounded-lg border-l-4 py-2 pl-4 pr-3 text-base transition-colors ${
+                        isActive(c.href, true)
+                          ? "border-sage-600 bg-sage-50 font-medium text-sage-800"
+                          : "border-stone-200 text-stone-600 hover:bg-sage-50 hover:text-sage-600"
+                      }`}
+                      onClick={() => setOpen(false)}
+                    >
+                      {c.label}
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={isActive(item.href) ? "page" : undefined}
+                  className={`text-lg transition-colors py-2 px-4 rounded-lg border-l-4 ${
+                    isActive(item.href)
+                      ? "border-sage-600 bg-sage-50 font-medium text-sage-800"
+                      : "border-transparent text-stone-600 hover:text-sage-600 hover:bg-sage-50"
+                  }`}
+                  onClick={() => setOpen(false)}
+                >
+                  {item.label}
+                </Link>
+              ),
+            )}
           </nav>
 
           {/* CTA Button */}
-          <div className="mt-8 pt-6 border-t border-stone-200">
+          <div className="mt-6 pt-6 border-t border-stone-200">
             <Link href="/booking" onClick={() => setOpen(false)}>
               <Button className="w-full bg-sage-600 hover:bg-sage-700 text-white">
                 Book Session
@@ -81,7 +94,8 @@ export function MobileNav() {
             <div>
               <p className="font-medium text-stone-800">Contact</p>
               <p>+61 429 940 130</p>
-              <p>healwithrangika@gmail.com</p>
+              <p>mindandsoulworks@gmail.com</p>
+              <p>Perth, Western Australia</p>
             </div>
             <div>
               <p className="font-medium text-stone-800">Hours</p>

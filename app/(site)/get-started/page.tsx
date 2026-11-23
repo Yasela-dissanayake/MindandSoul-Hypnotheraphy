@@ -3,7 +3,7 @@ import { ExploreServices } from "@/components/portal/explore-services";
 import { NoAccountDialog } from "@/components/site/no-account-dialog";
 
 // For people without an account. Accounts are never made just by signing in (anyone could make one);
-// they're made automatically when someone books a session, enrols in a class or buys a course.
+// they're made automatically when someone books a session, enrolls in a class or buys a course.
 // Google sign-ins from emails with no account are sent here (?from=google).
 
 export const metadata: Metadata = {

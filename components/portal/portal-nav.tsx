@@ -24,7 +24,7 @@ export function PortalNav({
   const items: { href: string; label: string; icon: typeof Home; dot?: boolean; dotLabel?: string }[] = [
     { href: "/portal", label: "Today", icon: Home },
     ...(hasSessions ? [{ href: "/portal/sessions", label: "My sessions", icon: Sparkles, dot: newAnswers > 0, dotLabel: "new answer from Rangika" }] : []),
-    ...(hasCourses ? [{ href: "/portal/classes", label: "My classes", icon: GraduationCap }] : []),
+    ...(hasCourses ? [{ href: "/portal/classes", label: "My training", icon: GraduationCap }] : []),
     ...(hasLearning ? [{ href: "/portal/courses", label: "My courses", icon: BookOpen }] : []),
     { href: "/portal/journal", label: "Journal", icon: NotebookPen, dot: newReplies > 0, dotLabel: "new reply from Rangika" },
     { href: "/portal/profile", label: "Profile", icon: User },

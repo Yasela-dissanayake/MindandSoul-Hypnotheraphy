@@ -97,10 +97,11 @@ export async function loadCourseForEditor(courseId: string) {
       priceAed: c.priceAed,
       prerequisite: c.prerequisite ?? "",
       highlights: c.highlights ?? "",
+      track: c.track,
       seats: c.seats,
       published: c.published,
     },
-    // A bundle enrols students in these classes instead of having content of its own.
+    // A bundle enrolls students in these classes instead of having content of its own.
     includes: c.includes,
     includedIn: c.includedIn,
     hasStudents: c._count.enrollments > 0,

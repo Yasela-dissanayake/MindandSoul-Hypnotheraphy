@@ -31,7 +31,7 @@ export function NoAccountDialog() {
           <DialogTitle className="font-serif text-xl text-stone-800">There&apos;s no account for that Google email yet</DialogTitle>
           <DialogDescription className="space-y-3 pt-1 text-sm text-stone-600">
             <span className="block">
-              Your private space is set up automatically when you book a session, enrol in a class or buy a course. Use the same email, and you can
+              Your private space is set up automatically when you book a session, enroll in a class or buy a course. Use the same email, and you can
               then sign in with Google.
             </span>
             <span className="block">Already booked or bought with a different email? Sign in with that one.</span>

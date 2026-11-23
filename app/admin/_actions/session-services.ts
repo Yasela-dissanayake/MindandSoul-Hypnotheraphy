@@ -9,14 +9,17 @@ import { isSiteImage } from "@/lib/covers";
 import { slugify } from "@/lib/learning";
 import { blank, fail, type ActionResult } from "./common";
 
-// One-to-one session services on the website (Sessions page and booking): Rangika edits text,
-// prices (AUD and AED) and packages here. Changes show on the website straight away.
+// One-to-one services on the website (the Clinical Hypnotherapy and Reiki Energy Healing tabs, and booking):
+// Rangika edits the page text, prices (AUD and AED) and packages here. Changes show on the website straight away.
 
 function refresh() {
-  revalidatePath("/sessions", "layout");
+  revalidatePath("/hypnotherapy", "layout");
+  revalidatePath("/reiki-healing", "layout");
   revalidatePath("/booking");
   revalidatePath("/admin/sessions", "layout");
 }
+
+const CATEGORY = z.enum(["HYPNOTHERAPY", "REIKI_HEALING", "ANIMAL_REIKI"]);
 
 async function uniqueSlug(title: string, excludeId?: string) {
   const base = slugify(title);
@@ -28,14 +31,15 @@ async function uniqueSlug(title: string, excludeId?: string) {
   return `${base}-${Date.now() % 100000}`;
 }
 
-export async function createSessionService(input: { title: string }): Promise<ActionResult<{ id: string }>> {
+export async function createSessionService(input: { title: string; category?: z.infer<typeof CATEGORY> }): Promise<ActionResult<{ id: string }>> {
   await requireAdmin();
   const title = input.title.trim();
   if (!title) return fail("Please enter a name.");
   if (title.length > 150) return fail("Please use a shorter name.");
-  const count = await db.sessionService.count();
+  const category = CATEGORY.catch("HYPNOTHERAPY").parse(input.category ?? "HYPNOTHERAPY");
+  const count = await db.sessionService.count({ where: { category } });
   const s = await db.sessionService.create({
-    data: { title, slug: await uniqueSlug(title), order: count + 1, published: false, planService: "HYPNOTHERAPY" },
+    data: { title, slug: await uniqueSlug(title), order: count + 1, published: false, planService: category, category },
   });
   refresh();
   return { ok: true, data: { id: s.id } };
@@ -44,7 +48,10 @@ export async function createSessionService(input: { title: string }): Promise<Ac
 const serviceSchema = z
   .object({
     title: z.string().trim().min(1, "Please enter a name.").max(150),
+    category: CATEGORY,
+    tagline: z.string().max(200).optional().nullable(),
     summary: z.string().max(300).optional().nullable(),
+    body: z.string().max(40000, "The page text is too long.").optional().nullable(),
     details: z.string().max(10000).optional().nullable(),
     highlights: z.string().max(5000).optional().nullable(),
     planService: z.enum(["HYPNOTHERAPY", "REIKI_HEALING", "ANIMAL_REIKI"]),
@@ -69,7 +76,10 @@ export async function updateSessionService(id: string, input: z.input<typeof ser
     where: { id },
     data: {
       title: d.title,
+      category: d.category,
+      tagline: blank(d.tagline),
       summary: blank(d.summary),
+      body: blank(d.body),
       details: blank(d.details),
       highlights: blank(d.highlights),
       planService: d.planService,
@@ -97,10 +107,12 @@ export async function deleteSessionService(id: string): Promise<ActionResult> {
   return { ok: true };
 }
 
-/** Move a service up or down on the Sessions page. */
+/** Move a service up or down within its website tab (e.g. among the Clinical Hypnotherapy areas). */
 export async function moveSessionService(id: string, dir: -1 | 1): Promise<ActionResult> {
   await requireAdmin();
-  const all = await db.sessionService.findMany({ orderBy: [{ order: "asc" }, { title: "asc" }], select: { id: true } });
+  const me = await db.sessionService.findUnique({ where: { id }, select: { category: true } });
+  if (!me) return fail("Session not found.");
+  const all = await db.sessionService.findMany({ where: { category: me.category }, orderBy: [{ order: "asc" }, { title: "asc" }], select: { id: true } });
   const i = all.findIndex((x) => x.id === id);
   const j = i + dir;
   if (i < 0 || j < 0 || j >= all.length) return { ok: true };
@@ -130,6 +142,7 @@ const optionSchema = z.object({
   priceAed: z.number().min(0).max(500000).nullable(),
   mode: z.enum(["IN_PERSON", "DISTANCE"]).nullable(),
   note: z.string().max(200).optional().nullable(),
+  recorded: z.boolean().optional().default(false),
 });
 
 export async function saveSessionOption(serviceId: string, optionId: string | null, input: z.input<typeof optionSchema>): Promise<ActionResult> {
@@ -139,7 +152,7 @@ export async function saveSessionOption(serviceId: string, optionId: string | nu
   const d = parsed.data;
   const priceAed = d.priceAed ? Math.round(d.priceAed * 100) : null;
   if (priceAed !== null && priceAed < 200) return fail("The AED price is too low. Leave it empty to show the AUD price instead.");
-  const data = { title: d.title, sessions: d.sessions, price: Math.round(d.price * 100), priceAed, mode: d.mode, note: blank(d.note) };
+  const data = { title: d.title, sessions: d.sessions, price: Math.round(d.price * 100), priceAed, mode: d.mode, note: blank(d.note), recorded: d.recorded };
   if (optionId) {
     const o = await db.sessionOption.findFirst({ where: { id: optionId, serviceId }, select: { id: true } });
     if (!o) return fail("Price not found.");

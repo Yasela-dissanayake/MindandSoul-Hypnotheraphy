@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { db } from "@/lib/db";
 import { coverUrl } from "@/lib/covers";
+import { classHref, serviceHref } from "@/lib/site-routes";
 
 // Promotions (admin → Promotion). Only one runs at a time: from startsAt until endsAt (startsAt + days).
 // While it runs it shows on the home page (pop-up + section), the item it points to is listed first
@@ -10,7 +11,7 @@ export const DAY_MS = 86_400_000;
 export const MAX_DAYS = 365;
 
 const linkSelect = {
-  sessionService: { select: { id: true, slug: true, title: true, published: true, enquiryOnly: true } },
+  sessionService: { select: { id: true, slug: true, title: true, published: true, enquiryOnly: true, category: true } },
   course: { select: { id: true, slug: true, title: true, published: true, archived: true } },
   package: { select: { id: true, slug: true, title: true, published: true, archived: true } },
 } as const;
@@ -37,9 +38,9 @@ export type PromoKind = "session" | "class" | "course";
 /** What the promotion points to, if that item is on the website. */
 export function promotionLink(p: ActivePromotion): { kind: PromoKind; id: string; title: string; href: string } | null {
   const s = p.sessionService;
-  if (s && s.published) return { kind: "session", id: s.id, title: s.title, href: `/sessions/${s.slug}` };
+  if (s && s.published) return { kind: "session", id: s.id, title: s.title, href: serviceHref(s) };
   const c = p.course;
-  if (c && c.slug && c.published && !c.archived) return { kind: "class", id: c.id, title: c.title, href: `/classes/${c.slug}` };
+  if (c && c.slug && c.published && !c.archived) return { kind: "class", id: c.id, title: c.title, href: classHref(c) };
   const k = p.package;
   if (k && k.slug && k.published && !k.archived) return { kind: "course", id: k.id, title: k.title, href: `/courses/${k.slug}` };
   return null;

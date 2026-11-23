@@ -16,19 +16,16 @@ import {
   Leaf,
   Heart,
   Brain,
-  Calendar,
   CheckCircle,
   Quote,
-  Users,
-  GraduationCap,
-  Building,
-  School,
   Sparkles,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { WaysToWork } from "@/components/site/ways-to-work";
+import { ENQUIRY_TOPICS } from "@/lib/enquiry-topics";
 import { PromotionPopup, PromotionSection } from "@/components/site/promotion";
+import { CardCarousel } from "@/components/site/card-carousel";
 import type { HomePromotion } from "@/lib/promotions";
 
 /** The home page. `promotion` = the promotion running now (shown as a pop-up and as the 3rd section), if any. */
@@ -132,28 +129,29 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
             <div className="space-y-8">
               <div className="space-y-4">
                 <Badge className="bg-sage-100 text-sage-700 hover:bg-sage-100">
-                  🌿 Welcome to Mind & Soul Works Australia
+                  🌿 Heal within. Grow beyond
                 </Badge>
                 <h1 className="text-4xl lg:text-6xl font-serif text-stone-800 leading-tight">
-                  Where Healing
-                  <span className="text-sage-600"> Meets Wholeness</span>
+                  A nurturing space for
+                  <span className="text-sage-600"> mind, body and soul</span>
                 </h1>
                 <p className="text-lg text-stone-600 leading-relaxed">
-                  I believe true wellness is more than the absence of
-                  illness—it's a deep alignment of mind, body, and soul. Our
-                  holistic healing platform brings together compassionate
-                  therapeutic techniques and ancient healing practices to
-                  support your journey toward balance and self-discovery.
+                  Supporting your journey towards inner balance, emotional
+                  wellbeing, spiritual connection and personal transformation.
+                </p>
+                <p className="text-sm font-medium tracking-wide text-sage-700">
+                  Clinical Hypnotherapy · Reiki Energy Healing · Animal
+                  Reiki/Communication · Reiki Training
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/contact">
+                <Link href="#journey">
                   <Button
                     size="lg"
                     className="bg-sage-600 hover:bg-sage-700 text-white"
                   >
-                    <Calendar className="mr-2 h-5 w-5" />
-                    Book Free Consultation
+                    <Sparkles className="mr-2 h-5 w-5" />
+                    Explore Your Healing Journey
                   </Button>
                 </Link>
                 <Link href="/about">
@@ -232,43 +230,42 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
             <div className="space-y-8">
               <div className="space-y-4">
                 <Badge className="bg-stone-100 text-stone-700">
-                  Meet Your Healing Partner
+                  A gentle space to pause, reconnect and rediscover yourself
                 </Badge>
                 <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">
-                  Rangika Mathew - Founder
+                  Welcome. I&apos;m Rangika, and I&apos;m so glad you&apos;ve
+                  found your way here.
                 </h2>
                 <p className="text-stone-600 leading-relaxed">
-                  I'm a Certified Clinical Hypnotherapist, Certified Energy
-                  Healer, Meditation Coach, and Life Coach, with a passion for
-                  guiding individuals toward deep, lasting
-                  transformation—mentally, emotionally, and spiritually.
+                  Life can sometimes leave us feeling overwhelmed, disconnected
+                  or searching for something more. Sometimes we simply need a
+                  little space to breathe, reflect, release and reconnect with
+                  who we truly are.
                 </p>
                 <p className="text-stone-600 leading-relaxed">
-                  Having gone through difficult and dark phases in my own life,
-                  I was guided to this path not just through study, but through
-                  experience. It was in those challenging seasons that I
-                  discovered the true power of healing, self-awareness, and the
-                  mind-body-spirit connection.
+                  At Mind &amp; Soul Works, I believe that wellbeing is about
+                  more than just the mind or the body. It is about nurturing the
+                  whole person — mind, body, energy and soul. Through the
+                  integration of clinical hypnotherapy, Reiki energy healing and
+                  holistic spiritual practices, I offer a compassionate and
+                  supportive space for you to explore your own journey of
+                  healing, growth and self-discovery.
                 </p>
                 <p className="text-stone-600 leading-relaxed">
-                  As the Founder of Mind and Soul Works in Dubai, UAE, I have
-                  had the privilege of supporting a diverse, global clientele
-                  through holistic and evidence-based approaches to wellness and
-                  now spreading my healing wings in Australia to share my unique
-                  gifts.
+                  Whether you are seeking emotional support, positive personal
+                  change, energetic balance, spiritual development or simply a
+                  moment of stillness, you are welcome here.
                 </p>
               </div>
-              <div className="grid grid-cols-2 gap-6">
-                <div className="text-center p-4">
-                  <div className="text-3xl font-bold text-sage-600">17+</div>
-                  <div className="text-sm text-stone-600">
-                    Years Professional Experience
-                  </div>
-                </div>
-                <div className="text-center p-4">
-                  <div className="text-3xl font-bold text-sage-600">Global</div>
-                  <div className="text-sm text-stone-600">Clientele Served</div>
-                </div>
+              <div className="space-y-2 rounded-2xl bg-sage-50 p-6 ring-1 ring-sage-200">
+                <p className="font-serif text-xl text-stone-800">
+                  There is no need to have everything figured out. Your journey
+                  begins exactly where you are.
+                </p>
+                <p className="text-sm text-stone-600">
+                  Because sometimes the most beautiful transformation begins
+                  when we give ourselves permission to pause and reconnect.
+                </p>
               </div>
             </div>
             <div className="relative h-[500px] overflow-hidden rounded-2xl shadow-lg">
@@ -293,13 +290,16 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
         <div className="container mx-auto px-4">
           <div className="text-center space-y-4 mb-16">
             <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">
-              Our Healing Philosophy
+              Healing is not about becoming someone else.
+              <span className="block text-sage-600">
+                It is about reconnecting with yourself.
+              </span>
             </h2>
             <p className="text-stone-600 max-w-2xl mx-auto">
-              My mission is to hold space for healing that bridges science and
-              spirit, empowering clients to reconnect with their inner wisdom,
-              release what no longer serves them, and live with intention and
-              purpose.
+              I believe every individual has their own story, their own
+              experiences and their own unique path. There is no single
+              approach to wellbeing, and there is no timetable for personal
+              growth.
             </p>
           </div>
 
@@ -310,14 +310,12 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
                   <Heart className="h-8 w-8 text-sage-600" />
                 </div>
                 <h3 className="text-xl font-semibold text-stone-800">
-                  Holistic & Empowering
+                  The Therapeutic &amp; the Spiritual
                 </h3>
                 <p className="text-stone-600">
-                  Mind & Soul Works' mission is to guide individuals on a
-                  journey of self-discovery and healing by integrating therapy,
-                  mindfulness and energy healing—empowering mind, body, and soul
-                  to restore balance and live with greater clarity, peace, and
-                  purpose.
+                  My philosophy brings together the therapeutic and the
+                  spiritual, recognising that we can benefit from different
+                  approaches at different stages of our lives.
                 </p>
               </CardContent>
             </Card>
@@ -328,14 +326,12 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
                   <Brain className="h-8 w-8 text-sage-600" />
                 </div>
                 <h3 className="text-xl font-semibold text-stone-800">
-                  Therapeutic & Transformational
+                  Welcomed Without Judgement
                 </h3>
                 <p className="text-stone-600">
-                  Committed to offering evidence-informed therapies that support
-                  emotional release, inner calm, and personal
-                  transformation—through a unique blend of hypnotherapy,
-                  mindfulness practices, expressive art, and energetic
-                  alignment.
+                  At Mind &amp; Soul Works, you will be welcomed without
+                  judgement, supported with compassion and encouraged to explore
+                  what feels right for you.
                 </p>
               </CardContent>
             </Card>
@@ -346,21 +342,25 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
                   <Sparkles className="h-8 w-8 text-sage-600" />
                 </div>
                 <h3 className="text-xl font-semibold text-stone-800">
-                  Creative & Nurturing
+                  Honouring Every Journey
                 </h3>
                 <p className="text-stone-600">
-                  Our purpose is to create a safe, compassionate space where
-                  healing unfolds naturally—through creative expression,
-                  subconscious exploration, and energetic balance—helping
-                  individuals reconnect with their inner strength and wisdom.
+                  I honour the uniqueness of every journey, whether it involves
+                  working with the mind, nurturing the energy, exploring
+                  spirituality or deepening our connection with the animals we
+                  love.
                 </p>
               </CardContent>
             </Card>
           </div>
+          <p className="mt-12 text-center font-serif text-xl italic text-sage-700">
+            A little more awareness. A little more balance. A little more
+            connection with the beautiful person you already are.
+          </p>
         </div>
       </section>
 
-      <WaysToWork showAllServices />
+      <WaysToWork />
 
       {/* Testimonials Section */}
       <section id="testimonials" className="py-20 bg-stone-50">
@@ -378,9 +378,9 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <CardCarousel label="Client testimonials" interval={6000}>
             {testimonials.map((testimonial, index) => (
-              <Card key={index} className="border-stone-200">
+              <Card key={index} className="h-full border-stone-200">
                 <CardContent className="p-6 space-y-4">
                   <div className="flex items-center gap-1 mb-2">
                     {[...Array(testimonial.rating)].map((_, i) => (
@@ -405,7 +405,7 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
                 </CardContent>
               </Card>
             ))}
-          </div>
+          </CardCarousel>
 
           <div className="text-center mt-12">
             <Link href="/testimonials">
@@ -417,154 +417,6 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
                 Read More Stories
               </Button>
             </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Specialized Programs Section */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">
-              Specialized Programs
-            </h2>
-            <p className="text-stone-600 max-w-2xl mx-auto">
-              Comprehensive wellness programs designed for organizations,
-              schools, and those seeking to become healers themselves.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              {
-                icon: Building,
-                title: "Corporate Wellness",
-                description:
-                  "Empowering teams with mindful tools for a healthier, happier workplace",
-                features: [
-                  "Guided Meditation",
-                  "Group Hypnosis",
-                  "Art Therapy",
-                  "Therapeutic Baking",
-                ],
-              },
-              {
-                icon: School,
-                title: "School Programs",
-                description:
-                  "Holistic wellbeing programs for students and educators",
-                features: [
-                  "Student Wellbeing",
-                  "Educator Support",
-                  "Mindfulness Training",
-                  "Creative Expression",
-                ],
-              },
-              {
-                icon: GraduationCap,
-                title: "Reiki Training",
-                description:
-                  "Learn Reiki with confidence and care - Levels 1, 2 & 3 (Master)",
-                features: [
-                  "Level 1: Self-Healing",
-                  "Level 2: Practitioner",
-                  "Level 3: Master/Teacher",
-                  "Certification",
-                ],
-              },
-              {
-                icon: Users,
-                title: "Group Programs",
-                description:
-                  "Community-based healing circles and meditation groups",
-                features: [
-                  "Meditation Circles",
-                  "8-Week Programs",
-                  "Morning Sessions",
-                  "Community Support",
-                ],
-              },
-            ].map((program, index) => (
-              <Card
-                key={index}
-                className="border-stone-200 hover:shadow-lg transition-shadow"
-              >
-                <CardContent className="p-6 space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-3 bg-sage-100 rounded-lg">
-                      <program.icon className="h-6 w-6 text-sage-600" />
-                    </div>
-                    <h3 className="font-semibold text-stone-800">
-                      {program.title}
-                    </h3>
-                  </div>
-                  <p className="text-stone-600 text-sm">
-                    {program.description}
-                  </p>
-                  <div className="space-y-1">
-                    {program.features.map((feature, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-center gap-2 text-xs text-stone-600"
-                      >
-                        <CheckCircle className="h-3 w-3 text-sage-600" />
-                        {feature}
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Why Choose Us Section */}
-      <section className="py-20 bg-sage-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl lg:text-4xl font-serif text-stone-800">
-              Why Choose Mind & Soul Works?
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              {
-                icon: CheckCircle,
-                title: "Online & In-Person Options",
-                description:
-                  "Flexible delivery to meet your needs, whether you prefer face-to-face or remote sessions",
-              },
-              {
-                icon: Heart,
-                title: "Certified & Trauma-Informed",
-                description:
-                  "All practitioners are certified in their modalities and trained in trauma-informed care",
-              },
-              {
-                icon: Users,
-                title: "Personalized Care",
-                description:
-                  "Tailored healing journeys designed specifically for your unique needs and goals",
-              },
-              {
-                icon: Leaf,
-                title: "Safe & Inclusive Space",
-                description:
-                  "Judgment-free environment where healing unfolds naturally with compassion and understanding",
-              },
-            ].map((feature, index) => (
-              <div key={index} className="text-center space-y-4">
-                <div className="mx-auto w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg">
-                  <feature.icon className="h-8 w-8 text-sage-600" />
-                </div>
-                <h3 className="text-xl font-semibold text-stone-800">
-                  {feature.title}
-                </h3>
-                <p className="text-stone-600">{feature.description}</p>
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -582,10 +434,12 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
                   Ready to Begin Your Journey?
                 </h2>
                 <p className="text-stone-600 leading-relaxed">
-                  Take the first step towards positive change. Book your free
-                  consultation today and discover how holistic healing can help
-                  you achieve your goals. You are your own healer—we're here to
-                  guide and support you.
+                  There is no single pathway that is right for everyone. What
+                  matters is finding an approach that resonates with you and
+                  supports your individual needs. Whether your journey begins
+                  with the mind, the energy or the special connection you share
+                  with your animal companion, I welcome you with warmth,
+                  compassion and an open heart.
                 </p>
               </div>
 
@@ -607,7 +461,7 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
                   <div>
                     <div className="font-semibold text-stone-800">Email</div>
                     <div className="text-stone-600">
-                      healwithrangika@gmail.com
+                      mindandsoulworks@gmail.com
                     </div>
                   </div>
                 </div>
@@ -619,7 +473,7 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
                   <div>
                     <div className="font-semibold text-stone-800">Location</div>
                     <div className="text-stone-600">
-                      Perth & Online Sessions Available
+                      Perth, Western Australia &amp; online
                     </div>
                   </div>
                 </div>
@@ -731,13 +585,9 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
                         name="workOn"
                         className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                       >
-                        <option>Anxiety & Stress Relief</option>
-                        <option>Confidence Building</option>
-                        <option>Habit Change</option>
-                        <option>Weight Management</option>
-                        <option>Sleep Improvement</option>
-                        <option>Pain Management</option>
-                        <option>Other</option>
+                        {ENQUIRY_TOPICS.map((t) => (
+                          <option key={t}>{t}</option>
+                        ))}
                       </select>
                     </div>
 
@@ -779,9 +629,9 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
                 <h3 className="text-xl font-serif">Mind & Soul Works</h3>
               </div>
               <p className="text-stone-300 text-sm leading-relaxed">
-                Your partner in healing, growth, and inner transformation.
-                Bridging science and spirit to empower you to reconnect with
-                your inner wisdom and live with intention and purpose.
+                Heal within. Grow beyond. A nurturing space for the mind, body
+                and soul: clinical hypnotherapy, Reiki energy healing, Animal
+                Reiki &amp; communication and Reiki training.
               </p>
             </div>
 
@@ -794,12 +644,20 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
                 >
                   About Rangika
                 </Link>
-                <Link
-                  href="/sessions"
-                  className="block text-stone-300 hover:text-white transition-colors"
-                >
-                  Services
-                </Link>
+                {[
+                  ["/hypnotherapy", "Clinical Hypnotherapy"],
+                  ["/reiki-healing", "Reiki Energy Healing"],
+                  ["/reiki-training", "Reiki Training"],
+                  ["/courses", "Courses"],
+                ].map(([href, label]) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className="block text-stone-300 hover:text-white transition-colors"
+                  >
+                    {label}
+                  </Link>
+                ))}
                 <Link
                   href="/testimonials"
                   className="block text-stone-300 hover:text-white transition-colors"
@@ -819,8 +677,8 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
               <h4 className="font-semibold">Contact Info</h4>
               <div className="space-y-2 text-sm text-stone-300">
                 <div>+61 429 940 130</div>
-                <div>healwithrangika@gmail.com</div>
-                <div>Australia & Online Worldwide</div>
+                <div>mindandsoulworks@gmail.com</div>
+                <div>Perth, Western Australia &amp; online worldwide</div>
               </div>
             </div>
           </div>
@@ -828,7 +686,7 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
           <Separator className="my-8 bg-stone-700" />
 
           <div className="flex flex-col md:flex-row justify-between items-center text-sm text-stone-400">
-            <div>© 2025 Mind & Soul Works. All rights reserved.</div>
+            <div>© {new Date().getFullYear()} Mind & Soul Works. All rights reserved.</div>
             <div className="flex gap-6 mt-4 md:mt-0">
               <Link
                 href="/privacy"

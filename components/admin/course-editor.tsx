@@ -249,7 +249,7 @@ export function CourseMaterialEditor({ course, library }: { course: EditorCourse
 }
 
 // ---------------------------------------------------------------------------
-// Certificates and enrolments
+// Certificates and enrollments
 // ---------------------------------------------------------------------------
 
 export function CertificateUpload({ enrollmentId, hasCertificate }: { enrollmentId: string; hasCertificate: boolean }) {
@@ -327,7 +327,7 @@ export function CourseStudents({
           ))}
         </select>
         <Button variant="outline" disabled={!pick || pending} onClick={() => run(() => enrollStudent(pick, courseId), "Enrolled", (r) => r.ok && setPick(""))}>
-          Enrol
+          Enroll
         </Button>
         <Button variant="ghost" asChild>
           <Link href="/admin/clients?add=1">New person…</Link>
@@ -415,7 +415,7 @@ export function PersonCourses({
       {available.length > 0 && (
         <div className="flex flex-wrap gap-2 rounded-2xl border-2 border-dashed border-sage-200 bg-white p-4">
           <select suppressHydrationWarning className={`${selectCls} max-w-xs`} value={pick} onChange={(e) => setPick(e.target.value)}>
-            <option value="">Enrol in a class…</option>
+            <option value="">Enroll in a class…</option>
             {available.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.title}
@@ -423,7 +423,7 @@ export function PersonCourses({
             ))}
           </select>
           <Button className="bg-sage-600 hover:bg-sage-700" disabled={!pick || pending} onClick={() => run(() => enrollStudent(userId, pick), "Enrolled", (r) => r.ok && setPick(""))}>
-            Enrol
+            Enroll
           </Button>
         </div>
       )}
@@ -431,7 +431,7 @@ export function PersonCourses({
   );
 }
 
-/** Price (AUD and AED), dates, details and bundle contents for the public /classes page, and the publish switch. */
+/** Price (AUD and AED), dates, details and bundle contents for the class's Reiki Training page, and the publish switch. */
 export function CourseWebsiteForm({ course, classOptions }: { course: EditorCourse; classOptions: { id: string; title: string; isBundle: boolean }[] }) {
   const w = course.website;
   const [f, setF] = useState({
@@ -443,6 +443,7 @@ export function CourseWebsiteForm({ course, classOptions }: { course: EditorCour
     priceAed: w.priceAed ? String(w.priceAed / 100) : "",
     prerequisite: w.prerequisite,
     highlights: w.highlights,
+    track: w.track,
     seats: w.seats === null ? "" : String(w.seats),
     published: w.published,
   });
@@ -465,11 +466,12 @@ export function CourseWebsiteForm({ course, classOptions }: { course: EditorCour
           priceAed: f.priceAed.trim() === "" ? null : Number(f.priceAed),
           prerequisite: f.prerequisite,
           highlights: f.highlights,
+          track: f.track,
           seats: f.seats.trim() === "" ? null : Math.max(0, Math.floor(Number(f.seats))),
           published,
           includeIds,
         }),
-      published && !w.published ? "Published. People can enrol on the website now." : !published && w.published ? "Taken off the website" : "Saved",
+      published && !w.published ? "Published. People can enroll on the website now." : !published && w.published ? "Taken off the website" : "Saved",
       (r) => {
         if (r.ok) {
           setF((x) => ({ ...x, published }));
@@ -487,11 +489,24 @@ export function CourseWebsiteForm({ course, classOptions }: { course: EditorCour
           <h2 className="flex items-center gap-2 font-serif text-xl text-stone-800">
             <Globe className="h-5 w-5 text-sage-600" /> On the website
           </h2>
-          <p className="text-sm text-stone-500">People can read about this class on the Classes page, pay by card and be enrolled automatically.</p>
+          <p className="text-sm text-stone-500">People can read about this training on the website, pay by card and be enrolled automatically.</p>
         </div>
         <span className={`rounded-full px-3 py-1 text-xs font-medium ${f.published ? "bg-sage-100 text-sage-800" : "bg-amber-100 text-amber-900"}`}>
           {f.published ? "On the website" : "Not on the website"}
         </span>
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="cw-track">Shown under (Reiki Training menu)</Label>
+        <select
+          suppressHydrationWarning
+          id="cw-track"
+          className="h-10 w-full rounded-md border border-input bg-white px-3 text-sm sm:w-72"
+          value={f.track}
+          onChange={(e) => setF({ ...f, track: e.target.value as "REIKI" | "ANIMAL" })}
+        >
+          <option value="REIKI">Reiki (Usui Reiki levels)</option>
+          <option value="ANIMAL">Animal Reiki</option>
+        </select>
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="cw-summary">Short summary</Label>
@@ -558,8 +573,8 @@ export function CourseWebsiteForm({ course, classOptions }: { course: EditorCour
         <div className="space-y-2 rounded-xl border border-stone-200 p-4">
           <p className="font-medium text-stone-800">Bundle (optional)</p>
           <p className="text-xs text-stone-500">
-            Tick two or more classes to sell this as a bundle (e.g. “Reiki Level 1 &amp; 2”). Buying it enrols the student in each ticked class, so they get each
-            class&apos;s own content and certificate. Changes apply to new enrolments.
+            Tick two or more classes to sell this as a bundle (e.g. “Reiki Level 1 &amp; 2”). Buying it enrolls the student in each ticked class, so they get each
+            class&apos;s own content and certificate. Changes apply to new enrollments.
           </p>
           <div className="grid gap-2 sm:grid-cols-2">
             {bundleChoices.map((c) => (
@@ -587,7 +602,7 @@ export function CourseWebsiteForm({ course, classOptions }: { course: EditorCour
           ))}
         {f.published && slug && (
           <Button variant="ghost" asChild>
-            <a href={`/classes/${slug}`} target="_blank" rel="noreferrer">
+            <a href={`/reiki-training/${slug}`} target="_blank" rel="noreferrer">
               <ExternalLink className="mr-2 h-4 w-4" /> View on website
             </a>
           </Button>

@@ -14,7 +14,7 @@ export default async function LearningPackagePage({ params, searchParams }: { pa
   const [{ id }, sp] = await Promise.all([params, searchParams]);
   const lp = await getLearnerPackage(user.id, id);
   if (!lp) {
-    // Classes used to live at /portal/courses/<id>: send old links there (that page checks enrolment).
+    // Classes used to live at /portal/courses/<id>: send old links there (that page checks enrollment).
     if (await db.course.findUnique({ where: { id }, select: { id: true } })) redirect(`/portal/classes/${id}`);
     notFound(); // hasn't bought it: nothing to see
   }

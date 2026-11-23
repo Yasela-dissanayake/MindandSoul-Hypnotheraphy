@@ -14,13 +14,13 @@ export function SiteHeader() {
           <Link href="/" className="flex items-center gap-2">
             {/* <Leaf className="h-8 w-8 text-sage-600" /> */}
             <Image width={52} height={52} src="/brand/logo-mark.png" alt="Mind & Soul Works logo" priority className="rounded-xl" />
-            <h1 className="text-2xl font-serif text-stone-800">
+            <span className="text-xl font-serif text-stone-800 sm:text-2xl">
               Mind & Soul Works
-            </h1>
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
+          <nav className="hidden xl:flex items-center gap-5 2xl:gap-7 text-[15px]">
             <DesktopNavLinks />
             <Link href="/booking">
               <Button className="bg-sage-600 hover:bg-sage-700 text-white">

@@ -25,7 +25,10 @@ export type EditorService = {
   id: string;
   slug: string;
   title: string;
+  category: "HYPNOTHERAPY" | "REIKI_HEALING" | "ANIMAL_REIKI";
+  tagline: string;
   summary: string;
+  body: string;
   details: string;
   highlights: string;
   planService: "HYPNOTHERAPY" | "REIKI_HEALING" | "ANIMAL_REIKI";
@@ -37,11 +40,42 @@ export type EditorService = {
   published: boolean;
   canDelete: boolean;
 };
-export type EditorOption = { id: string; title: string; sessions: number; price: number; priceAed: number | null; mode: "IN_PERSON" | "DISTANCE" | null; note: string };
+export type EditorOption = {
+  id: string;
+  title: string;
+  sessions: number;
+  price: number;
+  priceAed: number | null;
+  mode: "IN_PERSON" | "DISTANCE" | null;
+  note: string;
+  recorded: boolean;
+};
+
+const TAB_PATH = { HYPNOTHERAPY: "/hypnotherapy", REIKI_HEALING: "/reiki-healing", ANIMAL_REIKI: "/reiki-healing" } as const;
+
+/** The marks the page text understands (components/site/rich-text.tsx). */
+function PageTextHelp() {
+  return (
+    <details className="rounded-lg bg-stone-50 px-3 py-2 text-xs text-stone-600 ring-1 ring-stone-200">
+      <summary className="cursor-pointer font-medium text-stone-700">How to format the page text</summary>
+      <ul className="mt-2 space-y-1 font-mono">
+        <li>## Areas of focus include: <span className="font-sans text-stone-500">→ a heading</span></li>
+        <li>### Option 1 — 1-Session … <span className="font-sans text-stone-500">→ a smaller heading; two or more in a row become tabs (“Option 1”, “Session 2”…), or open/close questions if they end with ?</span></li>
+        <li>- Stress management and relaxation. <span className="font-sans text-stone-500">→ a ticked point</span></li>
+        <li>- **Guided Hypnotherapy:** Experience … <span className="font-sans text-stone-500">→ a point with a bold title</span></li>
+        <li>&gt; Ideal for: … <span className="font-sans text-stone-500">→ a soft green box</span></li>
+        <li>**bold**  *italic*  [link text](/contact)</li>
+        <li>[[book]] <span className="font-sans text-stone-500">→ the &quot;Book your session&quot; and &quot;Send us an enquiry&quot; buttons</span></li>
+      </ul>
+      <p className="mt-2">Leave an empty line between paragraphs.</p>
+    </details>
+  );
+}
 
 export function NewSessionServiceButton() {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
+  const [category, setCategory] = useState<EditorService["category"]>("HYPNOTHERAPY");
   const { pending, run } = useAction();
   const router = useRouter();
   if (!open)
@@ -53,10 +87,17 @@ export function NewSessionServiceButton() {
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Input autoFocus placeholder="e.g. Inner Child Healing" value={title} onChange={(e) => setTitle(e.target.value)} className="w-64" />
+      <select suppressHydrationWarning className={`${selectCls} w-56`} value={category} onChange={(e) => setCategory(e.target.value as EditorService["category"])} aria-label="Website tab">
+        <option value="HYPNOTHERAPY">Clinical Hypnotherapy</option>
+        <option value="REIKI_HEALING">Reiki Energy Healing</option>
+        <option value="ANIMAL_REIKI">Animal Reiki &amp; Communication</option>
+      </select>
       <Button
         disabled={pending || !title.trim()}
         className="bg-sage-600 hover:bg-sage-700"
-        onClick={() => run(() => createSessionService({ title }), "Created. Add its details and prices.", (r) => r.ok && router.push(`/admin/sessions/services/${(r as { data?: { id: string } }).data?.id}`))}
+        onClick={() =>
+          run(() => createSessionService({ title, category }), "Created. Add its details and prices.", (r) => r.ok && router.push(`/admin/sessions/services/${(r as { data?: { id: string } }).data?.id}`))
+        }
       >
         Create
       </Button>
@@ -93,7 +134,10 @@ export function SessionServiceForm({ service }: { service: EditorService }) {
       () =>
         updateSessionService(service.id, {
           title: f.title,
+          category: f.category,
+          tagline: f.tagline,
           summary: f.summary,
+          body: f.body,
           details: f.details,
           highlights: f.highlights,
           planService: f.planService,
@@ -116,22 +160,44 @@ export function SessionServiceForm({ service }: { service: EditorService }) {
           {f.published ? "On the website" : "Hidden"}
         </span>
       </div>
+      <div className="grid gap-4 sm:grid-cols-[1fr_16rem]">
+        <div className="space-y-1.5">
+          <Label htmlFor="ss-title">Name</Label>
+          <Input id="ss-title" maxLength={150} value={f.title} onChange={set("title")} />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="ss-category">Website tab</Label>
+          <select suppressHydrationWarning id="ss-category" className={selectCls} value={f.category} onChange={set("category")}>
+            <option value="HYPNOTHERAPY">Clinical Hypnotherapy</option>
+            <option value="REIKI_HEALING">Reiki Energy Healing</option>
+            <option value="ANIMAL_REIKI">Reiki Energy Healing · Animal</option>
+          </select>
+        </div>
+      </div>
       <div className="space-y-1.5">
-        <Label htmlFor="ss-title">Name</Label>
-        <Input id="ss-title" maxLength={150} value={f.title} onChange={set("title")} />
+        <Label htmlFor="ss-tagline">Tagline</Label>
+        <Input id="ss-tagline" maxLength={200} placeholder="e.g. Break Free from Smoking. Build a Healthier Future." value={f.tagline} onChange={set("tagline")} />
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="ss-summary">Short summary</Label>
-        <Input id="ss-summary" maxLength={300} placeholder="One line on the Sessions page" value={f.summary} onChange={set("summary")} />
+        <Input id="ss-summary" maxLength={300} placeholder="One or two lines on the tab page's card" value={f.summary} onChange={set("summary")} />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="ss-details">About this session</Label>
-        <Textarea id="ss-details" rows={8} maxLength={10000} value={f.details} onChange={set("details")} />
+        <Label htmlFor="ss-body">Page text</Label>
+        <Textarea id="ss-body" rows={22} maxLength={40000} className="font-mono text-[13px] leading-relaxed" value={f.body} onChange={set("body")} />
+        <PageTextHelp />
       </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="ss-highlights">How it can help / areas of support</Label>
-        <Textarea id="ss-highlights" rows={6} maxLength={5000} placeholder={"One point per line"} value={f.highlights} onChange={set("highlights")} />
-      </div>
+      <details className="space-y-3 rounded-lg px-3 py-2 ring-1 ring-stone-200">
+        <summary className="cursor-pointer text-sm font-medium text-stone-700">Older fields (only shown when the page text is empty)</summary>
+        <div className="mt-3 space-y-1.5">
+          <Label htmlFor="ss-details">About this session</Label>
+          <Textarea id="ss-details" rows={6} maxLength={10000} value={f.details} onChange={set("details")} />
+        </div>
+        <div className="mt-3 space-y-1.5">
+          <Label htmlFor="ss-highlights">How it can help / areas of support</Label>
+          <Textarea id="ss-highlights" rows={5} maxLength={5000} placeholder={"One point per line"} value={f.highlights} onChange={set("highlights")} />
+        </div>
+      </details>
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="space-y-1.5">
           <Label htmlFor="ss-minutes">Booking length (minutes)</Label>
@@ -178,7 +244,7 @@ export function SessionServiceForm({ service }: { service: EditorService }) {
         )}
         {f.published && (
           <Button variant="ghost" asChild>
-            <a href={`/sessions/${service.slug}`} target="_blank" rel="noreferrer">
+            <a href={`${TAB_PATH[f.category]}/${service.slug}`} target="_blank" rel="noreferrer">
               <ExternalLink className="mr-2 h-4 w-4" /> View on website
             </a>
           </Button>
@@ -204,6 +270,7 @@ function OptionForm({ serviceId, option, onDone }: { serviceId: string; option: 
     priceAed: option?.priceAed ? String(option.priceAed / 100) : "",
     mode: option?.mode ?? "",
     note: option?.note ?? "",
+    recorded: option?.recorded ?? false,
   });
   const { pending, run } = useAction();
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setF({ ...f, [k]: e.target.value });
@@ -241,6 +308,15 @@ function OptionForm({ serviceId, option, onDone }: { serviceId: string; option: 
         <Label>Note (optional)</Label>
         <Input maxLength={200} placeholder="e.g. Recommended for IBS · completed within 6 weeks" value={f.note} onChange={set("note")} />
       </div>
+      <label className="flex items-start gap-2 text-sm text-stone-700">
+        <input suppressHydrationWarning type="checkbox" className="mt-1" checked={f.recorded} onChange={(e) => setF({ ...f, recorded: e.target.checked })} />
+        <span>
+          Also offered as a <strong>self-paced recorded course</strong>
+          <span className="block text-xs text-stone-500">
+            Shows a &quot;Self-paced recorded course · Coming soon&quot; button under this price that opens the Courses page. Bookings stay live sessions.
+          </span>
+        </span>
+      </label>
       <div className="flex gap-2">
         <Button
           disabled={pending}
@@ -255,6 +331,7 @@ function OptionForm({ serviceId, option, onDone }: { serviceId: string; option: 
                   priceAed: f.priceAed.trim() === "" ? null : Number(f.priceAed),
                   mode: f.mode === "" ? null : (f.mode as "IN_PERSON" | "DISTANCE"),
                   note: f.note,
+                  recorded: f.recorded,
                 }),
               "Price saved",
               (r) => r.ok && onDone(),
@@ -307,6 +384,7 @@ export function SessionOptionsEditor({ serviceId, options }: { serviceId: string
                     · {o.sessions} session{o.sessions === 1 ? "" : "s"}
                     {o.mode ? ` · ${o.mode === "IN_PERSON" ? "in person only" : "online only"}` : ""}
                   </span>
+                  {o.recorded && <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-[11px] font-medium text-amber-900">Recorded course</span>}
                 </p>
                 <p className="text-sm text-stone-600">
                   {fmt(o.price, "AUD")}

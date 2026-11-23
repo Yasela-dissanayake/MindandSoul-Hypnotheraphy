@@ -15,7 +15,7 @@ export default async function BookPackageSessionPage({ searchParams }: { searchP
     where: { id: planId, userId: user.id, completedAt: null },
     include: { sessionService: true, _count: { select: { bookings: { where: { status: "CONFIRMED" } } } } },
   });
-  if (!plan?.sessionService) notFound();
+  if (!plan?.sessionService || plan.selfPaced) notFound(); // a recorded journey has no live sessions
   const left = Math.max(0, (plan.totalSessions ?? 0) - plan._count.bookings);
   const s = plan.sessionService;
 

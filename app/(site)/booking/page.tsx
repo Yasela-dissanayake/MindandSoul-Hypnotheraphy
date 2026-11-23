@@ -23,7 +23,7 @@ export default async function BookingPage({ searchParams }: { searchParams: Prom
     viewerCurrency(),
     db.sessionService.findMany({
       where: { published: true, enquiryOnly: false, options: { some: {} } },
-      orderBy: [{ order: "asc" }, { title: "asc" }],
+      orderBy: [{ category: "asc" }, { order: "asc" }, { title: "asc" }],
       include: serviceWithOptions,
     }),
     getActivePromotion(),
@@ -38,6 +38,7 @@ export default async function BookingPage({ searchParams }: { searchParams: Prom
     slug: s.slug,
     title: s.title,
     summary: s.summary,
+    category: s.category,
     lengthLabel: s.lengthLabel,
     inPerson: s.inPerson,
     online: s.online,
@@ -61,8 +62,11 @@ export default async function BookingPage({ searchParams }: { searchParams: Prom
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <CurrencySwitch current={currency} />
-            <Link href="/sessions" className="text-sm text-sage-700 underline">
-              Read about each session
+            <Link href="/hypnotherapy" className="text-sm text-sage-700 underline">
+              Clinical Hypnotherapy
+            </Link>
+            <Link href="/reiki-healing" className="text-sm text-sage-700 underline">
+              Reiki Energy Healing
             </Link>
           </div>
         </div>

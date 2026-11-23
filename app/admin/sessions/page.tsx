@@ -101,9 +101,10 @@ export default async function SessionsPage({ searchParams }: { searchParams: Pro
       <section id="services" className="scroll-mt-6 space-y-3 border-b border-stone-200 pb-8">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h2 className="font-serif text-2xl text-stone-800">Session services &amp; prices</h2>
+            <h2 className="font-serif text-2xl text-stone-800">Services &amp; prices</h2>
             <p className="text-sm text-stone-500">
-              What people can book on the website, with AUD and AED prices. Open a session to change its text, prices and packages, or hide it.
+              The Clinical Hypnotherapy areas and Reiki Energy Healing services on the website, with AUD and AED prices. Open one to change its page text,
+              prices and packages (live and recorded), or hide it.
             </p>
           </div>
           <NewSessionServiceButton />
@@ -173,7 +174,9 @@ export default async function SessionsPage({ searchParams }: { searchParams: Pro
                             <StatusBadge status={u.status} />
                           </td>
                           <td className="px-4 py-3 text-stone-700">{sessionName(p)}</td>
-                          <td className="px-4 py-3 text-stone-700">{p.totalSessions ? `Session ${p.currentSession ?? 0} of ${p.totalSessions}` : "—"}</td>
+                          <td className="px-4 py-3 text-stone-700">
+                            {p.selfPaced ? "Recorded journey" : p.totalSessions ? `Session ${p.currentSession ?? 0} of ${p.totalSessions}` : "—"}
+                          </td>
                           <td className="px-4 py-3">
                             {u._count.questions + u._count.submissions + u._count.journal === 0 ? (
                               <span className="text-stone-400">—</span>
@@ -211,7 +214,7 @@ export default async function SessionsPage({ searchParams }: { searchParams: Pro
                           <td className="px-4 py-3 text-stone-600">
                             {(() => {
                               const next = p.bookings.find((b) => b.endsAt > now);
-                              const left = p.sessionServiceId ? Math.max(0, (p.totalSessions ?? 0) - p.bookings.length) : 0;
+                              const left = p.sessionServiceId && !p.selfPaced ? Math.max(0, (p.totalSessions ?? 0) - p.bookings.length) : 0;
                               return (
                                 <>
                                   {next ? nextText(next.startsAt) : <span className="text-stone-400">—</span>}

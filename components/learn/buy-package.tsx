@@ -227,7 +227,7 @@ function BuyForm({
         disabled={(!free && !stripe) || busy || !agreed || (Boolean(prerequisite) && !prereqDone)}
         className="w-full bg-sage-600 py-3 hover:bg-sage-700"
       >
-        {free ? (kind === "course" ? "Join for free" : "Get it for free") : `${kind === "course" ? "Enrol" : "Buy"} · ${priceLabel}`}
+        {free ? (kind === "course" ? "Join for free" : "Get it for free") : `${kind === "course" ? "Enroll" : "Buy"} · ${priceLabel}`}
       </Button>
       <p className="flex items-center justify-center gap-1 text-xs text-stone-500">
         {free ? (

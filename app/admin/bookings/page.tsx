@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { BookOpen, CalendarDays, Globe, GraduationCap, MapPin, Search, Sparkles } from "lucide-react";
+import { BookOpen, CalendarDays, Globe, GraduationCap, Headphones, MapPin, Search, Sparkles } from "lucide-react";
 import { requireAdminPage } from "@/lib/authz";
 import { db } from "@/lib/db";
 import { BOOKING_TZ, time12 } from "@/lib/booking";
@@ -13,7 +13,7 @@ import { CancelBookingButton } from "@/components/admin/calendar-blocker";
 import { MarkSeenButton } from "@/components/admin/mark-seen-button";
 
 // Everything people have booked or bought on the website, in one place:
-// session bookings, class enrolments and course purchases, each as a table.
+// session bookings, class enrollments and course purchases, each as a table.
 // New ones are highlighted until Rangika marks them as seen.
 
 type Tab = "sessions" | "courses" | "learning";
@@ -21,7 +21,7 @@ type SP = { tab?: string; q?: string; show?: string };
 
 const TABS: { id: Tab; label: string; icon: typeof Sparkles }[] = [
   { id: "sessions", label: "Session bookings", icon: Sparkles },
-  { id: "courses", label: "Class enrolments", icon: GraduationCap },
+  { id: "courses", label: "Class enrollments", icon: GraduationCap },
   { id: "learning", label: "Courses", icon: BookOpen },
 ];
 
@@ -179,9 +179,13 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
                   <td className="whitespace-nowrap px-4 py-3">
                     {isNew && <NewPill />}
                     <p className="font-medium text-stone-800">{longDay(b.date)}</p>
-                    <p className="text-stone-600">
-                      {time12(b.start)} – {time12(b.end)}
-                    </p>
+                    {b.recorded ? (
+                      <p className="text-stone-600">No appointment (bought)</p>
+                    ) : (
+                      <p className="text-stone-600">
+                        {time12(b.start)} – {time12(b.end)}
+                      </p>
+                    )}
                     {b.clientTimezone && b.clientTimezone !== BOOKING_TZ && (
                       <p className="text-xs text-stone-500">Client in {b.clientTimezone.replace(/_/g, " ")}</p>
                     )}
@@ -192,10 +196,16 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
                   <td className="min-w-[9rem] px-4 py-3 text-stone-700">
                     <p>{b.service}</p>
                     <p className="text-xs text-stone-500">{b.credit ? "From their package" : b.option?.title ?? ""}</p>
-                    <p className="mt-0.5 inline-flex items-center gap-1 text-xs text-stone-500">
-                      {b.mode === "IN_PERSON" ? <MapPin className="h-3.5 w-3.5" /> : <Globe className="h-3.5 w-3.5" />}
-                      {b.mode === "IN_PERSON" ? "In person" : "Online / distance"}
-                    </p>
+                    {b.recorded ? (
+                      <p className="mt-0.5 inline-flex items-center gap-1 text-xs font-medium text-amber-800">
+                        <Headphones className="h-3.5 w-3.5" /> Self-paced recorded journey
+                      </p>
+                    ) : (
+                      <p className="mt-0.5 inline-flex items-center gap-1 text-xs text-stone-500">
+                        {b.mode === "IN_PERSON" ? <MapPin className="h-3.5 w-3.5" /> : <Globe className="h-3.5 w-3.5" />}
+                        {b.mode === "IN_PERSON" ? "In person" : "Online / distance"}
+                      </p>
+                    )}
                   </td>
                   <td className="min-w-[8rem] px-4 py-3 text-stone-700">
                     {b.credit ? <span className="text-stone-500">Package</span> : b.amount === 0 ? <span className="font-medium text-amber-700">Free</span> : formatPrice(b.amount, b.currency)}
@@ -249,7 +259,7 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
     });
     body =
       purchases.length === 0 ? (
-        <Empty>{q ? `No class enrolments match "${q}".` : "No one has enrolled on a class through the website yet."}</Empty>
+        <Empty>{q ? `No class enrollments match "${q}".` : "No one has enrolled on a class through the website yet."}</Empty>
       ) : (
         <Table head={["Paid on", "Student", "Class", "Amount", "Account", "Actions"]} minWidth="min-w-[860px]">
           {purchases.map((p) => {

@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     if (!p || p.status !== "PAID") return NextResponse.json({ ok: false }, { status: 409 });
     return NextResponse.json({ ok: true, newAccount: p.newAccount });
   } catch (e) {
-    console.error("Course enrolment confirmation failed:", e);
+    console.error("Course enrollment confirmation failed:", e);
     return NextResponse.json({ ok: false }, { status: 500 });
   }
 }

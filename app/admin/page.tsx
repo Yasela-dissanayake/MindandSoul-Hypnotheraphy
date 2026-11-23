@@ -79,7 +79,7 @@ export default async function AdminOverview() {
               <strong>New on the website:</strong>{" "}
               {[
                 sales.sessions && `${sales.sessions} session booking${sales.sessions === 1 ? "" : "s"}`,
-                sales.courses && `${sales.courses} class enrolment${sales.courses === 1 ? "" : "s"}`,
+                sales.courses && `${sales.courses} class enrollment${sales.courses === 1 ? "" : "s"}`,
                 sales.learning && `${sales.learning} course purchase${sales.learning === 1 ? "" : "s"}`,
               ]
                 .filter(Boolean)

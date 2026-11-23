@@ -8,7 +8,7 @@ import { SITE_URL } from "@/lib/mail";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { AddPersonDialog } from "@/components/admin/add-person-dialog";
-import { EnrolExistingPerson } from "@/components/admin/enrol-existing-person";
+import { EnrollExistingPerson } from "@/components/admin/enroll-existing-person";
 import { NewCourseDialog } from "@/components/admin/new-course-dialog";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { viewerTimezone } from "@/lib/viewer-tz";
@@ -76,19 +76,19 @@ export default async function CoursesPage({ searchParams }: { searchParams: Prom
       <div className="space-y-4">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="font-serif text-3xl text-stone-800">Classes</h1>
+            <h1 className="font-serif text-3xl text-stone-800">Reiki Training</h1>
             <p className="text-stone-500">Your students. Open a student to see their progress, mark a class complete and add their certificate.</p>
           </div>
           <AddPersonDialog packages={packages} courses={courseOptions} siteUrl={SITE_URL} />
         </div>
-        <EnrolExistingPerson people={everyone.map((u) => ({ id: u.id, name: u.name ? `${u.name} (${u.email})` : u.email }))} courses={courseOptions} />
+        <EnrollExistingPerson people={everyone.map((u) => ({ id: u.id, name: u.name ? `${u.name} (${u.email})` : u.email }))} courses={courseOptions} />
       </div>
 
       {newSales.length > 0 && (
         <div className="space-y-2 rounded-xl bg-sage-50 p-4 ring-1 ring-sage-200">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="font-medium text-stone-800">
-              {newSales.length} new enrolment{newSales.length === 1 ? "" : "s"} from the website
+              {newSales.length} new enrollment{newSales.length === 1 ? "" : "s"} from the website
             </p>
             <div className="flex flex-wrap gap-2">
               <Link href="/admin/bookings?tab=courses" className="inline-flex h-9 items-center rounded-md px-3 text-sm font-medium text-sage-800 hover:bg-sage-100">
@@ -164,7 +164,7 @@ export default async function CoursesPage({ searchParams }: { searchParams: Prom
                     )}
                   </div>
                   {c.includes.length ? (
-                    <p className="text-xs text-stone-500">Bundle: enrols buyers in {c.includes.map((x) => x.title).join(" + ")}</p>
+                    <p className="text-xs text-stone-500">Bundle: enrolls buyers in {c.includes.map((x) => x.title).join(" + ")}</p>
                   ) : (
                     <p className="text-xs text-stone-500">
                       {c._count.modules} module{c._count.modules === 1 ? "" : "s"} · {c._count.items} item{c._count.items === 1 ? "" : "s"} · {active} current student
@@ -187,7 +187,7 @@ export default async function CoursesPage({ searchParams }: { searchParams: Prom
         </div>
         {rows.length === 0 ? (
           <p className="rounded-xl bg-white p-5 text-sm text-stone-500 ring-1 ring-stone-200">
-            {filter ? "No students in this class right now." : "No students yet. They appear here when someone enrols on the website, or when you add them."}
+            {filter ? "No students in this class right now." : "No students yet. They appear here when someone enrolls on the website, or when you add them."}
           </p>
         ) : (
           <div className="overflow-x-auto rounded-xl bg-white ring-1 ring-stone-200">
@@ -209,7 +209,7 @@ export default async function CoursesPage({ searchParams }: { searchParams: Prom
                   const allDone = total > 0 && done >= total;
                   const fresh = isNewStudent(c.id, e.user.id);
                   return (
-                    // The whole row opens the student (the name link stretches over it). New website enrolments are tinted.
+                    // The whole row opens the student (the name link stretches over it). New website enrollments are tinted.
                     <tr key={e.id} className={cn("relative border-b border-stone-100 align-top last:border-0", fresh ? "bg-sage-50 hover:bg-sage-100" : "hover:bg-stone-50")}>
                       <td className="px-4 py-3">
                         <span className="flex items-center gap-2">
