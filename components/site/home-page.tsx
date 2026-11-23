@@ -257,16 +257,6 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
                   moment of stillness, you are welcome here.
                 </p>
               </div>
-              <div className="space-y-2 rounded-2xl bg-sage-50 p-6 ring-1 ring-sage-200">
-                <p className="font-serif text-xl text-stone-800">
-                  There is no need to have everything figured out. Your journey
-                  begins exactly where you are.
-                </p>
-                <p className="text-sm text-stone-600">
-                  Because sometimes the most beautiful transformation begins
-                  when we give ourselves permission to pause and reconnect.
-                </p>
-              </div>
             </div>
             <div className="relative h-[500px] overflow-hidden rounded-2xl shadow-lg">
               <Image
