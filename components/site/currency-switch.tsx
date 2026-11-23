@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -56,7 +57,9 @@ export function CurrencySwitch({ current, className }: { current: Currency; clas
         </div>
       </div>
 
-      {switching && (
+      {/* Drawn straight on <body>: inside the sticky price box it would sit under later parts of the page. */}
+      {switching &&
+        createPortal(
         <div
           role="status"
           aria-live="polite"
@@ -66,8 +69,9 @@ export function CurrencySwitch({ current, className }: { current: Currency; clas
             <Loader2 className="h-8 w-8 animate-spin text-sage-600" />
             <p className="text-sm font-medium text-stone-700">Showing prices in {switching.toUpperCase()}…</p>
           </div>
-        </div>
-      )}
+        </div>,
+          document.body,
+        )}
     </>
   );
 }
