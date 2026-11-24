@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, CalendarCheck, Clock, Globe, Headphones, MapPin, MessageCircle } from "lucide-react";
+import { ArrowLeft, CalendarCheck, Clock, Globe, MapPin, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { ServiceWithOptions } from "@/lib/session-catalog";
 import { classPrice, formatPrice, type Currency } from "@/lib/currency";
@@ -24,7 +24,6 @@ export function ServiceDetail({ s, currency, promo }: { s: ServiceWithOptions; c
   const freeId = promoted && promo?.free && !s.enquiryOnly ? freeOptionOf(s.options)?.id : null;
   const cover = coverUrl("session", s);
   const single = s.options.find((o) => o.sessions === 1 && !o.mode);
-  const hasRecorded = s.options.some((o) => o.recorded);
   const enquiry = enquiryHref(s.title);
 
   const cta = (
@@ -78,11 +77,6 @@ export function ServiceDetail({ s, currency, promo }: { s: ServiceWithOptions; c
                 <Globe className="h-4 w-4 text-sage-600" /> {s.inPerson ? "Live online / distance" : "Remote / online"}
               </span>
             )}
-            {hasRecorded && (
-              <span className="flex items-center gap-1.5">
-                <Headphones className="h-4 w-4 text-sage-600" /> Self-paced recorded course coming soon
-              </span>
-            )}
           </div>
         </header>
 
@@ -121,18 +115,9 @@ export function ServiceDetail({ s, currency, promo }: { s: ServiceWithOptions; c
                           <div className="space-y-2 pt-1">
                             <Button asChild size="sm" className="w-full bg-sage-600 text-white hover:bg-sage-700">
                               <Link href={bookingHref(s.slug, { sessions: o.sessions, mode: o.mode })}>
-                                {isFree ? "Book your free session" : o.recorded ? "Book live sessions" : `Book ${o.sessions > 1 ? o.title.toLowerCase() : "this session"}`}
+                                {isFree ? "Book your free session" : `Book ${o.sessions > 1 ? o.title.toLowerCase() : "this session"}`}
                               </Link>
                             </Button>
-                            {/* The self-paced recorded journey is one of the pre-built Courses (coming soon). */}
-                            {o.recorded && !isFree && (
-                              <Button asChild size="sm" variant="outline" className="w-full border-sage-300 text-sage-800 hover:bg-sage-50">
-                                <Link href="/courses">
-                                  <Headphones className="mr-1.5 h-4 w-4" /> Self-paced recorded course
-                                  <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800">Coming soon</span>
-                                </Link>
-                              </Button>
-                            )}
                           </div>
                         )}
                       </li>
@@ -148,7 +133,6 @@ export function ServiceDetail({ s, currency, promo }: { s: ServiceWithOptions; c
               {!s.enquiryOnly && s.options.length > 0 && (
                 <p className="text-xs leading-relaxed text-stone-500">
                   {s.options.some((o) => o.sessions > 1) && "Packages: you book your first live session at checkout and the rest from your private space, whenever it suits you. "}
-                  {hasRecorded && "The self-paced recorded journeys will be available as courses (coming soon). "}
                   Not sure what&apos;s right for you? Ask for a free consultation.
                 </p>
               )}

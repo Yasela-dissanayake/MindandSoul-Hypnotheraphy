@@ -2,6 +2,7 @@ import { cache } from "react";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import type { QuestionRow } from "@/components/admin/questions-list";
+import { areaQuestionWhere } from "@/lib/session-areas";
 
 /** Questions for the admin lists: unanswered first, then newest. */
 export async function loadQuestions(where: Prisma.QuestionWhereInput, take = 100): Promise<QuestionRow[]> {
@@ -29,3 +30,13 @@ export async function loadQuestions(where: Prisma.QuestionWhereInput, take = 100
 
 // Shared per page render (menu badge + Overview), like the other dashboard counts.
 export const countWaitingQuestions = cache(() => db.question.count({ where: { answeredAt: null, user: { status: { not: "FINISHED" } } } }));
+
+/** Waiting questions split by area, for the Clinical Hypnotherapy and Reiki Energy Healing menu badges. */
+export const countWaitingQuestionsByArea = cache(async () => {
+  const waiting = { answeredAt: null, user: { status: { not: "FINISHED" as const } } };
+  const [hypnoQuestions, reikiQuestions] = await Promise.all([
+    db.question.count({ where: { AND: [areaQuestionWhere("hypnotherapy"), waiting] } }),
+    db.question.count({ where: { AND: [areaQuestionWhere("reiki-healing"), waiting] } }),
+  ]);
+  return { hypnoQuestions, reikiQuestions };
+});

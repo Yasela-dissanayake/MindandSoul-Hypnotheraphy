@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { countWaitingQuestions } from "@/lib/questions";
+import { countWaitingQuestionsByArea } from "@/lib/questions";
 import { countNewSales } from "@/lib/sales";
 import { countOpenEnquiries } from "@/lib/enquiries";
 
@@ -13,11 +13,11 @@ export async function GET() {
   if (session?.user?.role !== "ADMIN") return NextResponse.json({ error: "Not found" }, { status: 404 });
   try {
     const [questions, sales, enquiries] = await Promise.all([
-      countWaitingQuestions(),
+      countWaitingQuestionsByArea(),
       countNewSales(),
       countOpenEnquiries(),
     ]);
-    return NextResponse.json({ questions, sales: sales.total, enquiries }, { headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json({ ...questions, sales: sales.total, enquiries }, { headers: { "Cache-Control": "no-store" } });
   } catch {
     // Database out of reach for a moment: the menu keeps its last numbers and asks again later.
     return NextResponse.json({ error: "Try again later" }, { status: 503, headers: { "Cache-Control": "no-store" } });

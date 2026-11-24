@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { Globe, MapPin } from "lucide-react";
 import { db } from "@/lib/db";
+import type { Service } from "@prisma/client";
 import { formatPrice } from "@/lib/currency";
-import { MoveServiceButtons } from "@/components/admin/session-service-editor";
+import { serviceEditHref } from "@/lib/session-areas";
+import { DeleteServiceButton, MoveServiceButtons } from "@/components/admin/session-service-editor";
 
 const GROUPS = [
   { category: "HYPNOTHERAPY", label: "Clinical Hypnotherapy" },
@@ -11,8 +13,9 @@ const GROUPS = [
 ] as const;
 
 /** The one-to-one services sold on the website with their prices, grouped by website tab. */
-export async function SessionServicesTable() {
+export async function SessionServicesTable({ categories }: { categories: Service[] }) {
   const services = await db.sessionService.findMany({
+    where: { category: { in: categories } },
     orderBy: [{ category: "asc" }, { order: "asc" }, { title: "asc" }],
     include: { options: { orderBy: [{ order: "asc" }, { sessions: "asc" }] }, _count: { select: { plans: true } } },
   });
@@ -28,6 +31,7 @@ export async function SessionServicesTable() {
             <th className="px-4 py-3 font-medium">Prices</th>
             <th className="px-4 py-3 font-medium">Where</th>
             <th className="px-4 py-3 font-medium">Clients</th>
+            <th className="w-12 px-2 py-3"><span className="sr-only">Delete</span></th>
           </tr>
         </thead>
         {GROUPS.map((g) => {
@@ -36,7 +40,7 @@ export async function SessionServicesTable() {
           return (
         <tbody key={g.category}>
           <tr className="bg-sage-50">
-            <th colSpan={5} className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-sage-800">
+            <th colSpan={6} className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-sage-800">
               {g.label} <span className="font-normal text-stone-500">· {list.length}</span>
             </th>
           </tr>
@@ -47,15 +51,12 @@ export async function SessionServicesTable() {
                 <MoveServiceButtons id={s.id} first={i === 0} last={i === list.length - 1} />
               </td>
               <td className="px-4 py-3">
-                <Link href={`/admin/sessions/services/${s.id}`} className="font-medium text-stone-800 after:absolute after:inset-0 hover:underline">
+                <Link href={serviceEditHref(s.id, s.category)} className="font-medium text-stone-800 after:absolute after:inset-0 hover:underline">
                   {s.title}
                 </Link>
                 <span className="mt-1 flex flex-wrap gap-1.5">
                   {!s.published && <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[11px] font-medium text-amber-900">Hidden</span>}
                   {s.enquiryOnly && <span className="rounded bg-stone-100 px-1.5 py-0.5 text-[11px] font-medium text-stone-600">Enquiry only</span>}
-                  {s.options.some((o) => o.recorded) && (
-                    <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[11px] font-medium text-amber-900">Recorded course</span>
-                  )}
                   {s.lengthLabel && <span className="text-xs text-stone-500">{s.lengthLabel}</span>}
                 </span>
               </td>
@@ -88,6 +89,9 @@ export async function SessionServicesTable() {
                 </span>
               </td>
               <td className="px-4 py-3 text-stone-600">{s._count.plans}</td>
+              <td className="relative z-10 px-2 py-2">
+                <DeleteServiceButton id={s.id} title={s.title} clients={s._count.plans} icon />
+              </td>
             </tr>
           ))}
         </tbody>

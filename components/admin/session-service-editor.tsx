@@ -16,6 +16,7 @@ import {
   saveSessionOption,
   updateSessionService,
 } from "@/app/admin/_actions/session-services";
+import { areaHref, areaOf, serviceEditHref } from "@/lib/session-areas";
 import { useAction } from "./use-action";
 import { ConfirmButton } from "./confirm-button";
 
@@ -38,7 +39,7 @@ export type EditorService = {
   online: boolean;
   enquiryOnly: boolean;
   published: boolean;
-  canDelete: boolean;
+  clients: number; // clients who bought it (shown in the delete warning)
 };
 export type EditorOption = {
   id: string;
@@ -72,10 +73,17 @@ function PageTextHelp() {
   );
 }
 
-export function NewSessionServiceButton() {
+const CATEGORY_LABEL: Record<EditorService["category"], string> = {
+  HYPNOTHERAPY: "Clinical Hypnotherapy",
+  REIKI_HEALING: "Reiki Energy Healing",
+  ANIMAL_REIKI: "Animal Reiki & Communication",
+};
+
+/** "New session" for one area: the website tab can be chosen when the area has more than one (Reiki / Animal Reiki). */
+export function NewSessionServiceButton({ categories }: { categories: EditorService["category"][] }) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
-  const [category, setCategory] = useState<EditorService["category"]>("HYPNOTHERAPY");
+  const [category, setCategory] = useState<EditorService["category"]>(categories[0]);
   const { pending, run } = useAction();
   const router = useRouter();
   if (!open)
@@ -87,16 +95,20 @@ export function NewSessionServiceButton() {
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Input autoFocus placeholder="e.g. Inner Child Healing" value={title} onChange={(e) => setTitle(e.target.value)} className="w-64" />
-      <select suppressHydrationWarning className={`${selectCls} w-56`} value={category} onChange={(e) => setCategory(e.target.value as EditorService["category"])} aria-label="Website tab">
-        <option value="HYPNOTHERAPY">Clinical Hypnotherapy</option>
-        <option value="REIKI_HEALING">Reiki Energy Healing</option>
-        <option value="ANIMAL_REIKI">Animal Reiki &amp; Communication</option>
-      </select>
+      {categories.length > 1 && (
+        <select suppressHydrationWarning className={`${selectCls} w-56`} value={category} onChange={(e) => setCategory(e.target.value as EditorService["category"])} aria-label="Website tab">
+          {categories.map((c) => (
+            <option key={c} value={c}>
+              {CATEGORY_LABEL[c]}
+            </option>
+          ))}
+        </select>
+      )}
       <Button
         disabled={pending || !title.trim()}
         className="bg-sage-600 hover:bg-sage-700"
         onClick={() =>
-          run(() => createSessionService({ title, category }), "Created. Add its details and prices.", (r) => r.ok && router.push(`/admin/sessions/services/${(r as { data?: { id: string } }).data?.id}`))
+          run(() => createSessionService({ title, category }), "Created. Add its details and prices.", (r) => r.ok && router.push(serviceEditHref((r as { data?: { id: string } }).data?.id ?? "", category)))
         }
       >
         Create
@@ -119,6 +131,24 @@ export function MoveServiceButtons({ id, first, last }: { id: string; first: boo
         <ArrowDown className="h-4 w-4" />
       </Button>
     </span>
+  );
+}
+
+/** Deletes a service after an "Are you sure?" that says what happens to clients who already bought it. */
+export function DeleteServiceButton({ id, title, clients, icon, onDeleted }: { id: string; title: string; clients: number; icon?: boolean; onDeleted?: () => void }) {
+  const { run } = useAction();
+  const description =
+    clients > 0
+      ? `It disappears from the website and its prices are removed. ${clients} client${clients === 1 ? " has" : "s have"} bought it: they keep their plan, past bookings and payments, but can't book any remaining sessions of it online. This can't be undone. To only take it off the website, use "Hide from the website" instead.`
+      : "It disappears from the website and its prices are removed. This can't be undone.";
+  return (
+    <ConfirmButton
+      icon={icon}
+      label={icon ? `Delete ${title}` : "Delete"}
+      title={`Delete "${title}"?`}
+      description={description}
+      onConfirm={() => run(() => deleteSessionService(id), "Deleted", (r) => r.ok && onDeleted?.())}
+    />
   );
 }
 
@@ -249,14 +279,7 @@ export function SessionServiceForm({ service }: { service: EditorService }) {
             </a>
           </Button>
         )}
-        {service.canDelete && (
-          <ConfirmButton
-            label="Delete"
-            title={`Delete "${service.title}"?`}
-            description="It disappears from the website. This can't be undone."
-            onConfirm={() => run(() => deleteSessionService(service.id), "Deleted", (r) => r.ok && router.push("/admin/sessions#services"))}
-          />
-        )}
+        <DeleteServiceButton id={service.id} title={service.title} clients={service.clients} onDeleted={() => router.push(`${areaHref(areaOf(service.category))}#services`)} />
       </div>
     </div>
   );
@@ -270,7 +293,7 @@ function OptionForm({ serviceId, option, onDone }: { serviceId: string; option: 
     priceAed: option?.priceAed ? String(option.priceAed / 100) : "",
     mode: option?.mode ?? "",
     note: option?.note ?? "",
-    recorded: option?.recorded ?? false,
+    recorded: false, // the recorded-course option is no longer offered
   });
   const { pending, run } = useAction();
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setF({ ...f, [k]: e.target.value });
@@ -308,15 +331,6 @@ function OptionForm({ serviceId, option, onDone }: { serviceId: string; option: 
         <Label>Note (optional)</Label>
         <Input maxLength={200} placeholder="e.g. Recommended for IBS · completed within 6 weeks" value={f.note} onChange={set("note")} />
       </div>
-      <label className="flex items-start gap-2 text-sm text-stone-700">
-        <input suppressHydrationWarning type="checkbox" className="mt-1" checked={f.recorded} onChange={(e) => setF({ ...f, recorded: e.target.checked })} />
-        <span>
-          Also offered as a <strong>self-paced recorded course</strong>
-          <span className="block text-xs text-stone-500">
-            Shows a &quot;Self-paced recorded course · Coming soon&quot; button under this price that opens the Courses page. Bookings stay live sessions.
-          </span>
-        </span>
-      </label>
       <div className="flex gap-2">
         <Button
           disabled={pending}
@@ -384,7 +398,6 @@ export function SessionOptionsEditor({ serviceId, options }: { serviceId: string
                     · {o.sessions} session{o.sessions === 1 ? "" : "s"}
                     {o.mode ? ` · ${o.mode === "IN_PERSON" ? "in person only" : "online only"}` : ""}
                   </span>
-                  {o.recorded && <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-[11px] font-medium text-amber-900">Recorded course</span>}
                 </p>
                 <p className="text-sm text-stone-600">
                   {fmt(o.price, "AUD")}

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Headphones } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import type { ServiceWithOptions } from "@/lib/session-catalog";
 import { cheapest } from "@/lib/session-catalog";
 import { classPrice, formatPrice, type Currency } from "@/lib/currency";
@@ -36,7 +36,6 @@ export function ServiceCard({
   const from = cheapest(s.options);
   const price = from ? classPrice(from, currency) : null;
   const cover = photo ? coverUrl("session", s) : null;
-  const recorded = s.options.some((o) => o.recorded);
   return (
     <Link
       href={serviceHref(s)}
@@ -63,11 +62,6 @@ export function ServiceCard({
         <div className="mt-auto space-y-3 pt-3">
           <div className="flex flex-wrap gap-1.5 text-xs">
             <span className="rounded-full bg-sage-50 px-2.5 py-1 text-sage-800 ring-1 ring-sage-200">{packagesLabel(s)}</span>
-            {recorded && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-amber-800 ring-1 ring-amber-200">
-                <Headphones className="h-3 w-3" aria-hidden /> Recorded course soon
-              </span>
-            )}
           </div>
           <div className="flex items-end justify-between gap-2 text-sm">
             <span className="inline-flex items-center gap-1 font-medium text-sage-700">

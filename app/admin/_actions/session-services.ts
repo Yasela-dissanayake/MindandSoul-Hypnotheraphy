@@ -95,12 +95,14 @@ export async function updateSessionService(id: string, input: z.input<typeof ser
   return { ok: true };
 }
 
-/** Deleting is only possible before anyone has booked it; otherwise hide it instead. */
+/**
+ * Removes a service and its prices. Clients who already bought it keep their plans, bookings and payments
+ * (those links are simply cleared), but they can no longer book its remaining sessions online.
+ */
 export async function deleteSessionService(id: string): Promise<ActionResult> {
   await requireAdmin();
-  const s = await db.sessionService.findUnique({ where: { id }, select: { imageKey: true, _count: { select: { plans: true } }, options: { select: { _count: { select: { bookings: true } } } } } });
+  const s = await db.sessionService.findUnique({ where: { id }, select: { imageKey: true } });
   if (!s) return fail("Session not found.");
-  if (s._count.plans || s.options.some((o) => o._count.bookings)) return fail("People have booked this session, so it can't be deleted. Hide it from the website instead.");
   await db.sessionService.delete({ where: { id } });
   if (s.imageKey && !isSiteImage(s.imageKey)) await deleteObject(s.imageKey);
   refresh();

@@ -4,12 +4,13 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, CalendarDays, LayoutDashboard, Library, LogOut, Menu, Settings, Users, ClipboardList, GraduationCap, Megaphone, ShoppingBag, Inbox, Layers, ChevronDown } from "lucide-react";
+import { BookOpen, CalendarDays, LayoutDashboard, Library, LogOut, Menu, Settings, Users, ClipboardList, GraduationCap, Megaphone, ShoppingBag, Inbox, Layers, ChevronDown, Sparkles } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { SubmitButton } from "@/components/submit-button";
 
-type Badges = { questions: number; sales: number; enquiries: number };
+type Badges = { hypnoQuestions: number; reikiQuestions: number; sales: number; enquiries: number };
+const NO_BADGES: Badges = { hypnoQuestions: 0, reikiQuestions: 0, sales: 0, enquiries: 0 };
 
 type Item = { href: string; label: string; icon: typeof Users; also?: string[]; badge?: keyof Badges };
 type Group = { group: string; icon: typeof Users; children: Item[] };
@@ -21,7 +22,8 @@ const items: (Item | Group)[] = [
     group: "Services",
     icon: Layers,
     children: [
-      { href: "/admin/sessions", label: "Sessions", icon: ClipboardList, also: ["/admin/plans"], badge: "questions" },
+      { href: "/admin/sessions/hypnotherapy", label: "Hypnotherapy", icon: ClipboardList, also: ["/admin/plans"], badge: "hypnoQuestions" },
+      { href: "/admin/sessions/reiki-healing", label: "Reiki Energy Healing", icon: Sparkles, badge: "reikiQuestions" },
       { href: "/admin/classes", label: "Reiki Training", icon: GraduationCap },
       { href: "/admin/courses", label: "Courses", icon: BookOpen },
     ],
@@ -57,7 +59,7 @@ function CountBadge({ count, label }: { count: number; label: string }) {
 /** Keeps the badge numbers fresh: every 30 s, on page change, and when the tab is shown again. */
 function useBadges(initial: Badges, pathname: string) {
   const [counts, setCounts] = useState(initial);
-  useEffect(() => setCounts(initial), [initial.questions, initial.sales, initial.enquiries]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => setCounts(initial), [initial.hypnoQuestions, initial.reikiQuestions, initial.sales, initial.enquiries]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     let stop = false;
     const load = async () => {
@@ -72,7 +74,7 @@ function useBadges(initial: Badges, pathname: string) {
         }
         if (!res.ok || stop) return;
         const j = await res.json();
-        setCounts({ questions: j.questions ?? 0, sales: j.sales ?? 0, enquiries: j.enquiries ?? 0 });
+        setCounts({ hypnoQuestions: j.hypnoQuestions ?? 0, reikiQuestions: j.reikiQuestions ?? 0, sales: j.sales ?? 0, enquiries: j.enquiries ?? 0 });
       } catch {}
     };
     void load();
@@ -88,11 +90,11 @@ function useBadges(initial: Badges, pathname: string) {
   return counts;
 }
 
-export function AdminNav({ name, logout, badges = { questions: 0, sales: 0, enquiries: 0 } }: { name: string; logout: () => Promise<void>; badges?: Badges }) {
+export function AdminNav({ name, logout, badges = NO_BADGES }: { name: string; logout: () => Promise<void>; badges?: Badges }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const counts = useBadges(badges, pathname);
-  const waiting = counts.questions + counts.sales + counts.enquiries;
+  const waiting = counts.hypnoQuestions + counts.reikiQuestions + counts.sales + counts.enquiries;
   const active = (i: Item) =>
     i.href === "/admin" ? pathname === i.href : [i.href, ...(i.also ?? [])].some((h) => pathname.startsWith(h));
   // Groups start open; one you're inside always stays open. Closing one is remembered on this device.
