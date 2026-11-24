@@ -177,7 +177,7 @@ export function AdminNav({ name, logout, badges = NO_BADGES }: { name: string; l
   const brand = (
     <Link href="/admin" className="flex items-center gap-2">
       <Image src="/brand/logo-mark.png" alt="" width={32} height={32} className="rounded-full" />
-      <span className="font-serif text-lg text-stone-800">Dashboard</span>
+      <span className="font-brand text-lg font-medium text-sage-700">Dashboard</span>
     </Link>
   );
 

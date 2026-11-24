@@ -24,17 +24,17 @@ function paragraphs(text: string) {
 
 /** Shared calm, green email layout. `body` is trusted HTML built by the templates below. */
 function layout(body: string, footer = "") {
-  return `<!doctype html><html><body style="margin:0;background:#f6f7f6;font-family:Georgia,'Times New Roman',serif;color:#292524">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f7f6;padding:32px 12px"><tr><td align="center">
+  return `<!doctype html><html><body style="margin:0;background:#f8f4ea;font-family:Georgia,'Times New Roman',serif;color:#292524">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f8f4ea;padding:32px 12px"><tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:12px;overflow:hidden">
-<tr><td style="background:#485a48;color:#ffffff;padding:20px 28px;font-size:20px">Mind &amp; Soul Works</td></tr>
+<tr><td style="background:#0e2a16;color:#d9b45a;padding:20px 28px;font-size:20px;border-bottom:2px solid #d9b45a">Mind &amp; Soul Works<div style="font-family:Arial,sans-serif;font-size:11px;letter-spacing:2px;color:#ece3cb;margin-top:4px">HEAL WITHIN. GROW BEYOND.</div></td></tr>
 <tr><td style="padding:28px;font-size:16px;line-height:1.6">${body}</td></tr>
-<tr><td style="padding:16px 28px;background:#f6f7f6;font-size:12px;color:#78716c;font-family:Arial,sans-serif">${footer || "Mind &amp; Soul Works · Hypnotherapy &amp; Reiki"}</td></tr>
+<tr><td style="padding:16px 28px;background:#f8f4ea;font-size:12px;color:#78716c;font-family:Arial,sans-serif">${footer || "Mind &amp; Soul Works · Hypnotherapy &amp; Reiki"}</td></tr>
 </table></td></tr></table></body></html>`;
 }
 
 function button(href: string, label: string) {
-  return `<p style="margin:24px 0"><a href="${href}" style="background:#485a48;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:8px;font-family:Arial,sans-serif;display:inline-block">${escapeHtml(label)}</a></p>`;
+  return `<p style="margin:24px 0"><a href="${href}" style="background:#1f4529;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:8px;font-family:Arial,sans-serif;display:inline-block">${escapeHtml(label)}</a></p>`;
 }
 
 /**
@@ -112,7 +112,7 @@ export function loginDetailsEmail(opts: {
     opts.customText?.trim() ||
     `Your private space at Mind & Soul Works is ready. There you'll find your sessions work, class material and journal, all in one calm place.`;
   const url = `${SITE_URL}/login`;
-  const details = `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px;background:#f6f7f6;border-radius:8px;font-family:Arial,sans-serif;font-size:15px">
+  const details = `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px;background:#f8f4ea;border-radius:8px;font-family:Arial,sans-serif;font-size:15px">
 <tr><td style="padding:12px 16px 4px;color:#78716c">Username</td><td style="padding:12px 16px 4px"><strong>${escapeHtml(opts.username)}</strong></td></tr>
 <tr><td style="padding:4px 16px 12px;color:#78716c">Password</td><td style="padding:4px 16px 12px"><strong>${escapeHtml(opts.password)}</strong></td></tr></table>`;
   return {
@@ -155,7 +155,7 @@ export function taskDoneEmail(opts: { clientName: string; taskTitle: string; whe
 }
 
 function quote(text: string) {
-  return `<div style="margin:0 0 16px;padding:12px 16px;background:#f6f7f6;border-left:3px solid #8aa58a;border-radius:4px">${escapeHtml(text).replace(/\n/g, "<br>")}</div>`;
+  return `<div style="margin:0 0 16px;padding:12px 16px;background:#f8f4ea;border-left:3px solid #d9b45a;border-radius:4px">${escapeHtml(text).replace(/\n/g, "<br>")}</div>`;
 }
 
 /** To Rangika: a client typed a question. */
@@ -251,7 +251,7 @@ export function packagePurchasedEmail(opts: { name: string; packageTitle: string
   const intro = `Thank you for buying ${opts.packageTitle}. It's ready for you in your private space. Work through the lessons one by one, at your own pace.`;
   const url = `${SITE_URL}/login?bought=1`; // shows the "use the details we emailed you" note
   const details = opts.login
-    ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px;background:#f6f7f6;border-radius:8px;font-family:Arial,sans-serif;font-size:15px">
+    ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px;background:#f8f4ea;border-radius:8px;font-family:Arial,sans-serif;font-size:15px">
 <tr><td style="padding:12px 16px 4px;color:#78716c">Username</td><td style="padding:12px 16px 4px"><strong>${escapeHtml(opts.login.username)}</strong></td></tr>
 <tr><td style="padding:4px 16px 12px;color:#78716c">Password</td><td style="padding:4px 16px 12px"><strong>${escapeHtml(opts.login.password)}</strong></td></tr></table>`
     : `<p style="margin:0 0 16px">Sign in as usual (with Google or your username and password). You'll find it under <strong>My courses</strong>.</p>`;
@@ -334,7 +334,7 @@ export function courseEnrolledEmail(opts: {
   const url = `${SITE_URL}/login?bought=1`; // shows the "use the details we emailed you" note
   const details = opts.login
     ? `<p style="margin:0 0 8px">Your private space, where your class notes and material will appear:</p>
-<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px;background:#f6f7f6;border-radius:8px;font-family:Arial,sans-serif;font-size:15px">
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px;background:#f8f4ea;border-radius:8px;font-family:Arial,sans-serif;font-size:15px">
 <tr><td style="padding:12px 16px 4px;color:#78716c">Username</td><td style="padding:12px 16px 4px"><strong>${escapeHtml(opts.login.username)}</strong></td></tr>
 <tr><td style="padding:4px 16px 12px;color:#78716c">Password</td><td style="padding:4px 16px 12px"><strong>${escapeHtml(opts.login.password)}</strong></td></tr></table>`
     : `<p style="margin:0 0 16px">Sign in as usual (with Google or your username and password). You'll find the class under <strong>My classes</strong>.</p>`;
@@ -418,7 +418,7 @@ type SessionMail = {
 const RECORDED_TEXT = "Self-paced recorded journey. No appointment needed: Rangika adds your recordings, workbooks and trackers to your private space.";
 
 function detailRows(rows: [string, string][]) {
-  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px;background:#f6f7f6;border-radius:8px;font-family:Arial,sans-serif;font-size:15px">${rows
+  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px;background:#f8f4ea;border-radius:8px;font-family:Arial,sans-serif;font-size:15px">${rows
     .map(([k, v]) => `<tr><td style="padding:8px 16px;color:#78716c;vertical-align:top">${escapeHtml(k)}</td><td style="padding:8px 16px">${escapeHtml(v)}</td></tr>`)
     .join("")}</table>`;
 }

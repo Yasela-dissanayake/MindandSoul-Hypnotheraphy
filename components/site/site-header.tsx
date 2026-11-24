@@ -7,15 +7,15 @@ import { DesktopNavLinks } from "@/components/site/nav-links";
 /** The website's top bar: logo, menu and "Book a Session". Used by the site layout and the 404 page. */
 export function SiteHeader() {
   return (
-    <header className="bg-white/80 backdrop-blur-sm border-b border-stone-200 sticky top-0 z-50">
+    <header className="sticky top-0 z-50 border-b border-stone-200/80 bg-cream-50/90 backdrop-blur-sm">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            {/* <Leaf className="h-8 w-8 text-sage-600" /> */}
+          <Link href="/" className="flex items-center gap-3">
             <Image width={52} height={52} src="/brand/logo-mark.png" alt="Mind & Soul Works logo" priority className="rounded-xl" />
-            <span className="text-xl font-serif text-stone-800 sm:text-2xl">
-              Mind & Soul Works
+            <span className="flex flex-col leading-tight">
+              <span className="font-brand text-xl font-medium text-sage-700 sm:text-2xl">Mind &amp; Soul Works</span>
+              <span className="hidden text-xs tracking-[0.18em] text-gold-700 sm:block">Heal Within. Grow Beyond.</span>
             </span>
           </Link>
 

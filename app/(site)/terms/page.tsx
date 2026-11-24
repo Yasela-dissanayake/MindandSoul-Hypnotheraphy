@@ -16,7 +16,7 @@ export default function TermsPage() {
 
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle className="text-2xl text-[#3c4a3c]">
+              <CardTitle className="text-2xl text-sage-700">
                 1. Acceptance of Terms
               </CardTitle>
             </CardHeader>
@@ -36,7 +36,7 @@ export default function TermsPage() {
 
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle className="text-2xl text-[#3c4a3c]">
+              <CardTitle className="text-2xl text-sage-700">
                 2. Services Description
               </CardTitle>
             </CardHeader>
@@ -62,7 +62,7 @@ export default function TermsPage() {
 
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle className="text-2xl text-[#3c4a3c]">
+              <CardTitle className="text-2xl text-sage-700">
                 3. Booking and Payment Terms
               </CardTitle>
             </CardHeader>
@@ -92,7 +92,7 @@ export default function TermsPage() {
 
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle className="text-2xl text-[#3c4a3c]">
+              <CardTitle className="text-2xl text-sage-700">
                 4. Cancellation and Refund Policy
               </CardTitle>
             </CardHeader>
@@ -134,7 +134,7 @@ export default function TermsPage() {
 
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle className="text-2xl text-[#3c4a3c]">
+              <CardTitle className="text-2xl text-sage-700">
                 5. Client Responsibilities
               </CardTitle>
             </CardHeader>
@@ -154,7 +154,7 @@ export default function TermsPage() {
 
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle className="text-2xl text-[#3c4a3c]">
+              <CardTitle className="text-2xl text-sage-700">
                 6. Health and Safety Disclaimers
               </CardTitle>
             </CardHeader>
@@ -188,7 +188,7 @@ export default function TermsPage() {
 
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle className="text-2xl text-[#3c4a3c]">
+              <CardTitle className="text-2xl text-sage-700">
                 7. Confidentiality and Privacy
               </CardTitle>
             </CardHeader>
@@ -208,7 +208,7 @@ export default function TermsPage() {
 
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle className="text-2xl text-[#3c4a3c]">
+              <CardTitle className="text-2xl text-sage-700">
                 8. Limitation of Liability
               </CardTitle>
             </CardHeader>
@@ -229,7 +229,7 @@ export default function TermsPage() {
 
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle className="text-2xl text-[#3c4a3c]">
+              <CardTitle className="text-2xl text-sage-700">
                 9. Modifications to Terms
               </CardTitle>
             </CardHeader>
@@ -245,7 +245,7 @@ export default function TermsPage() {
 
           {/* <Card className="mb-8">
             <CardHeader>
-              <CardTitle className="text-2xl text-[#3c4a3c]">
+              <CardTitle className="text-2xl text-sage-700">
                 10. Contact Information
               </CardTitle>
             </CardHeader>

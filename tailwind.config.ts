@@ -53,23 +53,53 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        sage: {
-          50: "#f6f7f6",
-          100: "#e3e7e3",
-          200: "#c7d0c7",
-          300: "#a3b2a3",
-          400: "#7a8f7a",
-          500: "#5c735c",
-          600: "#485a48",
-          700: "#3c4a3c",
-          800: "#323d32",
-          900: "#2b332b",
+        // Brand palette (docs/Colour Palette Document.docx): Deep Green #0E2A16 leads, Gold #D9B45A is an accent,
+        // Cream #F6F1E3 for light backgrounds, Sage Green #9FA88A for soft supporting tones.
+        brand: {
+          green: "#0E2A16",
+          gold: "#D9B45A",
+          cream: "#F6F1E3",
+          sage: "#9FA88A",
         },
+        // The site's main green scale: light tints from the brand Sage, dark shades towards the brand Deep Green.
+        // 600 = buttons, 700 = links and the Deep Green itself.
+        sage: {
+          50: "#f5f6ef",
+          100: "#e9ecdf",
+          200: "#d5dac6",
+          300: "#b9c0a6",
+          400: "#9fa88a",
+          500: "#4f6f53",
+          600: "#1f4529",
+          700: "#0e2a16",
+          800: "#0b2312",
+          900: "#071a0d",
+        },
+        // Gold accents. 300-500 for lines, icons and details on dark green; 600-800 for gold text on light backgrounds (readable).
+        gold: {
+          50: "#fbf7ea",
+          100: "#f5ecd0",
+          200: "#ecdcaa",
+          300: "#e3c87f",
+          400: "#d9b45a",
+          500: "#c49a3c",
+          600: "#a47d2c",
+          700: "#7f6024",
+          800: "#5f4820",
+          900: "#4a391c",
+        },
+        cream: {
+          DEFAULT: "#f6f1e3",
+          50: "#fcfaf4",
+          100: "#f6f1e3",
+          200: "#ece3cb",
+        },
+        // Warm neutrals; the lightest shades lean towards the brand Cream so pages feel soft rather than stark white.
         stone: {
-          50: "#fafaf9",
-          100: "#f5f5f4",
-          200: "#e7e5e4",
-          300: "#d6d3d1",
+          50: "#faf8f2",
+          100: "#f3efe4",
+          200: "#e6e1d4",
+          300: "#d3cdbf",
           400: "#a8a29e",
           500: "#78716c",
           600: "#57534e",
@@ -99,6 +129,8 @@ const config: Config = {
       },
       fontFamily: {
         serif: ["Georgia", "serif"],
+        // The logo's typeface (Poppins), for the "Mind & Soul Works" wordmark.
+        brand: ["var(--font-brand)", "Poppins", "Arial", "sans-serif"],
       },
     },
   },

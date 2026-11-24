@@ -129,8 +129,10 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
               <div className="space-y-4">
-                <Badge className="bg-sage-100 text-sage-700 hover:bg-sage-100">
-                  🌿 Heal within. Grow beyond
+                <Badge className="gap-2 bg-gold-50 py-1 font-medium tracking-wide text-gold-800 ring-1 ring-gold-200 hover:bg-gold-50">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/brand/lotus.svg" alt="" width={18} height={11} className="h-[11px] w-[18px]" />
+                  Heal Within. Grow Beyond.
                 </Badge>
                 <h1 className="text-4xl lg:text-6xl font-serif text-stone-800 leading-tight">
                   A nurturing space for
@@ -610,16 +612,13 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
       </section>
 
       {/* Footer */}
-      <footer className="bg-stone-800 text-white py-12">
+      <footer className="bg-brand-green py-14 text-brand-cream">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-3 gap-8">
             <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                {/* <Leaf className="h-6 w-6 text-sage-400" /> */}
-                <Image width={40} height={40} src="/brand/logo-mark.png" alt="Mind & Soul Works logo" className="rounded-lg" />
-                <h3 className="text-xl font-serif">Mind & Soul Works</h3>
-              </div>
-              <p className="text-stone-300 text-sm leading-relaxed">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/brand/logo-horizontal.svg" alt="Mind & Soul Works · Heal Within. Grow Beyond." width={260} height={68} className="h-auto w-[240px] sm:w-[260px]" />
+              <p className="text-brand-cream/70 text-sm leading-relaxed">
                 Heal within. Grow beyond. A nurturing space for the mind, body
                 and soul: clinical hypnotherapy, Reiki energy healing, Animal
                 Reiki &amp; communication and Reiki training.
@@ -627,11 +626,11 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
             </div>
 
             <div className="space-y-4">
-              <h4 className="font-semibold">Quick Links</h4>
+              <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-gold">Quick Links</h4>
               <div className="space-y-2 text-sm">
                 <Link
                   href="/about"
-                  className="block text-stone-300 hover:text-white transition-colors"
+                  className="block text-brand-cream/70 hover:text-brand-gold transition-colors"
                 >
                   About Rangika
                 </Link>
@@ -644,20 +643,20 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
                   <Link
                     key={href}
                     href={href}
-                    className="block text-stone-300 hover:text-white transition-colors"
+                    className="block text-brand-cream/70 hover:text-brand-gold transition-colors"
                   >
                     {label}
                   </Link>
                 ))}
                 <Link
                   href="/testimonials"
-                  className="block text-stone-300 hover:text-white transition-colors"
+                  className="block text-brand-cream/70 hover:text-brand-gold transition-colors"
                 >
                   Testimonials
                 </Link>
                 <Link
                   href="/contact"
-                  className="block text-stone-300 hover:text-white transition-colors"
+                  className="block text-brand-cream/70 hover:text-brand-gold transition-colors"
                 >
                   Contact
                 </Link>
@@ -665,8 +664,8 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
             </div>
 
             <div className="space-y-4">
-              <h4 className="font-semibold">Contact Info</h4>
-              <div className="space-y-2 text-sm text-stone-300">
+              <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-gold">Contact Info</h4>
+              <div className="space-y-2 text-sm text-brand-cream/70">
                 <div>+61 429 940 130</div>
                 <div>mindandsoulworks@gmail.com</div>
                 <div>Perth, Western Australia &amp; online worldwide</div>
@@ -674,20 +673,20 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
             </div>
           </div>
 
-          <Separator className="my-8 bg-stone-700" />
+          <Separator className="my-8 bg-brand-gold/20" />
 
-          <div className="flex flex-col md:flex-row justify-between items-center text-sm text-stone-400">
+          <div className="flex flex-col md:flex-row justify-between items-center text-sm text-brand-cream/55">
             <div>© {new Date().getFullYear()} Mind & Soul Works. All rights reserved.</div>
             <div className="flex gap-6 mt-4 md:mt-0">
               <Link
                 href="/privacy"
-                className="hover:text-white transition-colors"
+                className="hover:text-brand-gold transition-colors"
               >
                 Privacy Policy
               </Link>
               <Link
                 href="/terms"
-                className="hover:text-white transition-colors"
+                className="hover:text-brand-gold transition-colors"
               >
                 Terms of Service
               </Link>

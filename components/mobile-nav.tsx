@@ -34,7 +34,7 @@ export function MobileNav() {
               onClick={() => setOpen(false)}
             >
               <Image width={48} height={48} src="/brand/logo-mark.png" alt="Mind & Soul Works logo" className="rounded-xl" />
-              <span className="text-lg font-serif text-stone-800">
+              <span className="font-brand text-lg font-medium text-sage-700">
                 Mind & Soul Works
               </span>
             </Link>

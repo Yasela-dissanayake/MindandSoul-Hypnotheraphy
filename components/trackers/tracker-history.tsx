@@ -26,9 +26,9 @@ function Sparkline({ points, max }: { points: { date: string; v: number }[]; max
   const d = points.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.v).toFixed(1)}`).join(" ");
   return (
     <svg viewBox={`0 0 ${w} ${h}`} className="h-20 w-full max-w-sm" role="img" aria-label="Trend">
-      <path d={d} fill="none" stroke="#5c735c" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+      <path d={d} fill="none" stroke="#4f6f53" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
       {points.map((p, i) => (
-        <circle key={p.date} cx={x(i)} cy={y(p.v)} r="2.5" fill="#485a48">
+        <circle key={p.date} cx={x(i)} cy={y(p.v)} r="2.5" fill="#1f4529">
           <title>
             {formatDate(p.date)}: {p.v}
           </title>

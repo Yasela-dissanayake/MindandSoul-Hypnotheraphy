@@ -8,7 +8,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
   const offline = typeof navigator !== "undefined" && navigator.onLine === false;
   return (
     <html lang="en">
-      <body style={{ margin: 0, fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, sans-serif", background: "#f6f7f6", color: "#292524" }}>
+      <body style={{ margin: 0, fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, sans-serif", background: "#faf8f2", color: "#292524" }}>
         <main style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
           <div role="alert" style={{ maxWidth: 480, textAlign: "center" }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -24,11 +24,11 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
             <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
               <button
                 onClick={() => (offline ? window.location.reload() : reset())}
-                style={{ background: "#485a48", color: "white", border: 0, borderRadius: 8, padding: "10px 20px", fontSize: 15, cursor: "pointer" }}
+                style={{ background: "#1f4529", color: "white", border: 0, borderRadius: 8, padding: "10px 20px", fontSize: 15, cursor: "pointer" }}
               >
                 Try again
               </button>
-              <a href="/" style={{ border: "1px solid #a3b2a3", color: "#323d32", borderRadius: 8, padding: "9px 20px", fontSize: 15, textDecoration: "none" }}>
+              <a href="/" style={{ border: "1px solid #b9c0a6", color: "#0e2a16", borderRadius: 8, padding: "9px 20px", fontSize: 15, textDecoration: "none" }}>
                 Back to home
               </a>
             </div>

@@ -39,7 +39,7 @@ export default async function PortalLayout({ children }: { children: React.React
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
           <Link href="/portal" className="flex items-center gap-2">
             <Image src="/brand/logo-mark.png" alt="" width={36} height={36} className="rounded-full" />
-            <span className="font-serif text-lg text-stone-800">Mind & Soul Works</span>
+            <span className="font-brand text-lg font-medium text-sage-700">Mind & Soul Works</span>
           </Link>
           <div className="flex items-center gap-1">
             {showNav && (
