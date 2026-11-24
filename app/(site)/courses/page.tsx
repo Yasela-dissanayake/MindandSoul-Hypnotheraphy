@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { BookOpen, Clock, Infinity as Always, Sparkles } from "lucide-react";
+import { BookOpen, Globe, MessageCircle, Sparkles } from "lucide-react";
+import { enquiryHref } from "@/lib/site-routes";
 import { db } from "@/lib/db";
 import { money } from "@/lib/learning";
 import { coverUrl } from "@/lib/covers";
@@ -30,33 +31,8 @@ export default async function LearnPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sage-50 to-white">
+      <h1 className="sr-only">Courses</h1>
       <section className="container mx-auto px-4 py-16 md:py-20">
-        <div className="mx-auto max-w-3xl space-y-4 text-center">
-          <h1 className="font-serif text-4xl text-stone-800 md:text-5xl">Courses</h1>
-          <p className="text-lg text-stone-600">
-            Self-paced courses by Rangika. Learn at home, one lesson at a time, whenever it suits you.
-          </p>
-          <p className="text-sm text-stone-500">
-            Looking for live Reiki training?{" "}
-            <Link href="/reiki-training" className="text-sage-700 underline">
-              See Reiki training
-            </Link>
-          </p>
-          <div className="flex flex-wrap justify-center gap-4 pt-2 text-sm text-stone-600">
-            <span className="flex items-center gap-1.5">
-              <Clock className="h-4 w-4 text-sage-600" /> At your own pace
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Always className="h-4 w-4 text-sage-600" /> Keep access to your course
-            </span>
-            <span className="flex items-center gap-1.5">
-              <BookOpen className="h-4 w-4 text-sage-600" /> Certificate when you finish
-            </span>
-          </div>
-        </div>
-      </section>
-
-      <section className="container mx-auto px-4 pb-20">
         {packages.length === 0 ? (
           // No published courses yet: shown until Rangika publishes one, then the list appears by itself.
           <div className="mx-auto max-w-2xl overflow-hidden rounded-3xl bg-white text-center shadow-sm ring-1 ring-sage-200">
@@ -64,27 +40,28 @@ export default async function LearnPage() {
               <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-sage-200">
                 <Sparkles className="h-8 w-8 text-sage-600" aria-hidden />
               </span>
-              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.25em] text-sage-700">Self-paced courses</p>
-              <h2 className="mt-2 font-serif text-4xl text-stone-800 md:text-5xl">Coming Soon</h2>
+              <h2 className="mt-5 font-serif text-4xl text-stone-800 md:text-5xl">Coming Soon!</h2>
+              <p className="mt-3 text-xs font-semibold uppercase tracking-[0.25em] text-sage-700">Self-Paced Recorded Hypnotherapy Journey</p>
             </div>
             <div className="space-y-6 px-6 py-8 md:px-10">
-              <p className="text-stone-600">
-                Rangika is preparing new courses you can follow at home, at your own pace. Check back soon. In the meantime, you can work with Rangika one to one or join a Reiki training.
-              </p>
+              <div className="space-y-3 text-stone-600">
+                <p>
+                  Our <strong className="font-medium text-stone-800">Self-Paced Recorded Hypnotherapy Journey</strong> is currently being prepared and will be available soon.
+                </p>
+                <p>Thank you for your patience and interest!</p>
+                <p>In the meantime, you&apos;re welcome to explore our Live Online Sessions or send us an enquiry for more information.</p>
+              </div>
               <div className="flex flex-col justify-center gap-3 sm:flex-row">
-                <Link href="/hypnotherapy" className="inline-flex items-center justify-center rounded-full bg-sage-600 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-sage-700">
-                  Clinical Hypnotherapy
+                <Link href="/hypnotherapy" className="inline-flex items-center justify-center gap-2 rounded-full bg-sage-600 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-sage-700">
+                  <Globe className="h-4 w-4" aria-hidden /> Explore Live Online Sessions
                 </Link>
-                <Link href="/reiki-training" className="inline-flex items-center justify-center rounded-full border border-sage-300 px-6 py-2.5 text-sm font-medium text-sage-800 transition hover:bg-sage-50">
-                  Reiki Training
+                <Link
+                  href={enquiryHref("Self-Paced Recorded Hypnotherapy Journey")}
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-sage-300 px-6 py-2.5 text-sm font-medium text-sage-800 transition hover:bg-sage-50"
+                >
+                  <MessageCircle className="h-4 w-4" aria-hidden /> Send us an enquiry
                 </Link>
               </div>
-              <p className="text-sm text-stone-500">
-                Want to hear when courses open?{" "}
-                <Link href="/contact#enquiry" className="text-sage-700 underline">
-                  Let Rangika know
-                </Link>
-              </p>
             </div>
           </div>
         ) : (
