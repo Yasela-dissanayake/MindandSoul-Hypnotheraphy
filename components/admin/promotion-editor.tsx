@@ -20,6 +20,7 @@ import {
   updatePromotion,
   type PromotionInput,
 } from "@/app/admin/_actions/promotions";
+import { friendlyError } from "@/lib/friendly-error";
 
 export type PromoChoice = { value: string; title: string };
 export type PromoChoices = { sessions: PromoChoice[]; classes: PromoChoice[]; courses: PromoChoice[] };
@@ -49,7 +50,7 @@ export function PromotionForm({ id, initial, choices }: { id?: string; initial?:
       const { key } = await uploadFile(file, { purpose: "cover", filename: file.name, onProgress: setProgress });
       setPhoto({ key, preview: URL.createObjectURL(file) });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Upload failed.");
+      toast.error(friendlyError(e, "Upload failed."));
     } finally {
       setProgress(null);
       if (fileInput.current) fileInput.current.value = "";

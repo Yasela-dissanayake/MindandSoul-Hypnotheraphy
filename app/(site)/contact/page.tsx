@@ -20,6 +20,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { ENQUIRY_TOPICS } from "@/lib/enquiry-topics";
+import { friendlyError } from "@/lib/friendly-error";
 
 
 export default function ContactPage() {
@@ -75,7 +76,7 @@ export default function ContactPage() {
       console.error(err);
       toast({
         title: "⚠️ Error",
-        description: "Something went wrong.",
+        description: friendlyError(err, "We couldn't send your message. Please try again in a moment."),
         variant: "destructive",
       });
     } finally {

@@ -2,6 +2,7 @@ import type React from "react";
 import type { Metadata } from "next";
 import "./globals.css";
 import { NavigationProgress } from "@/components/navigation-progress";
+import { NetworkStatus } from "@/components/network-status";
 
 export const metadata: Metadata = {
   title: "Mind & Soul Works · Hypnotherapy, Reiki & Healing with Rangika",
@@ -23,6 +24,7 @@ export default function RootLayout({
       <body>
         <NavigationProgress />
         {children}
+        <NetworkStatus />
       </body>
     </html>
   );

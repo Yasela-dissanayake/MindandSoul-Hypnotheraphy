@@ -13,6 +13,7 @@ import { ACCEPT_FILES, KIND_LABEL, kindForFile } from "@/lib/catalog";
 import { formatBytes } from "@/lib/format";
 import { useAction } from "./use-action";
 import { KIND_ICON, uploadToLibrary } from "./library-picker";
+import { friendlyError } from "@/lib/friendly-error";
 
 /** Upload recordings, PDFs, Word documents and images to the library.
  *  With `personalFor`, the files are made for one client only. */
@@ -39,7 +40,7 @@ export function LibraryUpload({ personalFor, tags = [] }: { personalFor?: { id: 
       toast.success(`${ids.length} file${ids.length === 1 ? "" : "s"} uploaded`);
       setFiles([]);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Upload failed.");
+      toast.error(friendlyError(e, "Upload failed."));
     } finally {
       setBusy(false);
       setProgress(null);

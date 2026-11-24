@@ -27,6 +27,7 @@ import { ENQUIRY_TOPICS } from "@/lib/enquiry-topics";
 import { PromotionPopup, PromotionSection } from "@/components/site/promotion";
 import { CardCarousel } from "@/components/site/card-carousel";
 import type { HomePromotion } from "@/lib/promotions";
+import { friendlyError } from "@/lib/friendly-error";
 
 /** The home page. `promotion` = the promotion running now (shown as a pop-up and as the 3rd section), if any. */
 export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
@@ -73,7 +74,7 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
       console.error(err);
       toast({
         title: "⚠️ Error",
-        description: "Something went wrong.",
+        description: friendlyError(err, "We couldn't send your message. Please try again in a moment."),
         variant: "destructive",
       });
     } finally {

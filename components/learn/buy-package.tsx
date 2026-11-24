@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PaymentDialog, type PaymentState } from "@/components/payment-dialog";
+import { friendlyError } from "@/lib/friendly-error";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "");
 
@@ -174,7 +175,7 @@ function BuyForm({
         ),
       });
     } catch (err) {
-      setDialog({ status: "error", message: err instanceof Error ? err.message : "Something went wrong. Please try again." });
+      setDialog({ status: "error", message: friendlyError(err, "Something went wrong. Please try again.") });
     }
   };
 

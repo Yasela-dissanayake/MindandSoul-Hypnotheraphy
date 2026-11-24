@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { PaymentDialog, type PaymentState } from "@/components/payment-dialog";
 import { SlotPicker, myTz, type Slot } from "@/components/booking/slot-picker";
 import { cn } from "@/lib/utils";
+import { friendlyError } from "@/lib/friendly-error";
 
 // The booking page: pick a session (single or package) → in person or online → a time → your details → pay.
 // (Self-paced recorded journeys are the pre-built Courses, not booked here.)
@@ -406,7 +407,7 @@ function DetailsAndPay({ service, option, mode, slot, onSlotTaken }: { service: 
         ),
       });
     } catch (err) {
-      setDialog({ status: "error", message: err instanceof Error ? err.message : "Something went wrong. Please try again." });
+      setDialog({ status: "error", message: friendlyError(err, "Something went wrong. Please try again.") });
     }
   };
 

@@ -13,6 +13,7 @@ import { createFileResource, createLinkResource } from "@/app/admin/_actions/lib
 import { ACCEPT_FILES, KIND_LABEL, type KindId } from "@/lib/catalog";
 import { uploadFile } from "@/lib/upload-client";
 import type { LibraryOption } from "@/lib/admin-plans";
+import { friendlyError } from "@/lib/friendly-error";
 
 export const KIND_ICON: Record<KindId, typeof FileText> = {
   AUDIO: Headphones,
@@ -114,7 +115,7 @@ export function LibraryPicker(props: {
       });
       await finish(ids);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Upload failed.");
+      toast.error(friendlyError(e, "Upload failed."));
     } finally {
       setBusy(false);
       setProgress(null);

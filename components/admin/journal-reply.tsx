@@ -12,6 +12,7 @@ import { VoiceRecorder, type Recording } from "@/components/portal/voice-recorde
 import { deleteJournalReply, saveJournalReply } from "@/app/admin/_actions/journal";
 import { uploadFile } from "@/lib/upload-client";
 import { formatDuration } from "@/lib/format";
+import { friendlyError } from "@/lib/friendly-error";
 
 export type JournalReplyData = {
   text: string | null;
@@ -59,7 +60,7 @@ export function JournalReply({ entryId, clientName, reply }: { entryId: string; 
         setRemoveAudio(false);
         router.refresh();
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Could not send the reply. Please try again.");
+        toast.error(friendlyError(e, "Could not send the reply. Please try again."));
       } finally {
         setProgress(null);
       }

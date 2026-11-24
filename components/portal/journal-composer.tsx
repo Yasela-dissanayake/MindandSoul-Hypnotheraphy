@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { saveJournalEntry } from "@/app/portal/actions";
 import { uploadFile } from "@/lib/upload-client";
 import { VoiceRecorder, type Recording } from "./voice-recorder";
+import { friendlyError } from "@/lib/friendly-error";
 
 export function JournalComposer({ prompt }: { prompt: string | null }) {
   const [text, setText] = useState("");
@@ -41,7 +42,7 @@ export function JournalComposer({ prompt }: { prompt: string | null }) {
         setText("");
         setRecording(null);
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Could not save. Please try again.");
+        toast.error(friendlyError(e, "Could not save. Please try again."));
       } finally {
         setProgress(null);
       }

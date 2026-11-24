@@ -12,6 +12,7 @@ import { createSubmission, deleteMySubmission } from "@/app/portal/actions";
 import { uploadFile } from "@/lib/upload-client";
 import { formatBytes } from "@/lib/format";
 import { VoiceRecorder, type Recording } from "./voice-recorder";
+import { friendlyError } from "@/lib/friendly-error";
 
 const ACCEPT = "audio/*,.mp3,.m4a,.pdf,application/pdf,.doc,.docx,image/*,.jpg,.jpeg,.png,.heic";
 const nameWithoutExt = (n: string) => n.replace(/\.[^.]+$/, "");
@@ -54,7 +55,7 @@ export function SubmissionUpload({ plans }: { plans: { id: string; title: string
         setNote("");
         if (fileRef.current) fileRef.current.value = "";
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Upload failed. Please try again.");
+        toast.error(friendlyError(e, "Upload failed. Please try again."));
       } finally {
         setProgress(null);
       }

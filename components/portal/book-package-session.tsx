@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { SlotPicker } from "@/components/booking/slot-picker";
 import { bookPackageSession } from "@/app/portal/session-booking-actions";
 import { cn } from "@/lib/utils";
+import { friendlyError } from "@/lib/friendly-error";
 
 type Mode = "IN_PERSON" | "DISTANCE";
 type Slot = { start: string; end: string; startsAt: string; endsAt: string };
@@ -53,7 +54,12 @@ export function BookPackageSession({ planId, serviceSlug, modes, left }: { planI
     if (!mode || !slot || !date) return;
     setError(null);
     start(async () => {
-      const r = await bookPackageSession({ planId, mode, date, start: slot.start, timezone: tz });
+      // No internet or the server didn't answer: say so here instead of the page failing.
+      const r = await bookPackageSession({ planId, mode, date, start: slot.start, timezone: tz }).catch((e: unknown) => ({
+        ok: false as const,
+        error: friendlyError(e, "We couldn't book that time. Please try again."),
+        slotTaken: false,
+      }));
       if (r.ok) setDone(slot);
       else {
         setError(r.error);

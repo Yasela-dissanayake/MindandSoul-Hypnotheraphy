@@ -10,6 +10,7 @@ import { setLearningPackageCover } from "@/app/admin/_actions/learning";
 import { setSessionCover } from "@/app/admin/_actions/session-services";
 import { setPromotionImage } from "@/app/admin/_actions/promotions";
 import { useAction } from "./use-action";
+import { friendlyError } from "@/lib/friendly-error";
 
 /** Cover photo shown on the website (course cards and pages, or the promotion pop-up and section). */
 export function CoverUpload({ kind, id, url }: { kind: "course" | "package" | "session" | "promotion"; id: string; url: string | null }) {
@@ -28,7 +29,7 @@ export function CoverUpload({ kind, id, url }: { kind: "course" | "package" | "s
       const { key } = await uploadFile(file, { purpose: "cover", filename: file.name, onProgress: setProgress });
       run(() => save(id, key), "Cover photo saved");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Upload failed.");
+      toast.error(friendlyError(e, "Upload failed."));
     } finally {
       setProgress(null);
       if (input.current) input.current.value = "";

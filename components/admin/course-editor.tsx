@@ -37,6 +37,7 @@ import { useAction } from "./use-action";
 import { ConfirmButton } from "./confirm-button";
 import { KIND_ICON, LibraryPicker } from "./library-picker";
 import { NoteButton, Section } from "./plan-editor";
+import { friendlyError } from "@/lib/friendly-error";
 
 const selectCls = "h-10 w-full rounded-md border border-input bg-white px-3 text-sm";
 
@@ -264,7 +265,7 @@ export function CertificateUpload({ enrollmentId, hasCertificate }: { enrollment
       const up = await uploadFile(file, { purpose: "certificate", filename: file.name, onProgress: setPct });
       run(() => setCertificate(enrollmentId, { key: up.key, name: file.name, contentType: up.contentType }), "Certificate uploaded");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Upload failed.");
+      toast.error(friendlyError(e, "Upload failed."));
     } finally {
       setPct(null);
     }

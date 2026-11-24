@@ -2,6 +2,8 @@
 
 import { useBusyTransition } from "@/components/use-busy-transition";
 import { toast } from "sonner";
+import { unstable_rethrow } from "next/navigation";
+import { friendlyError } from "@/lib/friendly-error";
 
 type Result = { ok: true; data?: unknown } | { ok: false; error: string };
 
@@ -15,8 +17,10 @@ export function useAction() {
         if (!res.ok) toast.error(res.error);
         else if (success) toast.success(success);
         after?.(res);
-      } catch {
-        toast.error("Something went wrong. Please try again.");
+      } catch (e) {
+        unstable_rethrow(e);
+        console.error(e);
+        toast.error(friendlyError(e));
       }
     });
   return { pending, run };

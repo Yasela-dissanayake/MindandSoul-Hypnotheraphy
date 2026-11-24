@@ -32,6 +32,7 @@ import { ACCEPT_FILES, kindForFile } from "@/lib/catalog";
 import { ConfirmButton } from "./confirm-button";
 import { useAction } from "./use-action";
 import { cn } from "@/lib/utils";
+import { friendlyError } from "@/lib/friendly-error";
 
 const selectCls = "h-10 w-full rounded-md border border-input bg-white px-3 text-sm";
 
@@ -224,7 +225,7 @@ function LessonDialog({
       setF((x) => ({ ...x, resourceId: id }));
       toast.success("Uploaded and added to the Library");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Upload failed.");
+      toast.error(friendlyError(e, "Upload failed."));
     } finally {
       setUploadPct(null);
       if (fileRef.current) fileRef.current.value = "";
@@ -530,7 +531,7 @@ export function LearningCertificateUpload({ enrollmentId, hasCertificate }: { en
       const up = await uploadFile(file, { purpose: "certificate", filename: file.name, onProgress: setPct });
       run(() => setLearningCertificate(enrollmentId, { key: up.key, name: file.name, contentType: up.contentType }), "Certificate uploaded. The learner has been emailed.");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Upload failed.");
+      toast.error(friendlyError(e, "Upload failed."));
     } finally {
       setPct(null);
     }
