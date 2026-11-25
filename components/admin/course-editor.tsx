@@ -383,7 +383,7 @@ export function PersonCourses({
   const available = allCourses.filter((c) => !enrollments.some((e) => e.courseId === c.id));
   return (
     <div className="space-y-4">
-      {enrollments.length === 0 && <p className="rounded-xl bg-white p-5 text-stone-500 ring-1 ring-stone-200">Not enrolled in any class.</p>}
+      {enrollments.length === 0 && <p className="rounded-xl bg-white p-5 text-stone-500 ring-1 ring-stone-200">Not enrolled in any Reiki training.</p>}
       {enrollments.map((e) => (
         <section key={e.enrollmentId} className="space-y-3 rounded-2xl bg-white p-5 ring-1 ring-stone-200">
           <div className="flex flex-wrap items-center gap-2">
@@ -406,7 +406,7 @@ export function PersonCourses({
               {e.completed ? "Mark in progress" : "Mark completed"}
             </Button>
             <ConfirmButton
-              label="Remove from class"
+              label="Remove from training"
               title={`Remove from ${e.courseTitle}?`}
               description="They'll no longer see this class. Their module ticks and certificate for it are deleted."
               onConfirm={() => run(() => unenrollStudent(e.enrollmentId), "Removed")}
@@ -417,7 +417,7 @@ export function PersonCourses({
       {available.length > 0 && (
         <div className="flex flex-wrap gap-2 rounded-2xl border-2 border-dashed border-sage-200 bg-white p-4">
           <select suppressHydrationWarning className={`${selectCls} max-w-xs`} value={pick} onChange={(e) => setPick(e.target.value)}>
-            <option value="">Enroll in a class…</option>
+            <option value="">Enroll in a Reiki training…</option>
             {available.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.title}

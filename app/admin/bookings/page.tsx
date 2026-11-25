@@ -4,7 +4,7 @@ import { BookOpen, CalendarDays, Globe, GraduationCap, Headphones, MapPin, Searc
 import { requireAdminPage } from "@/lib/authz";
 import { db } from "@/lib/db";
 import { BOOKING_TZ, time12 } from "@/lib/booking";
-import { formatDate, todayIn } from "@/lib/dates";
+import { formatDate, isValidTimezone, momentIn, todayIn, zoneCity } from "@/lib/dates";
 import { formatPrice } from "@/lib/currency";
 import { countNewSales } from "@/lib/sales";
 import { viewerTimezone } from "@/lib/viewer-tz";
@@ -81,6 +81,13 @@ function Person({ userId, name, email, phone }: { userId?: string | null; name: 
       )}
     </>
   );
+}
+
+/** "6:30 am – 7:30 am their time (Colombo)", with their day added when it isn't the same date as on the viewer's clock. */
+function clientTime(startsAt: Date, endsAt: Date, viewerDate: string, tz: string) {
+  const s = momentIn(startsAt, tz);
+  const day = s.date !== viewerDate ? `${s.day.replace(/ \d{4}$/, "")}, ` : "";
+  return `${day}${s.time} – ${momentIn(endsAt, tz).time} their time (${zoneCity(tz)})`;
 }
 
 export default async function BookingsPage({ searchParams }: { searchParams: Promise<SP> }) {
@@ -166,7 +173,7 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
         {bookings.length === 0 ? (
           <Empty>{q ? `No ${show} bookings match "${q}".` : `No ${show} bookings.`}</Empty>
         ) : (
-          <Table head={["When (Perth time)", "Client", "Session", "Payment", "Notes", "Actions"]} minWidth="min-w-[880px]">
+          <Table head={[`When (your time · ${zoneCity(tz)})`, "Client", "Session", "Payment", "Notes", "Actions"]} minWidth="min-w-[880px]">
             {bookings.map((b) => {
               const isNew = b.status === "CONFIRMED" && !b.seenAt;
               const notes = [
@@ -178,16 +185,22 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
                 <Tr key={b.id} isNew={isNew}>
                   <td className="whitespace-nowrap px-4 py-3">
                     {isNew && <NewPill />}
-                    <p className="font-medium text-stone-800">{longDay(b.date)}</p>
+                    {/* Shown on the clock of the device Rangika is using, wherever she is. */}
+                    <p className="font-medium text-stone-800">{b.recorded ? longDay(b.date) : momentIn(b.startsAt, tz).day}</p>
                     {b.recorded ? (
                       <p className="text-stone-600">No appointment (bought)</p>
                     ) : (
                       <p className="text-stone-600">
-                        {time12(b.start)} – {time12(b.end)}
+                        {momentIn(b.startsAt, tz).time} – {momentIn(b.endsAt, tz).time}
                       </p>
                     )}
-                    {b.clientTimezone && b.clientTimezone !== BOOKING_TZ && (
-                      <p className="text-xs text-stone-500">Client in {b.clientTimezone.replace(/_/g, " ")}</p>
+                    {/* The same moment on the client's clock, so it matches what they picked. */}
+                    {b.clientTimezone && b.clientTimezone !== tz && isValidTimezone(b.clientTimezone) && !b.recorded && (
+                      <p className="text-xs text-stone-500">{clientTime(b.startsAt, b.endsAt, momentIn(b.startsAt, tz).date, b.clientTimezone)}</p>
+                    )}
+                    {/* In-person sessions happen in Perth: show Perth time too when Rangika is somewhere else. */}
+                    {tz !== BOOKING_TZ && b.mode === "IN_PERSON" && !b.recorded && (
+                      <p className="text-xs text-stone-500">{time12(b.start)} – {time12(b.end)} Perth time</p>
                     )}
                   </td>
                   <td className="min-w-[12rem] px-4 py-3">
@@ -236,7 +249,7 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
                     <div className="flex items-center justify-end gap-1">
                       {isNew && <MarkSeenButton kind="sessions" id={b.id} />}
                       {show === "upcoming" && (
-                        <CancelBookingButton id={b.id} name={b.clientName} when={`${formatDate(b.date, { day: "numeric", month: "short" })} at ${time12(b.start)}`} />
+                        <CancelBookingButton id={b.id} name={b.clientName} when={`${momentIn(b.startsAt, tz).day} at ${momentIn(b.startsAt, tz).time} (your time)`} />
                       )}
                     </div>
                   </td>

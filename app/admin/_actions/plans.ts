@@ -7,6 +7,7 @@ import { todayIn } from "@/lib/dates";
 import { getSettings } from "@/lib/settings";
 import { copyTemplateToUser } from "@/lib/plans";
 import { parseTrackerFields, TRACKER_FIELD_TYPES } from "@/lib/catalog";
+import { notify, planOwner } from "@/lib/notifications";
 import { blank, fail, refreshAll, type ActionResult } from "./common";
 
 // Session plans are either ready-made packages (userId = null) or one client's copy.
@@ -61,6 +62,9 @@ export async function createPlan(
       meetingLink: blank(d.meetingLink),
     },
   });
+  if (plan.userId) {
+    await notify(plan.userId, { kind: "PLAN", title: `Your ${plan.title} space is ready`, body: "Rangika will add your material, exercises and check-ins here.", href: "/portal/sessions" });
+  }
   refreshAll();
   return { ok: true, data: { id: plan.id } };
 }
@@ -99,6 +103,15 @@ export async function updatePlan(
       meetingLink: blank(d.meetingLink),
     },
   });
+  const zoom = blank(d.meetingLink);
+  if (plan.userId && zoom && zoom !== plan.meetingLink) {
+    await notify(plan.userId, {
+      kind: "ZOOM_LINK",
+      title: plan.meetingLink ? "Your session link has changed" : "Your session link is ready",
+      body: `For ${d.title}. Open My sessions to join.`,
+      href: "/portal/sessions",
+    });
+  }
   refreshAll();
   return { ok: true };
 }
@@ -123,6 +136,8 @@ export async function assignTemplate(userId: string, templateId: string, startDa
   const user = await db.user.findUnique({ where: { id: userId } });
   if (!user || user.role !== "CLIENT") return fail("Person not found.");
   await copyTemplateToUser(templateId, userId, startDate);
+  const t = await db.plan.findUnique({ where: { id: templateId }, select: { title: true } });
+  await notify(userId, { kind: "PLAN", title: `Your ${t?.title ?? "new"} plan is ready`, body: "Your material, exercises and check-ins are in My sessions.", href: "/portal/sessions" });
   refreshAll();
   return { ok: true };
 }
@@ -234,6 +249,13 @@ export async function addPlanItems(planId: string, resourceIds: string[], module
     data: resourceIds.map((resourceId, i) => ({ planId, resourceId, moduleId, order: count + i })),
     skipDuplicates: true,
   });
+  const owner = await planOwner(planId);
+  if (owner) {
+    const items = await db.resource.findMany({ where: { id: { in: resourceIds } }, select: { title: true } });
+    for (const r of items) {
+      await notify(owner.userId, { kind: "MATERIAL", title: "New material from Rangika", body: r.title, href: "/portal/sessions", merge: { many: (n) => `${n} new items from Rangika` } });
+    }
+  }
   refreshAll();
   return { ok: true };
 }
@@ -299,6 +321,16 @@ export async function saveTask(planId: string, input: z.input<typeof taskSchema>
   else {
     const count = await db.task.count({ where: { planId } });
     await db.task.create({ data: { ...data, planId, order: count } });
+    const owner = await planOwner(planId);
+    if (owner && !data.paused) {
+      await notify(owner.userId, {
+        kind: "TASK",
+        title: "New exercise from Rangika",
+        body: data.title,
+        href: "/portal",
+        merge: { many: (n) => `${n} new exercises from Rangika` },
+      });
+    }
   }
   refreshAll();
   return { ok: true };
@@ -328,7 +360,19 @@ export async function savePrompt(planId: string, input: { id?: string; day: numb
   if (!text) return fail("Please write the prompt.");
   if (!Number.isInteger(input.day) || input.day < 1) return fail("Day must be 1 or more.");
   if (input.id) await db.prompt.update({ where: { id: input.id, planId }, data: { day: input.day, text } });
-  else await db.prompt.create({ data: { planId, day: input.day, text } });
+  else {
+    await db.prompt.create({ data: { planId, day: input.day, text } });
+    const owner = await planOwner(planId);
+    if (owner) {
+      await notify(owner.userId, {
+        kind: "PROMPT",
+        title: "New journal prompt from Rangika",
+        body: text.length > 90 ? `${text.slice(0, 87)}…` : text,
+        href: "/portal/journal",
+        merge: { many: (n) => `${n} new journal prompts from Rangika` },
+      });
+    }
+  }
   refreshAll();
   return { ok: true };
 }
@@ -369,7 +413,9 @@ export async function saveTracker(planId: string, input: z.input<typeof trackerS
     await db.tracker.update({ where: { id: t.id, planId }, data: { title: t.title, description: blank(t.description), fields, active: t.active ?? true } });
   } else {
     const count = await db.tracker.count({ where: { planId } });
-    await db.tracker.create({ data: { planId, title: t.title, description: blank(t.description), fields, order: count } });
+    const created = await db.tracker.create({ data: { planId, title: t.title, description: blank(t.description), fields, order: count } });
+    const owner = await planOwner(planId);
+    if (owner) await notify(owner.userId, { kind: "TRACKER", title: "New check-in to fill in", body: t.title, href: `/portal/trackers/${created.id}` });
   }
   refreshAll();
   return { ok: true };

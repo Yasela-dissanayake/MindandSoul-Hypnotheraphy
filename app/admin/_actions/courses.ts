@@ -8,6 +8,7 @@ import { deleteObject } from "@/lib/storage";
 import { isSiteImage } from "@/lib/covers";
 import { uniqueCourseSlug } from "@/lib/course-sales";
 import { enrollInClass } from "@/lib/class-enroll";
+import { classStudents, notify } from "@/lib/notifications";
 import { blank, fail, refreshAll, type ActionResult } from "./common";
 import { DATE_RE, TIME_RE, perthMoment } from "@/lib/booking";
 
@@ -202,6 +203,20 @@ export async function addCourseItems(courseId: string, resourceIds: string[], mo
     data: resourceIds.map((resourceId, i) => ({ courseId, resourceId, moduleId: extra ? null : moduleId, extra, order: count + i })),
     skipDuplicates: true,
   });
+  const [course, students, items] = await Promise.all([
+    db.course.findUnique({ where: { id: courseId }, select: { title: true } }),
+    classStudents(courseId),
+    db.resource.findMany({ where: { id: { in: resourceIds } }, select: { title: true } }),
+  ]);
+  for (const r of items) {
+    await notify(students, {
+      kind: "CLASS_MATERIAL",
+      title: `New material in ${course?.title ?? "your training"}`,
+      body: r.title,
+      href: `/portal/classes/${courseId}`,
+      merge: { many: (n) => `${n} new items in ${course?.title ?? "your training"}` },
+    });
+  }
   refreshAll();
   return { ok: true };
 }
@@ -244,7 +259,9 @@ export async function enrollStudent(userId: string, courseId: string): Promise<A
   const user = await db.user.findUnique({ where: { id: userId } });
   if (!user || user.role !== "CLIENT") return fail("Person not found.");
   if (!(await db.course.findUnique({ where: { id: courseId }, select: { id: true } }))) return fail("Class not found.");
-  await enrollInClass(userId, courseId); // a bundle enrolls them in each of its classes
+  const ids = await enrollInClass(userId, courseId); // a bundle enrolls them in each of its classes
+  const c = await db.course.findUnique({ where: { id: courseId }, select: { title: true } });
+  await notify(userId, { kind: "CLASS", title: `You're enrolled in ${c?.title ?? "Reiki Training"}`, body: "Your training material is in My training.", href: ids.length === 1 ? `/portal/classes/${ids[0]}` : "/portal/classes" });
   refreshAll();
   return { ok: true };
 }
@@ -284,6 +301,10 @@ export async function setCertificate(enrollmentId: string, input: { key: string;
     },
   });
   if (e.certificateKey && e.certificateKey !== input.key) await deleteObject(e.certificateKey);
+  if (!e.certificateKey) {
+    const c = await db.course.findUnique({ where: { id: e.courseId }, select: { title: true } });
+    await notify(e.userId, { kind: "CERTIFICATE", title: "Your certificate is ready", body: c?.title ?? null, href: `/portal/classes/${e.courseId}` });
+  }
   refreshAll();
   return { ok: true };
 }

@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { PRACTITIONER_EMAIL, enquiryEmail, sendMail } from "@/lib/mail";
+import { notifyAdmins } from "@/lib/notifications";
 
 // Public contact forms on the website: "Book Your Free Consultation" and "Ask a question".
 // Every message is saved (so Rangika sees it in the dashboard under Enquiries), then emailed to her.
@@ -72,6 +73,13 @@ export async function POST(req: NextRequest) {
     console.error("Could not save enquiry", e);
     return NextResponse.json({ error: "Sorry, your message couldn't be sent. Please try again or email us directly." }, { status: 500 });
   }
+
+  await notifyAdmins({
+    kind: "ENQUIRY",
+    title: data.kind === "QUESTION" ? `New question from ${data.name}` : `Free consultation request: ${data.name}`,
+    body: data.topic ?? (data.message ? (data.message.length > 90 ? `${data.message.slice(0, 87)}…` : data.message) : null),
+    href: "/admin/enquiries",
+  });
 
   // Saved already, so a failed email doesn't lose the message.
   const mail = await sendMail({ to: PRACTITIONER_EMAIL, replyTo: data.email, ...enquiryEmail(data) }).catch(() => ({ ok: false }));

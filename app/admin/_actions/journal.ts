@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/authz";
+import { notify } from "@/lib/notifications";
 import { deleteObject } from "@/lib/storage";
 import { journalReplyEmail, sendMail } from "@/lib/mail";
 import { fail, refreshAll, type ActionResult } from "./common";
@@ -54,6 +55,12 @@ export async function saveJournalReply(entryId: string, input: z.infer<typeof re
   });
   if (dropOld) await deleteObject(entry.replyAudioKey).catch(() => {});
 
+  await notify(entry.userId, {
+    kind: "JOURNAL_REPLY",
+    title: firstReply ? "Rangika replied to your journal" : "Rangika updated her reply",
+    body: keepsAudio && !text ? "A voice message" : text ? (text.length > 90 ? `${text.slice(0, 87)}…` : text) : null,
+    href: "/portal/journal#past-entries",
+  });
   let emailed = false;
   if (firstReply && entry.user.status !== "FINISHED") {
     const res = await sendMail({ to: entry.user.email, ...journalReplyEmail({ name: entry.user.name, reply: text, voice: keepsAudio }) });

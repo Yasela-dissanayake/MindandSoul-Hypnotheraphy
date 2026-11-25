@@ -58,6 +58,29 @@ export function dateOfDay(startDate: string, day: number): string {
   return addDays(startDate, day - 1);
 }
 
+/** "Colombo" from "Asia/Colombo", "Perth" from "Australia/Perth". */
+export const zoneCity = (tz: string) => tz.split("/").pop()!.replace(/_/g, " ");
+
+/** A moment on the clock of a time zone: its date ("YYYY-MM-DD"), a short day ("Thu, 26 Nov 2026") and time ("9:00 am"). */
+export function momentIn(d: Date, tz: string) {
+  return {
+    date: d.toLocaleDateString("en-CA", { timeZone: tz }),
+    day: d.toLocaleDateString("en-AU", { timeZone: tz, weekday: "short", day: "numeric", month: "short", year: "numeric" }),
+    longDay: d.toLocaleDateString("en-AU", { timeZone: tz, weekday: "long", day: "numeric", month: "long" }),
+    time: d.toLocaleTimeString("en-AU", { timeZone: tz, hour: "numeric", minute: "2-digit" }),
+  };
+}
+
+/** How many hours `tz` is ahead of `base` right now (negative = behind), e.g. Perth vs Colombo = 2.5. */
+export function hoursAhead(tz: string, base: string, at = new Date()) {
+  const offset = (zone: string) => {
+    const p = new Intl.DateTimeFormat("en-US", { timeZone: zone, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }).formatToParts(at);
+    const v = (t: string) => Number(p.find((x) => x.type === t)?.value);
+    return (Date.UTC(v("year"), v("month") - 1, v("day"), v("hour"), v("minute")) - Math.floor(at.getTime() / 60000) * 60000) / 3600000;
+  };
+  return Math.round((offset(tz) - offset(base)) * 4) / 4;
+}
+
 export function formatDate(d: string, opts: Intl.DateTimeFormatOptions = { day: "numeric", month: "short" }): string {
   return new Date(toUTC(d)).toLocaleDateString("en-AU", { ...opts, timeZone: "UTC" });
 }

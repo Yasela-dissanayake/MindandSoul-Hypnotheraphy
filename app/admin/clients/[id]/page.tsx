@@ -5,6 +5,8 @@ import { ArrowLeft } from "lucide-react";
 import { requireAdminPage } from "@/lib/authz";
 import { db } from "@/lib/db";
 import { PlanBookingsAdmin } from "@/components/admin/plan-bookings-admin";
+import { AdminBookSession } from "@/components/admin/admin-book-session";
+import { modesFor } from "@/lib/session-catalog";
 import { loadLibraryOptions, loadPlansForEditor } from "@/lib/admin-plans";
 import { getSettings } from "@/lib/settings";
 import { addDays, dayNumber, formatDate, todayIn } from "@/lib/dates";
@@ -60,7 +62,7 @@ const TABS = [
   { id: "tasks", label: "Tasks" },
   { id: "trackers", label: "Trackers" },
   { id: "uploads", label: "Uploads" },
-  { id: "courses", label: "Classes" },
+  { id: "courses", label: "Reiki Training" },
   { id: "learning", label: "Courses" },
   { id: "journal", label: "Journal" },
   { id: "progress", label: "Progress" },
@@ -74,7 +76,7 @@ export default async function ClientPage({ params, searchParams }: { params: Pro
   const { id } = await params;
   const sp = await searchParams;
   const requested = sp.tab === "plan" ? "sessions" : sp.tab; // old links
-  // No tab asked for: open where this person has something (sessions, then classes, then courses).
+  // No tab asked for: open where this person has something (sessions, then Reiki training, then courses).
   const client = requested ? null : await clientOr404(id);
   const fallback: Tab = !client || client.plans.length ? "sessions" : client.enrollments.length ? "courses" : client.learningEnrollments.length ? "learning" : "sessions";
   const tab: Tab = (TABS.find((t) => t.id === requested)?.id ?? fallback) as Tab;
@@ -115,11 +117,11 @@ async function ClientHeader({ id, tab }: { id: string; tab: Tab }) {
         <p className="text-sm text-stone-600">
           {[
             client.plans.length ? `Sessions: ${[...new Set(client.plans.map((p) => serviceLabel(p.service)))].join(", ")}` : "",
-            client.enrollments.length ? `Classes: ${client.enrollments.map((e) => e.course.title).join(", ")}` : "",
+            client.enrollments.length ? `Reiki Training: ${client.enrollments.map((e) => e.course.title).join(", ")}` : "",
             client.learningEnrollments.length ? `Courses: ${client.learningEnrollments.map((e) => e.package.title).join(", ")}` : "",
           ]
             .filter(Boolean)
-            .join(" · ") || "No sessions, classes or courses yet"}
+            .join(" · ") || "No sessions, Reiki training or courses yet"}
         </p>
       </div>
 
@@ -196,6 +198,7 @@ async function SessionsTab({ clientId, addPlan }: { clientId: string; addPlan: b
         totalSessions: true,
         sessionServiceId: true,
         selfPaced: true,
+        sessionService: { select: { slug: true, published: true, enquiryOnly: true, inPerson: true, online: true } },
         bookings: {
           where: { status: "CONFIRMED" },
           orderBy: { startsAt: "asc" },
@@ -228,7 +231,24 @@ async function SessionsTab({ clientId, addPlan }: { clientId: string; addPlan: b
                 </p>
               );
             const left = pb.sessionServiceId ? Math.max(0, (pb.totalSessions ?? 0) - pb.bookings.length) : 0;
-            return <PlanBookingsAdmin bookings={pb.bookings} left={left} tz={tz} online={Boolean(pb.sessionServiceId)} />;
+            const s = pb.sessionService;
+            const canBook = Boolean(s && s.published && !s.enquiryOnly && !plan.completed);
+            const modes = s ? modesFor(s) : [];
+            return (
+              <PlanBookingsAdmin
+                bookings={pb.bookings}
+                left={left}
+                tz={tz}
+                online={Boolean(pb.sessionServiceId)}
+                book={
+                  canBook && s && modes.length > 0 ? (
+                    <AdminBookSession planId={plan.id} serviceSlug={s.slug} modes={modes} left={left} clientName={name} />
+                  ) : left > 0 && s ? (
+                    <p className="text-xs text-stone-500">This session is hidden or enquiry-only on the website, so it can&apos;t be booked online. Show it on the website to book here.</p>
+                  ) : null
+                }
+              />
+            );
           })()}
           <ModulesEditor plan={plan} />
           <MaterialsEditor plan={plan} library={library} />

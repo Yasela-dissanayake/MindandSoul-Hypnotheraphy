@@ -6,14 +6,32 @@ import { CheckCircle2, Globe, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SlotPicker } from "@/components/booking/slot-picker";
 import { bookPackageSession } from "@/app/portal/session-booking-actions";
+import { bookSessionForClient } from "@/app/admin/_actions/client-sessions";
 import { cn } from "@/lib/utils";
 import { friendlyError } from "@/lib/friendly-error";
 
 type Mode = "IN_PERSON" | "DISTANCE";
 type Slot = { start: string; end: string; startsAt: string; endsAt: string };
 
-/** Pick in person / online and a time, then book one of the sessions left in the package. */
-export function BookPackageSession({ planId, serviceSlug, modes, left }: { planId: string; serviceSlug: string; modes: Mode[]; left: number }) {
+/**
+ * Pick in person / online and a time, then book one of the sessions left in the package.
+ * With forClient, Rangika books it for that client from the admin page (they get the confirmation email).
+ */
+export function BookPackageSession({
+  planId,
+  serviceSlug,
+  modes,
+  left,
+  forClient,
+  onDone,
+}: {
+  planId: string;
+  serviceSlug: string;
+  modes: Mode[];
+  left: number;
+  forClient?: string;
+  onDone?: () => void;
+}) {
   const [mode, setMode] = useState<Mode | null>(modes.length === 1 ? modes[0] : null);
   const [date, setDate] = useState<string | null>(null);
   const [slot, setSlot] = useState<Slot | null>(null);
@@ -33,13 +51,21 @@ export function BookPackageSession({ planId, serviceSlug, modes, left }: { planI
     return (
       <div className="space-y-3 rounded-2xl bg-sage-50 p-6 ring-1 ring-sage-200">
         <p className="flex items-center gap-2 font-serif text-xl text-stone-800">
-          <CheckCircle2 className="h-6 w-6 text-sage-600" /> Your session is booked
+          <CheckCircle2 className="h-6 w-6 text-sage-600" /> {forClient ? "Session booked" : "Your session is booked"}
         </p>
-        <p className="text-stone-700">{fmt(done)}. We&apos;ve emailed you the details.</p>
+        <p className="text-stone-700">
+          {fmt(done)}. {forClient ? `${forClient} has been emailed the details, and it shows in their portal.` : "We've emailed you the details."}
+        </p>
         <div className="flex flex-wrap gap-2">
-          <Button asChild className="bg-sage-600 text-white hover:bg-sage-700">
-            <Link href="/portal/sessions">Back to My sessions</Link>
-          </Button>
+          {forClient ? (
+            <Button className="bg-sage-600 text-white hover:bg-sage-700" onClick={onDone}>
+              Done
+            </Button>
+          ) : (
+            <Button asChild className="bg-sage-600 text-white hover:bg-sage-700">
+              <Link href="/portal/sessions">Back to My sessions</Link>
+            </Button>
+          )}
           {left > 1 && (
             <Button variant="outline" onClick={() => (setDone(null), setSlot(null), setReload((x) => x + 1))}>
               Book another session
@@ -55,7 +81,8 @@ export function BookPackageSession({ planId, serviceSlug, modes, left }: { planI
     setError(null);
     start(async () => {
       // No internet or the server didn't answer: say so here instead of the page failing.
-      const r = await bookPackageSession({ planId, mode, date, start: slot.start, timezone: tz }).catch((e: unknown) => ({
+      const call = forClient ? bookSessionForClient({ planId, mode, date, start: slot.start }) : bookPackageSession({ planId, mode, date, start: slot.start, timezone: tz });
+      const r = await call.catch((e: unknown) => ({
         ok: false as const,
         error: friendlyError(e, "We couldn't book that time. Please try again."),
         slotTaken: false,
@@ -98,7 +125,7 @@ export function BookPackageSession({ planId, serviceSlug, modes, left }: { planI
         <div className="flex flex-wrap items-center gap-3 rounded-xl bg-white p-4 ring-1 ring-stone-200">
           <span className="flex-1 text-stone-700">{fmt(slot)}</span>
           <Button disabled={pending} onClick={book} className="bg-sage-600 text-white hover:bg-sage-700">
-            {pending ? "Booking…" : "Book this session"}
+            {pending ? "Booking…" : forClient ? `Book for ${forClient}` : "Book this session"}
           </Button>
         </div>
       )}

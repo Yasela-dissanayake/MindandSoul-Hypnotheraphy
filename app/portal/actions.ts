@@ -9,6 +9,7 @@ import { getSettings } from "@/lib/settings";
 import { activityEmail, PRACTITIONER_EMAIL, questionEmail, sendMail, taskDoneEmail } from "@/lib/mail";
 import { formatTimeOfDay, parseTrackerFields } from "@/lib/catalog";
 import { deleteObject } from "@/lib/storage";
+import { notifyAdmins } from "@/lib/notifications";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 const fail = (error: string): ActionResult => ({ ok: false, error });
@@ -199,6 +200,13 @@ export async function createSubmission(input: z.input<typeof submissionSchema>):
     },
   });
   await db.user.update({ where: { id: user.id }, data: { lastActiveAt: new Date() } });
+  await notifyAdmins({
+    kind: "UPLOAD",
+    title: `${user.name || user.email} sent you work`,
+    body: d.title,
+    href: `/admin/clients/${user.id}?tab=uploads`,
+    merge: { many: (n) => `${user.name || user.email} sent you ${n} files` },
+  });
   await notifyActivity(user, `uploaded "${d.title}"`, "uploads", d.note);
   refresh();
   return { ok: true };
@@ -255,6 +263,13 @@ export async function saveJournalEntry(input: z.infer<typeof journalSchema>): Pr
     },
   });
   await db.user.update({ where: { id: user.id }, data: { lastActiveAt: new Date() } });
+  await notifyAdmins({
+    kind: "JOURNAL",
+    title: `${user.name || user.email} ${audio && !body ? "sent a voice journal entry" : "wrote in their journal"}`,
+    body: body ? (body.length > 90 ? `${body.slice(0, 87)}…` : body) : prompt || null,
+    href: `/admin/clients/${user.id}?tab=journal`,
+    merge: { many: (n) => `${user.name || user.email} wrote ${n} journal entries` },
+  });
   await notifyActivity(user, audio && !body ? "sent a voice journal entry" : "wrote in their journal", "journal", [prompt, body].filter(Boolean).join("\n\n"));
   refresh();
   return { ok: true };
@@ -309,6 +324,13 @@ export async function askQuestion(input: z.input<typeof questionSchema>): Promis
 
   await db.question.create({ data: { userId: user.id, planId, topic: d.topic || null, topicHref: d.topicHref || null, body: d.body } });
   await db.user.update({ where: { id: user.id }, data: { lastActiveAt: new Date() } });
+  await notifyAdmins({
+    kind: "QUESTION",
+    title: `${user.name || user.email} asked a question`,
+    body: d.topic ? `${d.topic}: ${d.body}`.slice(0, 120) : d.body.length > 90 ? `${d.body.slice(0, 87)}…` : d.body,
+    href: `/admin/clients/${user.id}?tab=questions`,
+    merge: { many: (n) => `${user.name || user.email} asked ${n} questions` },
+  });
   // Questions always email Rangika (they need an answer), whatever the activity setting.
   await sendMail({ to: PRACTITIONER_EMAIL, ...questionEmail({ clientName: user.name || user.email, topic: d.topic, body: d.body }) }).catch(() => undefined);
   refresh();

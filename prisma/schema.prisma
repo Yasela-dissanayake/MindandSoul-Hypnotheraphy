@@ -115,6 +115,7 @@ model User {
   notes               PrivateNote[]
   personalFiles       Resource[]
   reminderLogs        ReminderLog[]
+  notifications       Notification[]
 }
 
 model Account {
@@ -649,6 +650,26 @@ model ReminderLog {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, forDate])
+}
+
+/// A note in the client's portal (the bell at the top): Rangika added material, answered a question,
+/// booked or cancelled a session, and so on. Several of the same kind close together are merged into one.
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  kind      String // MATERIAL, TASK, TRACKER, PROMPT, ANSWER, JOURNAL_REPLY, SESSION_BOOKED, SESSION_CANCELLED, ZOOM_LINK, PLAN, CLASS, CLASS_MATERIAL, CERTIFICATE, COURSE, LESSON
+  title     String
+  body      String?
+  href      String? // where it opens in the portal
+  count     Int       @default(1) // how many were merged into this one
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@index([userId, updatedAt])
 }
 
 // ---------- Independent learning packages (self-paced, bought on the website) ----------

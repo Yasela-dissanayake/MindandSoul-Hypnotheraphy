@@ -75,9 +75,11 @@ export async function SessionsView({ area, searchParams }: { area: SessionArea; 
   const serviceOf = (p: { sessionServiceId: string | null; title: string }) =>
     p.sessionServiceId ?? sessionServices.find((x) => x.title.trim().toLowerCase() === p.title.trim().toLowerCase())?.id ?? "other";
   const sessionName = (p: { sessionServiceId: string | null; title: string }) => sessionServices.find((x) => x.id === serviceOf(p))?.title ?? p.title;
-  const count = (id: string) => active.filter((p) => serviceOf(p) === id).length;
+  // Counts are people, not plans: a client with two plans for the same session counts once.
+  const people = (list: typeof active) => new Set(list.map((p) => p.userId)).size;
+  const count = (id: string) => people(active.filter((p) => serviceOf(p) === id));
   const filterOptions = [
-    { value: "", label: "All sessions", count: active.length },
+    { value: "", label: "All sessions", count: people(active) },
     ...sessionServices.map((x) => ({ value: x.id, label: x.title, count: count(x.id) })),
     ...(count("other") ? [{ value: "other", label: "Other", count: count("other") }] : []),
   ];
@@ -137,7 +139,7 @@ export async function SessionsView({ area, searchParams }: { area: SessionArea; 
       <section id="clients" className="scroll-mt-6 space-y-3">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <h2 className="font-serif text-2xl text-stone-800">
-            Clients <span className="text-base text-stone-500">({shown.length})</span>
+            Clients <span className="text-base text-stone-500">({people(shown)})</span>
           </h2>
           <ClientSessionFilter options={filterOptions} current={filter} />
         </div>

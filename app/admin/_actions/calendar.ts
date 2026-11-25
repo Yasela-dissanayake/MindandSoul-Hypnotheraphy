@@ -6,6 +6,9 @@ import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/authz";
 import { BOOKING_TZ, DATE_RE, TIME_RE, busyWhere, fromMin, toMin } from "@/lib/booking";
 import { todayIn } from "@/lib/dates";
+import { planStartAfterCancel, sendSessionCancelledEmail, sessionsLeft } from "@/lib/session-sales";
+import { notify } from "@/lib/notifications";
+import { isValidTimezone, momentIn } from "@/lib/dates";
 import { fail, type ActionResult } from "./common";
 
 const refresh = () => revalidatePath("/admin/calendar");
@@ -68,10 +71,30 @@ export async function saveDayBlocks(input: z.input<typeof daySchema>): Promise<A
   return { ok: true, data: { clashes } };
 }
 
-export async function cancelBooking(id: string): Promise<ActionResult> {
+/** Cancels a booking and emails the client (with how many sessions they can still book). */
+export async function cancelBooking(id: string): Promise<ActionResult<{ emailed: boolean }>> {
   await requireAdmin();
   const res = await db.booking.updateMany({ where: { id, status: { not: "CANCELLED" } }, data: { status: "CANCELLED", cancelledAt: new Date() } });
   if (res.count === 0) return fail("That booking was already cancelled.");
+  const b = await db.booking.findUnique({
+    where: { id },
+    select: { planId: true, date: true, startsAt: true, service: true, userId: true, user: { select: { timezone: true } }, plan: { select: { id: true, title: true, totalSessions: true, selfPaced: true } } },
+  });
+  if (b) await planStartAfterCancel(b);
+  if (b?.userId) {
+    const tz = b.user?.timezone && isValidTimezone(b.user.timezone) ? b.user.timezone : "Australia/Perth";
+    const m = momentIn(b.startsAt, tz);
+    const left = b.plan ? await sessionsLeft(b.plan) : 0;
+    await notify(b.userId, {
+      kind: "SESSION_CANCELLED",
+      title: `Your session on ${m.day.replace(/ \d{4}$/, "")} was cancelled`,
+      body: left > 0 ? `${b.plan?.title ?? b.service}: you can book a new time from My sessions.` : (b.plan?.title ?? b.service),
+      href: "/portal/sessions",
+    });
+  }
+  const emailed = await sendSessionCancelledEmail(id).catch((e) => (console.error("Cancellation email failed:", e), false));
   refresh();
-  return { ok: true };
+  revalidatePath("/admin", "layout");
+  revalidatePath("/portal", "layout");
+  return { ok: true, data: { emailed } };
 }

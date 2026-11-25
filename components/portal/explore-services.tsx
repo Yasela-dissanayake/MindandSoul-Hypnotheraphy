@@ -1,30 +1,42 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, GraduationCap, MessageCircleHeart, Sparkles } from "lucide-react";
+import { ArrowRight, BookOpen, Brain, GraduationCap, MessageCircleHeart, Sparkles } from "lucide-react";
 
 // Shown in the portal to people who haven't booked or bought anything yet (e.g. they just signed up
 // with Google): what Rangika offers, with links to the website pages where they can book or buy.
 // Free sessions and promotions can be added here later.
 
+// The website's four sections, the same as its top menu: each page lists everything in it, ready to book or buy.
 const OFFERS = [
   {
-    href: "/sessions",
-    icon: Sparkles,
-    title: "One-to-one sessions",
-    text: "Hypnotherapy, Reiki healing and Animal Reiki with Rangika, in person or at a distance. Book a single session or a package.",
-    cta: "See sessions",
+    href: "/hypnotherapy",
+    icon: Brain,
+    title: "Clinical Hypnotherapy",
+    short: "One-to-one sessions",
+    text: "One-to-one hypnotherapy sessions with Rangika, in person in Perth or online. Book a single session or a package.",
+    cta: "See hypnotherapy",
   },
   {
-    href: "/classes",
+    href: "/reiki-healing",
+    icon: Sparkles,
+    title: "Reiki Energy Healing",
+    short: "Reiki & Animal Reiki",
+    text: "Reiki healing sessions for you, and Animal Reiki & Communication for your animals, in person or at a distance.",
+    cta: "See Reiki healing",
+  },
+  {
+    href: "/reiki-training",
     icon: GraduationCap,
-    title: "Reiki classes",
-    text: "Live online Usui Reiki and Animal Reiki classes in small groups, from Level 1 to Master Teacher, with a certificate.",
-    cta: "See classes",
+    title: "Reiki Training",
+    short: "Live classes, with a certificate",
+    text: "Live Usui Reiki and Animal Reiki training in small groups, from Level 1 to Master Teacher, with a certificate.",
+    cta: "See Reiki training",
   },
   {
     href: "/courses",
     icon: BookOpen,
-    title: "Self-paced courses",
-    text: "Video and audio courses you can start straight away and follow at your own pace.",
+    title: "Courses",
+    short: "Self-paced, at home",
+    text: "Self-paced courses you can follow at home, at your own pace.",
     cta: "See courses",
   },
 ];
@@ -50,11 +62,11 @@ export function ExploreServices({
           {heading ?? `Welcome${firstName ? `, ${firstName}` : ""}! Here's how Rangika can help`}
         </h2>
         <div className="mt-2 text-stone-600">
-          {intro ?? "Choose a session, class or course below. Once you book or buy, it appears here in your private space straight away."}
+          {intro ?? "Choose a session, training or course below. Once you book or buy, it appears here in your private space straight away."}
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {OFFERS.map((o) => (
           <Link
             key={o.href}
@@ -88,6 +100,38 @@ export function ExploreServices({
           Ask Rangika <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" aria-hidden />
         </span>
       </Link>
+    </section>
+  );
+}
+
+/**
+ * For clients who already have something: a compact row with the website's four sections, to book or buy
+ * something else. Each opens that section of the website (all its services are listed there).
+ */
+export function BookMore() {
+  return (
+    <section className="space-y-3" aria-labelledby="book-more-title">
+      <h2 id="book-more-title" className="font-serif text-xl text-stone-800">
+        Book something else
+      </h2>
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {OFFERS.map((o) => (
+          <Link
+            key={o.href}
+            href={o.href}
+            className="group flex items-center gap-3 rounded-2xl bg-white p-3.5 ring-1 ring-stone-200 transition hover:ring-sage-300"
+          >
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sage-100 text-sage-700">
+              <o.icon className="h-4 w-4" aria-hidden />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-medium leading-snug text-stone-800 group-hover:text-sage-800">{o.title}</span>
+              <span className="block truncate text-xs text-stone-500">{o.short}</span>
+            </span>
+            <ArrowRight className="hidden h-4 w-4 shrink-0 text-sage-600 transition group-hover:translate-x-0.5 sm:block" aria-hidden />
+          </Link>
+        ))}
+      </div>
     </section>
   );
 }

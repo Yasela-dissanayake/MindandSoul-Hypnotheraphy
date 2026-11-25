@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/authz";
+import { courseLearners, notify } from "@/lib/notifications";
 import { deleteObject } from "@/lib/storage";
 import { isSiteImage } from "@/lib/covers";
 import { uniqueSlug } from "@/lib/learning";
@@ -153,6 +154,16 @@ export async function saveLesson(packageId: string, id: string | null, input: z.
   } else {
     const count = await db.lesson.count({ where: { packageId, sectionId: data.sectionId } });
     await db.lesson.create({ data: { packageId, ...data, order: count } });
+    const [pkg, learners] = await Promise.all([db.learningPackage.findUnique({ where: { id: packageId }, select: { title: true, published: true } }), courseLearners(packageId)]);
+    if (pkg?.published) {
+      await notify(learners, {
+        kind: "LESSON",
+        title: `New lesson in ${pkg.title}`,
+        body: data.title,
+        href: `/portal/courses/${packageId}`,
+        merge: { many: (n) => `${n} new lessons in ${pkg.title}` },
+      });
+    }
   }
   refresh();
   return { ok: true };
@@ -200,6 +211,7 @@ export async function setLearningCertificate(enrollmentId: string, input: { key:
   if (e.certificateKey && e.certificateKey !== input.key) await deleteObject(e.certificateKey);
   // First certificate: tell the learner it's ready.
   if (!e.certificateKey) {
+    await notify(e.userId, { kind: "CERTIFICATE", title: "Your certificate is ready", body: e.package.title, href: `/portal/courses/${e.package.id}` });
     await sendMail({ to: e.user.email, ...packageCertificateEmail({ name: e.user.name, packageTitle: e.package.title, packageId: e.package.id }) });
   }
   refresh();
@@ -227,7 +239,12 @@ export async function grantLearningPackage(userId: string, packageId: string): P
   ]);
   if (!user || user.role !== "CLIENT") return fail("Person not found.");
   if (!pkg) return fail("Course not found.");
+  const existing = await db.packageEnrollment.findUnique({ where: { userId_packageId: { userId, packageId } }, select: { id: true } });
   await db.packageEnrollment.upsert({ where: { userId_packageId: { userId, packageId } }, update: {}, create: { userId, packageId } });
+  if (!existing) {
+    const p = await db.learningPackage.findUnique({ where: { id: packageId }, select: { title: true } });
+    await notify(userId, { kind: "COURSE", title: `You now have the course ${p?.title ?? ""}`.trim(), body: "Start whenever you like, at your own pace.", href: `/portal/courses/${packageId}` });
+  }
   refresh();
   revalidatePath("/admin/clients", "layout");
   return { ok: true };

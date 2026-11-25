@@ -7,6 +7,7 @@ import { auth } from "@/lib/authz";
 import { Toaster } from "@/components/ui/sonner";
 import { PortalNav } from "@/components/portal/portal-nav";
 import { SignOutButton } from "@/components/portal/sign-out-button";
+import { NotificationBell } from "@/components/portal/notification-bell";
 import { TimezoneSync } from "@/components/timezone-sync";
 import { getAreas } from "@/lib/plans";
 import { db } from "@/lib/db";
@@ -27,6 +28,18 @@ async function Nav({ userId, variant }: { userId: string; variant: "top" | "bott
   return <PortalNav {...areas} newAnswers={newAnswers} newReplies={newReplies} variant={variant} />;
 }
 
+/** The bell with its unread number (streams in, like the menu). */
+async function Bell({ userId }: { userId: string }) {
+  // A problem here (e.g. the database out of reach) must never break the portal: show the bell without a number.
+  let unread = 0;
+  try {
+    unread = await db.notification.count({ where: { userId, readAt: null } });
+  } catch (e) {
+    console.error("Notification count failed:", e);
+  }
+  return <NotificationBell initialUnread={unread} />;
+}
+
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
   if (!session?.user) redirect("/login");
@@ -45,6 +58,11 @@ export default async function PortalLayout({ children }: { children: React.React
             {showNav && (
               <Suspense fallback={null}>
                 <Nav userId={session.user.id} variant="top" />
+              </Suspense>
+            )}
+            {showNav && (
+              <Suspense fallback={<span className="h-9 w-9" aria-hidden />}>
+                <Bell userId={session.user.id} />
               </Suspense>
             )}
             <span className="mx-1 hidden h-5 w-px bg-stone-200 md:block" aria-hidden />

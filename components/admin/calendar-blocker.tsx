@@ -241,8 +241,21 @@ export function CancelBookingButton({ id, name, when }: { id: string; name: stri
       disabled={pending}
       className="h-8 text-stone-500 hover:text-red-700"
       onClick={() => {
-        if (confirm(`Cancel ${name}'s booking on ${when}?\n\nThe time becomes free for others. This does not refund the payment: do that in Stripe, and let ${name} know.`))
-          run(() => cancelBooking(id), "Booking cancelled. The time is free again.");
+        if (
+          confirm(
+            `Cancel ${name}'s booking on ${when}?\n\nThe time becomes free for others, and ${name} gets an email saying the session is cancelled. If it was part of a package, the session goes back to them so they can book a new time.\n\nThis does not refund a payment: do that in Stripe if needed.`,
+          )
+        )
+          run(
+            () => cancelBooking(id),
+            undefined,
+            (r) => {
+              if (!r.ok) return;
+              const emailed = (r as { data?: { emailed: boolean } }).data?.emailed;
+              if (emailed) toast.success(`Booking cancelled. ${name} has been emailed.`);
+              else toast.warning(`Booking cancelled, but the email to ${name} couldn't be sent. Please let them know.`);
+            },
+          );
       }}
     >
       <Trash2 className="mr-1 h-4 w-4" /> Cancel

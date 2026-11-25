@@ -4,6 +4,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/authz";
 import { answerEmail, sendMail } from "@/lib/mail";
+import { notify } from "@/lib/notifications";
 import { fail, refreshAll, type ActionResult } from "./common";
 
 // Clients type questions about their work; Rangika answers them here.
@@ -22,6 +23,12 @@ export async function answerQuestion(id: string, answer: string, opts: { email?:
     where: { id },
     // A changed answer shows as new to the client again.
     data: { answer: parsed.data, answeredAt: q.answeredAt ?? new Date(), answerSeenAt: null },
+  });
+  await notify(q.userId, {
+    kind: "ANSWER",
+    title: firstAnswer ? "Rangika answered your question" : "Rangika updated her answer",
+    body: q.topic ?? (q.body.length > 90 ? `${q.body.slice(0, 87)}…` : q.body),
+    href: q.planId ? "/portal/sessions#questions" : (q.topicHref ?? "/portal/sessions#questions"),
   });
   let emailed = false;
   if ((opts.email ?? firstAnswer) && q.user.status !== "FINISHED") {

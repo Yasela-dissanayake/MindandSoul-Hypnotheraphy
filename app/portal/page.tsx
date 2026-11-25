@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Award, CheckCircle2, ClipboardList, GraduationCap, MessageCircleQuestion, NotebookPen } from "lucide-react";
+import { Award, CalendarPlus, CheckCircle2, ClipboardList, GraduationCap, MessageCircleQuestion, NotebookPen } from "lucide-react";
 import { requireClientPage } from "@/lib/authz";
 import { getToday } from "@/lib/plans";
 import { getStudentCourses } from "@/lib/material";
@@ -11,21 +11,37 @@ import { Progress } from "@/components/ui/progress";
 import { AskQuestion } from "@/components/portal/ask-question";
 import { db } from "@/lib/db";
 import { getLearnerPackages } from "@/lib/learning";
-import { ExploreServices } from "@/components/portal/explore-services";
+import { BookMore, ExploreServices } from "@/components/portal/explore-services";
 
 export default async function TodayPage() {
   const user = await requireClientPage();
-  const [{ today, tasks, trackers, prompt, tonightAudio, upcoming, hasPlans }, courses, enc, newAnswers, learning, newReplies] = await Promise.all([
+  const [{ today, tasks, trackers, prompt, tonightAudio, upcoming, hasPlans }, courses, enc, newAnswers, learning, newReplies, livePlans] = await Promise.all([
     getToday(user.id, user.timezone),
     getStudentCourses(user.id),
     getEncouragements(),
     db.question.count({ where: { userId: user.id, answeredAt: { not: null }, answerSeenAt: null } }),
     getLearnerPackages(user.id),
     db.journalEntry.count({ where: { userId: user.id, repliedAt: { not: null }, replySeenAt: null } }),
+    // Session plans with live sessions, to remind them of sessions still to book (e.g. after a cancellation).
+    db.plan.findMany({
+      where: { userId: user.id, completedAt: null, selfPaced: false, sessionServiceId: { not: null } },
+      select: {
+        id: true,
+        title: true,
+        totalSessions: true,
+        sessionService: { select: { published: true, enquiryOnly: true } },
+        bookings: { where: { status: "CONFIRMED", recorded: false }, select: { endsAt: true } },
+      },
+    }),
   ]);
+  const now = new Date();
+  // Sessions left to book and nothing coming up: invite them to choose a time.
+  const toBook = livePlans
+    .map((p) => ({ ...p, left: Math.max(0, (p.totalSessions ?? 0) - p.bookings.length), next: p.bookings.some((b) => b.endsAt > now) }))
+    .filter((p) => p.left > 0 && !p.next && p.sessionService?.published && !p.sessionService.enquiryOnly);
   const done = tasks.filter((t) => t.done).length;
   const firstName = user.name?.split(" ")[0];
-  const nothing = !hasPlans && courses.length === 0 && learning.length === 0;
+  const nothing = !hasPlans && livePlans.length === 0 && courses.length === 0 && learning.length === 0;
 
   return (
     <div className="space-y-6">
@@ -68,6 +84,18 @@ export default async function TodayPage() {
             {p.done} of {p.total} lessons done
           </p>
         </Link>
+      ))}
+
+      {toBook.map((p) => (
+        <div key={p.id} className="flex flex-wrap items-center gap-3 rounded-2xl bg-white p-4 ring-1 ring-sage-200">
+          <CalendarPlus className="h-5 w-5 shrink-0 text-sage-600" aria-hidden />
+          <p className="min-w-0 flex-1 text-stone-700">
+            You have <strong>{p.left}</strong> {p.title} session{p.left === 1 ? "" : "s"} left to book.
+          </p>
+          <Link href={`/portal/sessions/book?plan=${p.id}`} className="rounded-full bg-sage-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-sage-700">
+            Book a time
+          </Link>
+        </div>
       ))}
 
       {upcoming.map((u) => (
@@ -191,6 +219,9 @@ export default async function TodayPage() {
           </div>
         </div>
       </section>
+
+      {/* Clients who already have something: links to book or buy something else. */}
+      {!nothing && <BookMore />}
     </div>
   );
 }

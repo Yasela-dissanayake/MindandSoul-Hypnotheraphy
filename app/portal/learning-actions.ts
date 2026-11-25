@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { requireClient } from "@/lib/authz";
 import { getLearnerPackage } from "@/lib/learning";
 import { PRACTITIONER_EMAIL, packageFinishedEmail, sendMail } from "@/lib/mail";
+import { notifyAdmins } from "@/lib/notifications";
 
 type Result = { ok: true; data?: { nextLessonId: string | null; finished: boolean } } | { ok: false; error: string };
 
@@ -31,6 +32,12 @@ export async function completeLesson(packageId: string, lessonId: string): Promi
     // First time everything is done: mark it and let Rangika know a certificate is needed.
     const marked = await db.packageEnrollment.updateMany({ where: { id: lp.enrollment.id, completedAt: null }, data: { completedAt: new Date() } });
     if (marked.count === 1) {
+      await notifyAdmins({
+        kind: "COURSE_FINISHED",
+        title: `${user.name || user.email} finished ${lp.pkg.title}`,
+        body: "Upload their certificate when it's ready.",
+        href: `/admin/clients/${user.id}?tab=learning`,
+      });
       await sendMail({ to: PRACTITIONER_EMAIL, ...packageFinishedEmail({ name: user.name || user.email || "A learner", packageTitle: lp.pkg.title }) });
     }
   }

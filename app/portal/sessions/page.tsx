@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ClipboardList, Headphones, Video } from "lucide-react";
+import { BookMore } from "@/components/portal/explore-services";
 import { requireClientPage } from "@/lib/authz";
 import { db } from "@/lib/db";
 import { getSessionMaterial } from "@/lib/material";
@@ -245,6 +246,8 @@ export default async function SessionsPage() {
           timezone={user.timezone}
         />
       </section>
+
+      <BookMore />
     </div>
   );
 }

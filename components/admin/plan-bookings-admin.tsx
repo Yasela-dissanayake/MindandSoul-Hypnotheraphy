@@ -1,9 +1,10 @@
+import type React from "react";
 import { CalendarCheck, Globe, MapPin } from "lucide-react";
 
 type B = { id: string; startsAt: Date; endsAt: Date; mode: "IN_PERSON" | "DISTANCE"; credit: boolean; amount: number; currency: string };
 
-/** On the admin client page: this plan's booked sessions (Perth time) and how many are left to book. */
-export function PlanBookingsAdmin({ bookings, left, tz, online }: { bookings: B[]; left: number; tz: string; online: boolean }) {
+/** On the admin client page: this plan's booked sessions (in the viewer's own time) and how many are left to book. */
+export function PlanBookingsAdmin({ bookings, left, tz, online, book }: { bookings: B[]; left: number; tz: string; online: boolean; book?: React.ReactNode }) {
   if (!bookings.length && !left) return null;
   const now = new Date();
   const when = (d: Date) => d.toLocaleString("en-AU", { timeZone: tz, weekday: "short", day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" });
@@ -15,7 +16,7 @@ export function PlanBookingsAdmin({ bookings, left, tz, online }: { bookings: B[
         </p>
         {left > 0 && (
           <span className="text-sage-800">
-            {left} left to book{online ? " (the client books them from their portal)" : ""}
+            {left} left to book{online ? " (the client can book them from their portal, or you can book one for them)" : ""}
           </span>
         )}
       </div>
@@ -34,6 +35,7 @@ export function PlanBookingsAdmin({ bookings, left, tz, online }: { bookings: B[
           ))}
         </ul>
       )}
+      {left > 0 && book}
     </div>
   );
 }

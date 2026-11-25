@@ -4,6 +4,7 @@ import { getSettings } from "@/lib/settings";
 import { availableUsername } from "@/lib/accounts";
 import { generatePassword, hashPassword, sealForAdmin } from "@/lib/passwords";
 import { PRACTITIONER_EMAIL, packagePurchasedEmail, packageSoldEmail, sendMail } from "@/lib/mail";
+import { notifyAdmins } from "@/lib/notifications";
 import { resourceSelect } from "@/lib/material";
 import { stripe } from "@/lib/booking-payments";
 import { promoFor } from "@/lib/promotions";
@@ -249,6 +250,12 @@ async function completePurchase(purchaseId: string) {
   });
   await db.packagePurchase.update({ where: { id: purchase.id }, data: { userId: user.id, newAccount: Boolean(login) } });
 
+  await notifyAdmins({
+    kind: "COURSE_SALE",
+    title: `Course bought: ${purchase.name}`,
+    body: `${purchase.package.title} · ${purchase.amount === 0 ? "Free (promotion)" : money(purchase.amount, purchase.currency)}`,
+    href: "/admin/bookings?tab=learning",
+  });
   const [toLearner, toRangika] = await Promise.all([
     sendMail({ to: purchase.email, ...packagePurchasedEmail({ name: purchase.name, packageTitle: purchase.package.title, login }) }),
     sendMail({

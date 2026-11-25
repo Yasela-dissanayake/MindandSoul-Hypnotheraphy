@@ -8,6 +8,7 @@ import { promoFor } from "@/lib/promotions";
 import { classHref } from "@/lib/site-routes";
 import { classDatesInclude, formatClassTime, timeZoneName, upcomingClassTimes } from "@/lib/class-dates";
 import { isValidTimezone } from "@/lib/dates";
+import { notifyAdmins } from "@/lib/notifications";
 
 const tzOf = (tz?: string | null) => (tz && isValidTimezone(tz) ? tz : null);
 
@@ -188,6 +189,12 @@ async function completeCoursePurchase(purchaseId: string) {
   const seatsLeft = (await db.course.findUnique({ where: { id: purchase.courseId }, select: { seats: true } }))?.seats ?? null;
 
   const c = purchase.course;
+  await notifyAdmins({
+    kind: "CLASS_SALE",
+    title: `New Reiki Training enrollment: ${purchase.name}`,
+    body: `${c.title} · ${purchase.amount === 0 ? "Free (promotion)" : money(purchase.amount, purchase.currency)}${seatsLeft !== null ? ` · ${seatsLeft} seat${seatsLeft === 1 ? "" : "s"} left` : ""}`,
+    href: "/admin/bookings?tab=courses",
+  });
   const [toStudent, toRangika] = await Promise.all([
     sendMail({
       to: purchase.email,

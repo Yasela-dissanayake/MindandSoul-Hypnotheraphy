@@ -2,13 +2,13 @@ import { requireAdminPage } from "@/lib/authz";
 import { db } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { BOOKING_TZ, MODE_LABEL, blocksOn, busyWhere, daySlots, loadCalendar, time12 } from "@/lib/booking";
-import { addDays, formatDate, todayIn } from "@/lib/dates";
+import { addDays, hoursAhead, momentIn, todayIn, zoneCity } from "@/lib/dates";
+import { viewerTimezone } from "@/lib/viewer-tz";
 import { CalendarBlocker, CancelBookingButton, type DayInfo } from "@/components/admin/calendar-blocker";
-
-const longDay = (d: string) => formatDate(d, { weekday: "long", day: "numeric", month: "long" });
 
 export default async function CalendarPage() {
   await requireAdminPage();
+  const tz = await viewerTimezone();
   const today = todayIn(BOOKING_TZ);
   const lastDay = addDays(today, (await getSettings()).bookingDaysAhead);
 
@@ -39,15 +39,29 @@ export default async function CalendarPage() {
       <div>
         <h1 className="font-serif text-3xl text-stone-800">Calendar</h1>
         <p className="text-stone-500">
-          Pick a day, tap the session times you&apos;re not available, and save. People can&apos;t book those times on the website. All times
-          are Perth time.
+          Pick a day, tap the session times you&apos;re not available, and save. People can&apos;t book those times on the website. The session
+          times below are Perth time, because that&apos;s where your practice is.
         </p>
+        {tz !== BOOKING_TZ && (
+          <p className="mt-2 rounded-lg bg-gold-50 px-3 py-2 text-sm text-gold-800 ring-1 ring-gold-200">
+            You&apos;re in {zoneCity(tz)} time right now.{" "}
+            {(() => {
+              const h = hoursAhead(BOOKING_TZ, tz);
+              const n = Math.abs(h);
+              const hrs = `${n % 1 ? n : n.toFixed(0)} hour${n === 1 ? "" : "s"}`;
+              return h === 0 ? "That's the same as Perth time." : `Perth is ${hrs} ${h > 0 ? "ahead of" : "behind"} you.`;
+            })()}{" "}
+            The upcoming bookings list shows your own time.
+          </p>
+        )}
       </div>
 
       <CalendarBlocker today={today} lastDay={lastDay} days={days} />
 
       <section className="space-y-3">
-        <h2 className="font-serif text-xl text-stone-800">Upcoming bookings</h2>
+        <h2 className="font-serif text-xl text-stone-800">
+          Upcoming bookings <span className="text-sm font-normal text-stone-500">· your time ({zoneCity(tz)})</span>
+        </h2>
         {confirmed.length === 0 ? (
           <p className="rounded-xl bg-white p-5 text-stone-500 ring-1 ring-stone-200">No bookings yet.</p>
         ) : (
@@ -56,7 +70,8 @@ export default async function CalendarPage() {
               <div key={b.id} className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
                   <p className="font-medium text-stone-800">
-                    {longDay(b.date)} · {time12(b.start)} – {time12(b.end)}
+                    {momentIn(b.startsAt, tz).longDay} · {momentIn(b.startsAt, tz).time} – {momentIn(b.endsAt, tz).time}
+                    {tz !== BOOKING_TZ && <span className="ml-2 text-xs font-normal text-stone-500">({time12(b.start)} Perth time)</span>}
                   </p>
                   <p className="text-sm text-stone-600">
                     {b.clientName} · {b.service} · {MODE_LABEL[b.mode]}
@@ -75,7 +90,7 @@ export default async function CalendarPage() {
                     )}
                   </p>
                 </div>
-                <CancelBookingButton id={b.id} name={b.clientName} when={`${formatDate(b.date, { day: "numeric", month: "short" })} at ${time12(b.start)}`} />
+                <CancelBookingButton id={b.id} name={b.clientName} when={`${momentIn(b.startsAt, tz).day} at ${momentIn(b.startsAt, tz).time} (your time)`} />
               </div>
             ))}
           </div>

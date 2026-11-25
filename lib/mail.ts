@@ -423,6 +423,45 @@ function detailRows(rows: [string, string][]) {
     .join("")}</table>`;
 }
 
+/**
+ * To the client: Rangika cancelled their session. When sessions are left on their plan (the cancelled one
+ * goes back to them), they're invited to book a new time from their private space.
+ */
+export function sessionCancelledEmail(opts: { name: string; serviceTitle: string; when: string; sessionsLeft: number; canBookOnline: boolean }) {
+  const hello = `Hello ${opts.name},`;
+  const intro = `Your ${opts.serviceTitle} session has been cancelled. We're sorry for any inconvenience.`;
+  const rows: [string, string][] = [
+    ["Session", opts.serviceTitle],
+    ["Was booked for", opts.when],
+  ];
+  const n = opts.sessionsLeft;
+  const next =
+    n > 0
+      ? opts.canBookOnline
+        ? `The session isn't lost: you have ${n} session${n === 1 ? "" : "s"} left to book. Choose a new time whenever it suits you from your private space (My sessions → Book your next session).`
+        : `The session isn't lost: you have ${n} session${n === 1 ? "" : "s"} left. Rangika will be in touch to arrange a new time.`
+      : "If you'd like to book another session, you can do so on the website at any time.";
+  const url = n > 0 && opts.canBookOnline ? `${SITE_URL}/portal/sessions` : n > 0 ? `${SITE_URL}/login` : `${SITE_URL}/booking`;
+  const label = n > 0 && opts.canBookOnline ? "Book a new time" : n > 0 ? "Sign in" : "Book a session";
+  return {
+    subject: `Session cancelled: ${opts.serviceTitle}`,
+    html: layout(
+      `<p style="margin:0 0 16px">${escapeHtml(hello)}</p>${paragraphs(intro)}${detailRows(rows)}${paragraphs(next)}${button(url, label)}<p style="margin:0;color:#78716c;font-size:14px">Any questions? Simply reply to this email.</p>`,
+    ),
+    text: `${hello}
+
+${intro}
+
+${rows.map(([k, v]) => `${k}: ${v}`).join("\n")}
+
+${next}
+
+${label}: ${url}
+
+Any questions? Simply reply to this email.`,
+  };
+}
+
 /** To the client: their session is booked (and their login details if the account is new). */
 export function sessionBookedEmail(opts: SessionMail & { login?: { username: string; password: string } | null }) {
   const hello = `Hello ${opts.name},`;
