@@ -62,3 +62,9 @@ export async function syncMyTimezone(timezone: string): Promise<{ changed: boole
   }
   return { changed };
 }
+
+/** Signs out from the website's profile menu and goes back to the home page. */
+export async function signOutToHome() {
+  const { signOut } = await import("@/auth");
+  await signOut({ redirectTo: "/" });
+}

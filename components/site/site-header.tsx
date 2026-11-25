@@ -3,9 +3,15 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "@/components/mobile-nav";
 import { DesktopNavLinks } from "@/components/site/nav-links";
+import { AccountMenu } from "@/components/site/account-menu";
+import { getSiteViewer } from "@/lib/site-viewer";
 
-/** The website's top bar: logo, menu and "Book a Session". Used by the site layout and the 404 page. */
-export function SiteHeader() {
+/**
+ * The website's top bar: logo, menu and "Book a Session". Used by the site layout and the 404 page.
+ * Someone signed in sees their name with a menu (My space, My profile, Sign out) instead of "Client login".
+ */
+export async function SiteHeader() {
+  const viewer = await getSiteViewer();
   return (
     <header className="sticky top-0 z-50 border-b border-stone-200/80 bg-cream-50/90 backdrop-blur-sm">
       <div className="container mx-auto px-4 py-4">
@@ -21,7 +27,8 @@ export function SiteHeader() {
 
           {/* Desktop Navigation */}
           <nav className="hidden xl:flex items-center gap-5 2xl:gap-7 text-[15px]">
-            <DesktopNavLinks />
+            <DesktopNavLinks signedIn={Boolean(viewer)} />
+            {viewer && <AccountMenu viewer={viewer} />}
             <Link href="/booking">
               <Button className="bg-sage-600 hover:bg-sage-700 text-white">
                 Book a Session
@@ -30,7 +37,7 @@ export function SiteHeader() {
           </nav>
 
           {/* Mobile Navigation */}
-          <MobileNav />
+          <MobileNav viewer={viewer} />
         </div>
       </div>
     </header>

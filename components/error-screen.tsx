@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CloudOff, Loader2, RefreshCw, Sparkles, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { errorKind } from "@/lib/friendly-error";
+import { errorKind, fixedByReload, reloadOnce } from "@/lib/friendly-error";
 
 type Area = "site" | "portal" | "admin";
 
@@ -65,6 +65,8 @@ export function ErrorScreen({ error, reset, area = "site" }: { error: Error & { 
   useEffect(() => {
     // The details stay in the browser console for us; visitors only see the friendly message.
     console.error(error);
+    // The site was updated while this page was open: a fresh load fixes it, so do that quietly once.
+    if (fixedByReload(error) && reloadOnce()) return;
     setOnline(navigator.onLine);
     const goOnline = () => {
       setOnline(true);

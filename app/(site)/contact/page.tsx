@@ -1,5 +1,6 @@
 "use client";
 
+import { useClientViewer } from "@/components/site/viewer-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +25,7 @@ import { friendlyError } from "@/lib/friendly-error";
 
 
 export default function ContactPage() {
+  const me = useClientViewer(); // signed in: their details are filled in
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [topics, setTopics] = useState(ENQUIRY_TOPICS);
@@ -296,6 +298,7 @@ export default function ContactPage() {
                               type="text"
                               required
                               name="firstName"
+                              defaultValue={me?.firstName ?? undefined}
                               className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                               placeholder="Your first name"
                             />
@@ -308,6 +311,7 @@ export default function ContactPage() {
                               type="text"
                               required
                               name="lastName"
+                              defaultValue={me?.lastName ?? undefined}
                               className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                               placeholder="Your last name"
                             />
@@ -322,6 +326,7 @@ export default function ContactPage() {
                             type="email"
                             required
                             name="email"
+                            defaultValue={me?.email ?? undefined}
                             className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                             placeholder="your.email@example.com"
                           />
@@ -335,6 +340,7 @@ export default function ContactPage() {
                             type="tel"
                             required
                             name="phone"
+                            defaultValue={me?.phone ?? undefined}
                             className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                             placeholder="+61 xxx xxx xxx"
                           />
@@ -423,6 +429,7 @@ export default function ContactPage() {
                               type="text"
                               required
                               name="name"
+                              defaultValue={me?.name ?? undefined}
                               className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                               placeholder="Your name"
                             />
@@ -435,6 +442,7 @@ export default function ContactPage() {
                               type="email"
                               required
                               name="email"
+                              defaultValue={me?.email ?? undefined}
                               className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                               placeholder="your.email@example.com"
                             />

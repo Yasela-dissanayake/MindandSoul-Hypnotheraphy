@@ -116,6 +116,30 @@ export async function updatePlan(
   return { ok: true };
 }
 
+const zoomSchema = z.string().trim().max(500).refine((v) => v === "" || /^https:\/\/\S+$/i.test(v), "The Zoom link should start with https://");
+
+/** Sets, changes or removes the Zoom link on a client's plan (shown on their My sessions page). */
+export async function setMeetingLink(planId: string, link: string): Promise<ActionResult> {
+  await requireAdmin();
+  const parsed = zoomSchema.safeParse(link);
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Please check the link.");
+  const plan = await db.plan.findUnique({ where: { id: planId }, select: { userId: true, title: true, meetingLink: true } });
+  if (!plan) return fail("Plan not found.");
+  const next = parsed.data || null;
+  if (next === plan.meetingLink) return { ok: true };
+  await db.plan.update({ where: { id: planId }, data: { meetingLink: next } });
+  if (plan.userId && next) {
+    await notify(plan.userId, {
+      kind: "ZOOM_LINK",
+      title: plan.meetingLink ? "Your session link has changed" : "Your session link is ready",
+      body: `For ${plan.title}. Open My sessions to join.`,
+      href: "/portal/sessions",
+    });
+  }
+  refreshAll();
+  return { ok: true };
+}
+
 export async function setPlanCompleted(planId: string, completed: boolean): Promise<ActionResult> {
   await requireAdmin();
   await db.plan.update({ where: { id: planId }, data: { completedAt: completed ? new Date() : null } });

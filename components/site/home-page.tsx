@@ -1,5 +1,6 @@
 "use client";
 
+import { useClientViewer } from "@/components/site/viewer-context";
 import { useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 
@@ -31,6 +32,7 @@ import { friendlyError } from "@/lib/friendly-error";
 
 /** The home page. `promotion` = the promotion running now (shown as a pop-up and as the 3rd section), if any. */
 export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
+  const me = useClientViewer(); // signed in: their details are filled in
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (
@@ -512,6 +514,7 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
                           type="text"
                           required
                           name="firstName"
+                          defaultValue={me?.firstName ?? undefined}
                           className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                           placeholder="Your first name"
                         />
@@ -524,6 +527,7 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
                           type="text"
                           required
                           name="lastName"
+                          defaultValue={me?.lastName ?? undefined}
                           className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                           placeholder="Your last name"
                         />
@@ -538,6 +542,7 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
                         type="email"
                         required
                         name="email"
+                        defaultValue={me?.email ?? undefined}
                         className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                         placeholder="your.email@example.com"
                       />
@@ -551,6 +556,7 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
                         type="tel"
                         required
                         name="phone"
+                        defaultValue={me?.phone ?? undefined}
                         className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500"
                         placeholder="+61 xxx xxx xxx"
                       />

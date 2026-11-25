@@ -13,6 +13,7 @@ import { PaymentDialog, type PaymentState } from "@/components/payment-dialog";
 import { SlotPicker, myTz, type Slot } from "@/components/booking/slot-picker";
 import { cn } from "@/lib/utils";
 import { friendlyError } from "@/lib/friendly-error";
+import { useClientViewer } from "@/components/site/viewer-context";
 
 // The booking page: pick a session (single or package) → in person or online → a time → your details → pay.
 // (Self-paced recorded journeys are the pre-built Courses, not booked here.)
@@ -319,7 +320,18 @@ function SlotText({ slot }: { slot: Slot }) {
 function DetailsAndPay({ service, option, mode, slot, onSlotTaken }: { service: BookingService; option: BookingOption; mode: Mode; slot: Slot; onSlotTaken: () => void }) {
   const stripe = useStripe();
   const elements = useElements();
-  const [f, setF] = useState({ firstName: "", lastName: "", email: "", phone: "", concerns: "", previousTherapy: "", medicalConditions: "" });
+  // Signed in: their name, email and phone are filled in (the email stays theirs, so the booking lands in their account).
+  const me = useClientViewer();
+  const [f, setF] = useState({
+    firstName: me?.firstName ?? "",
+    lastName: me?.lastName ?? "",
+    email: me?.email ?? "",
+    phone: me?.phone ?? "",
+    concerns: "",
+    previousTherapy: "",
+    medicalConditions: "",
+  });
+  const goTo = me ? { href: "/portal/sessions", label: "Open my space" } : { href: "/login?bought=1", label: "Sign in" };
   const [agreed, setAgreed] = useState(false);
   const [dialog, setDialog] = useState<PaymentState>(null);
   const [slotTaken, setSlotTaken] = useState(false);
@@ -359,15 +371,17 @@ function DetailsAndPay({ service, option, mode, slot, onSlotTaken }: { service: 
               </p>
               <p className="mt-2">
                 We&apos;ve emailed the details to {f.email}.{" "}
-                {start.newAccount
-                  ? "Your private space is ready: sign in with the username and password in that email."
-                  : "You'll find it in your private space when you sign in."}
+                {me
+                  ? "It's in your private space now."
+                  : start.newAccount
+                    ? "Your private space is ready: sign in with the username and password in that email."
+                    : "You'll find it in your private space when you sign in."}
               </p>
             </>
           ),
           action: (
             <Button asChild className="w-full bg-sage-600 hover:bg-sage-700">
-              <Link href="/login?bought=1">Sign in</Link>
+              <Link href={goTo.href}>{goTo.label}</Link>
             </Button>
           ),
         });
@@ -395,14 +409,18 @@ function DetailsAndPay({ service, option, mode, slot, onSlotTaken }: { service: 
               <SlotText slot={slot} /> · {MODE_TEXT[mode].title}
             </p>
             <p className="mt-2">
-              We&apos;ve emailed the details to {f.email}. Your private space is ready: sign in with the username and password in that email
-              {option.sessions > 1 ? ` to book your other ${option.sessions - 1} session${option.sessions - 1 === 1 ? "" : "s"} whenever it suits you` : ""}.
+              We&apos;ve emailed the details to {f.email}.{" "}
+              {me ? "It's in your private space now" : "Your private space is ready: sign in with the username and password in that email"}
+              {option.sessions > 1
+                ? `${me ? ", where you can book" : " to book"} your other ${option.sessions - 1} session${option.sessions - 1 === 1 ? "" : "s"} whenever it suits you`
+                : ""}
+              .
             </p>
           </>
         ),
         action: (
           <Button asChild className="w-full bg-sage-600 hover:bg-sage-700">
-            <Link href="/login?bought=1">Sign in</Link>
+            <Link href={goTo.href}>{goTo.label}</Link>
           </Button>
         ),
       });
@@ -424,8 +442,27 @@ function DetailsAndPay({ service, option, mode, slot, onSlotTaken }: { service: 
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="bk-email">Email</Label>
-          <Input id="bk-email" required type="email" maxLength={200} autoComplete="email" value={f.email} onChange={set("email")} />
-          <p className="text-xs text-stone-500">Your confirmation and login details are sent here.</p>
+          <Input
+            id="bk-email"
+            required
+            type="email"
+            maxLength={200}
+            autoComplete="email"
+            value={f.email}
+            onChange={set("email")}
+            readOnly={Boolean(me)}
+            className={cn(me && "bg-stone-50 text-stone-600")}
+          />
+          {me ? (
+            <p className="text-xs text-stone-500">
+              You&apos;re signed in, so this booking goes to your account.{" "}
+              <Link href="/portal/profile" className="text-sage-700 underline">
+                Change your details
+              </Link>
+            </p>
+          ) : (
+            <p className="text-xs text-stone-500">Your confirmation and login details are sent here.</p>
+          )}
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="bk-phone">Phone</Label>

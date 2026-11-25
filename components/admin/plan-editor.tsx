@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { navigateTo } from "@/components/navigation-progress";
-import { ArrowDown, ArrowUp, Pause, Pencil, Play, Plus, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Pause, Pencil, Play, Plus, Trash2, Video, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,6 +27,7 @@ import {
   savePrompt,
   saveTask,
   saveTracker,
+  setMeetingLink,
   setPlanCompleted,
   setTaskPaused,
   setTrackerActive,
@@ -126,23 +127,7 @@ export function PlanDetails({ plan, services }: { plan: EditorPlan; services?: {
           </div>
         </div>
         {plan.description && <p className="whitespace-pre-line text-sm text-stone-600">{plan.description}</p>}
-        {!isTemplate &&
-          (plan.meetingLink ? (
-            <p className="text-sm text-stone-600">
-              Zoom link:{" "}
-              <a href={plan.meetingLink} target="_blank" rel="noreferrer" className="break-all text-sage-700 underline">
-                {plan.meetingLink}
-              </a>
-            </p>
-          ) : (
-            <p className="text-sm text-amber-700">
-              No Zoom link yet.{" "}
-              <button suppressHydrationWarning type="button" className="underline" onClick={() => setEditing(true)}>
-                Add one
-              </button>{" "}
-              so it shows on their page.
-            </p>
-          ))}
+        {!isTemplate && <ZoomLink planId={plan.id} link={plan.meetingLink} />}
         {plan.clientNote && (
           <p className="rounded-lg bg-sage-50 p-3 text-sm text-stone-700">
             <span className="font-medium">Note to client: </span>
@@ -799,5 +784,82 @@ export function TrackersEditor({ plan }: { plan: EditorPlan }) {
         </DialogContent>
       </Dialog>
     </Section>
+  );
+}
+
+/** The client's Zoom link: shown with "Change" and "Remove", or "Add one" when there isn't one yet. Edited right here. */
+function ZoomLink({ planId, link }: { planId: string; link: string | null }) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(link ?? "");
+  const { pending, run } = useAction();
+  const save = (v: string) => run(() => setMeetingLink(planId, v), v ? "Zoom link saved. The client has been notified." : "Zoom link removed", (r) => r.ok && setEditing(false));
+
+  if (editing) {
+    return (
+      <form
+        className="flex flex-col gap-2 rounded-xl bg-sage-50 p-3 ring-1 ring-sage-200 sm:flex-row sm:items-center"
+        onSubmit={(e) => {
+          e.preventDefault();
+          save(value.trim());
+        }}
+      >
+        <Video className="hidden h-4 w-4 shrink-0 text-sage-700 sm:block" aria-hidden />
+        <Input
+          autoFocus
+          type="url"
+          inputMode="url"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder="Paste the Zoom link, e.g. https://zoom.us/j/123456789"
+          className="flex-1 bg-white"
+          aria-label="Zoom link"
+        />
+        <div className="flex gap-2">
+          <Button type="submit" size="sm" disabled={pending || !value.trim()} className="bg-sage-600 hover:bg-sage-700">
+            Save
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={() => {
+              setValue(link ?? "");
+              setEditing(false);
+            }}
+          >
+            Cancel
+          </Button>
+        </div>
+      </form>
+    );
+  }
+  if (!link) {
+    return (
+      <p className="flex flex-wrap items-center gap-2 text-sm text-amber-700">
+        <Video className="h-4 w-4" aria-hidden /> No Zoom link yet.
+        <Button size="sm" variant="outline" className="h-8 border-amber-300 text-amber-800 hover:bg-amber-50" onClick={() => setEditing(true)}>
+          Add Zoom link
+        </Button>
+      </p>
+    );
+  }
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-sm text-stone-600">
+      <Video className="h-4 w-4 text-sage-600" aria-hidden />
+      <span>Zoom link:</span>
+      <a href={link} target="_blank" rel="noreferrer" className="min-w-0 break-all text-sage-700 underline">
+        {link}
+      </a>
+      <Button size="sm" variant="outline" className="h-8" onClick={() => (setValue(link), setEditing(true))}>
+        <Pencil className="mr-1.5 h-3.5 w-3.5" aria-hidden /> Change
+      </Button>
+      <ConfirmButton
+        label="Remove"
+        title="Remove the Zoom link?"
+        description="The client won't see a Zoom link on their page until you add a new one."
+        confirmLabel="Remove"
+        onConfirm={() => save("")}
+      />
+    </div>
   );
 }

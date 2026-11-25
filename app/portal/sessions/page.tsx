@@ -100,18 +100,40 @@ export default async function SessionsPage() {
 
             {!plan.completedAt && bookingsFor(plan.id) && <PlanBookings planId={plan.id} timezone={user.timezone} {...bookingsFor(plan.id)!} />}
 
-            {plan.meetingLink && !plan.completedAt && (
-              <a
-                href={plan.meetingLink}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-3 rounded-xl bg-sage-600 px-4 py-3 text-white hover:bg-sage-700"
-              >
-                <Video className="h-5 w-5" />
-                <span className="flex-1 font-medium">Join your session on Zoom</span>
-                <span className="text-sm opacity-80">Open →</span>
-              </a>
-            )}
+            {plan.meetingLink && !plan.completedAt && (() => {
+              // The Zoom link: a clear card with a big button, and when their next session is.
+              const next = bookingsFor(plan.id)?.upcoming.find((b) => b.mode === "DISTANCE") ?? bookingsFor(plan.id)?.upcoming[0];
+              const when = next
+                ? `${next.startsAt.toLocaleDateString("en-AU", { timeZone: user.timezone, weekday: "long", day: "numeric", month: "long" })}, ${next.startsAt.toLocaleTimeString("en-AU", { timeZone: user.timezone, hour: "numeric", minute: "2-digit" })}`
+                : null;
+              return (
+                <div className="flex flex-col gap-4 rounded-xl bg-white p-4 ring-1 ring-sage-200 sm:flex-row sm:items-center sm:p-5">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-sage-100 text-sage-700">
+                    <Video className="h-6 w-6" aria-hidden />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-stone-800">Your online session on Zoom</p>
+                    <p className="text-sm text-stone-600">
+                      {when ? (
+                        <>
+                          Next session: <span className="font-medium text-stone-800">{when}</span>. Join a few minutes early.
+                        </>
+                      ) : (
+                        "Use this link to join Rangika at your session time."
+                      )}
+                    </p>
+                  </div>
+                  <a
+                    href={plan.meetingLink!}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-sage-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-sage-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage-500 focus-visible:ring-offset-2"
+                  >
+                    <Video className="h-4 w-4" aria-hidden /> Click here to join Zoom session
+                  </a>
+                </div>
+              );
+            })()}
 
             {plan.clientNote && (
               <div className="rounded-xl bg-sage-50 p-4">

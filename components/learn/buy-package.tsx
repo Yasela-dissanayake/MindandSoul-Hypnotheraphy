@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PaymentDialog, type PaymentState } from "@/components/payment-dialog";
 import { friendlyError } from "@/lib/friendly-error";
+import { useClientViewer } from "@/components/site/viewer-context";
+import { cn } from "@/lib/utils";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "");
 
@@ -46,9 +48,12 @@ function BuyForm({
 }: { packageId: string; title: string; priceLabel: string; kind: Kind; onDone: (d: Done) => void } & ClassOptions) {
   const stripe = useStripe();
   const elements = useElements();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  // Signed in: their details are filled in (the email stays theirs, so the purchase lands in their account).
+  const me = useClientViewer();
+  const [name, setName] = useState(me?.name ?? "");
+  const [email, setEmail] = useState(me?.email ?? "");
+  const [phone, setPhone] = useState(me?.phone ?? "");
+  const mySpace = kind === "course" ? "/portal/classes" : "/portal/courses";
   const [agreed, setAgreed] = useState(false);
   const [prereqDone, setPrereqDone] = useState(false);
   const [dialog, setDialog] = useState<PaymentState>(null);
@@ -104,10 +109,10 @@ function BuyForm({
             status: "error",
             title: kind === "course" ? "You're already enrolled" : "You already have this course",
             message: start.error,
-            hint: "You have not been charged again. Sign in with the username and password we emailed you when you first bought it.",
+            hint: me ? "You have not been charged again. It's already in your private space." : "You have not been charged again. Sign in with the username and password we emailed you when you first bought it.",
             action: (
               <Button asChild className="w-full bg-sage-600 hover:bg-sage-700">
-                <Link href="/login">Sign in</Link>
+                <Link href={me ? mySpace : "/login"}>{me ? "Open my space" : "Sign in"}</Link>
               </Button>
             ),
           });
@@ -131,7 +136,7 @@ function BuyForm({
           ),
           action: (
             <Button asChild className="w-full bg-sage-600 hover:bg-sage-700">
-              <Link href="/login?bought=1">Sign in</Link>
+              <Link href={me ? mySpace : "/login?bought=1"}>{me ? "Open my space" : "Sign in"}</Link>
             </Button>
           ),
         });
@@ -170,7 +175,7 @@ function BuyForm({
         ),
         action: (
           <Button asChild className="w-full bg-sage-600 hover:bg-sage-700">
-            <Link href="/login?bought=1">Sign in</Link>
+            <Link href={me ? mySpace : "/login?bought=1"}>{me ? "Open my space" : "Sign in"}</Link>
           </Button>
         ),
       });
@@ -187,8 +192,18 @@ function BuyForm({
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="buy-email">Email</Label>
-        <Input id="buy-email" required type="email" maxLength={200} autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <p className="text-xs text-stone-500">Your login details are sent here.</p>
+        <Input
+          id="buy-email"
+          required
+          type="email"
+          maxLength={200}
+          autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          readOnly={Boolean(me)}
+          className={cn(me && "bg-stone-50 text-stone-600")}
+        />
+        <p className="text-xs text-stone-500">{me ? "You're signed in, so this goes to your account." : "Your login details are sent here."}</p>
       </div>
       {kind === "course" && (
         <div className="space-y-1.5">
@@ -248,6 +263,7 @@ function BuyForm({
 
 export function BuyPackage({ kind = "package", ...props }: { packageId: string; title: string; priceLabel: string; kind?: Kind } & ClassOptions) {
   const [done, setDone] = useState<Done | null>(null);
+  const me = useClientViewer();
 
   if (done) {
     return (
@@ -257,7 +273,7 @@ export function BuyPackage({ kind = "package", ...props }: { packageId: string; 
         </p>
         <p className="text-sm">{doneMessage(kind, done)}</p>
         <Button asChild className="w-full bg-sage-600 hover:bg-sage-700">
-          <Link href="/login?bought=1">Sign in</Link>
+          <Link href={me ? (kind === "course" ? "/portal/classes" : "/portal/courses") : "/login?bought=1"}>{me ? "Open my space" : "Sign in"}</Link>
         </Button>
       </div>
     );

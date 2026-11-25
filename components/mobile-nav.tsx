@@ -6,14 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Leaf } from "lucide-react";
 import Image from "next/image";
-import { SITE_NAV, useIsActive, useIsItemActive } from "@/components/site/nav-links";
+import { navFor, useIsActive, useIsItemActive } from "@/components/site/nav-links";
+import { Avatar, SignOutItem, accountLinks } from "@/components/site/account-menu";
+import type { SiteViewer } from "@/lib/site-viewer";
 
-export function MobileNav() {
+export function MobileNav({ viewer = null }: { viewer?: SiteViewer | null }) {
   const [open, setOpen] = useState(false);
   const isActive = useIsActive();
   const isItemActive = useIsItemActive();
 
-  const navItems = [{ href: "/", label: "Home" }, ...SITE_NAV];
+  const navItems = [{ href: "/", label: "Home" }, ...navFor(Boolean(viewer))];
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -40,8 +42,32 @@ export function MobileNav() {
             </Link>
           </div>
 
+          {/* Signed in: who they are, their space and profile, and Sign out */}
+          {viewer && (
+            <div className="mt-5 shrink-0 space-y-1 rounded-2xl bg-sage-50 p-3 ring-1 ring-sage-200">
+              <div className="flex items-center gap-3 px-1 pb-2">
+                <Avatar viewer={viewer} size={40} />
+                <div className="min-w-0">
+                  <p className="truncate font-medium text-stone-800">{viewer.name || viewer.firstName || "Signed in"}</p>
+                  <p className="truncate text-xs text-stone-500">{viewer.email}</p>
+                </div>
+              </div>
+              {accountLinks(viewer).map((l) => (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-base text-stone-700 transition hover:bg-white hover:text-sage-800"
+                >
+                  <l.icon className="h-4 w-4 text-sage-600" aria-hidden /> {l.label}
+                </Link>
+              ))}
+              <SignOutItem className="h-auto py-2.5 text-base hover:bg-white" />
+            </div>
+          )}
+
           {/* Navigation Links */}
-          <nav className="mt-6 flex flex-col space-y-1 overflow-y-auto">
+          <nav className="mt-6 flex shrink-0 flex-col space-y-1">
             {navItems.map((item) =>
               item.children ? (
                 <div key={item.href} className="space-y-1">

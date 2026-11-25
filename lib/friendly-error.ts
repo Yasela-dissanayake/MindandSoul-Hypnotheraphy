@@ -27,6 +27,33 @@ export function errorKind(e: unknown): "offline" | "network" | "updated" | "othe
   return "other";
 }
 
+/**
+ * Errors a fresh page load fixes: the website was updated while the page was open (its scripts changed),
+ * or the page's HTML and scripts didn't match (hydration).
+ */
+export function fixedByReload(e: unknown): boolean {
+  if (errorKind(e) === "updated") return true;
+  const msg = e instanceof Error ? `${e.name} ${e.message}` : String(e ?? "");
+  return /hydrat|did not match|server rendered HTML|text content does not match|Minified React error #(418|419|421|422|423|425)/i.test(msg);
+}
+
+/**
+ * Reloads the page once to recover quietly. At most once a minute per tab, so a problem a reload
+ * doesn't fix can never turn into a reload loop. Returns false when it didn't reload.
+ */
+export function reloadOnce(): boolean {
+  try {
+    const key = "msw-auto-reload";
+    const last = Number(sessionStorage.getItem(key) || 0);
+    if (Date.now() - last < 60_000) return false;
+    sessionStorage.setItem(key, String(Date.now()));
+  } catch {
+    return false; // no storage (private mode): don't risk a loop
+  }
+  window.location.reload();
+  return true;
+}
+
 /** A message that's safe and helpful to show to anyone. `fallback` is used for unexpected technical errors. */
 export function friendlyError(e: unknown, fallback = GENERIC_MESSAGE): string {
   const kind = errorKind(e);

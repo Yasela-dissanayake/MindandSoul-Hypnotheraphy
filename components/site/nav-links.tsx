@@ -57,13 +57,16 @@ const linkClass = (active: boolean) =>
     active ? "font-medium text-sage-700 after:scale-x-100" : "text-stone-600 after:scale-x-0 hover:text-sage-600 hover:after:scale-x-100",
   );
 
+/** The menu items, without "Client login" for someone who is already signed in. */
+export const navFor = (signedIn: boolean) => (signedIn ? SITE_NAV.filter((i) => i.href !== "/login") : SITE_NAV);
+
 /** Top-bar links: the current page is green with a short green underline. */
-export function DesktopNavLinks() {
+export function DesktopNavLinks({ signedIn = false }: { signedIn?: boolean }) {
   const isActive = useIsActive();
   const isItemActive = useIsItemActive();
   return (
     <>
-      {SITE_NAV.map((item) =>
+      {navFor(signedIn).map((item) =>
         item.children ? (
           <NavDropdown key={item.href} item={item} active={isItemActive(item)} />
         ) : (
