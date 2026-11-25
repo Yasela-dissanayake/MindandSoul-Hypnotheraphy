@@ -423,15 +423,30 @@ type TaskForm = {
   recurrence: "ONCE" | "DAILY";
   fromWeek: number;
   toWeek: string; // "" = keeps going
+  // A client's plan: real dates instead of weeks.
+  fromDate: string;
+  toDate: string; // "" = keeps going
   paused: boolean;
 };
+
+/** Today's date on this device (YYYY-MM-DD). */
+const todayHere = () => new Date().toLocaleDateString("en-CA");
 
 export function TasksEditor({ plan, library }: { plan: EditorPlan; library: LibraryOption[] }) {
   const { pending, run } = useAction();
   const [form, setForm] = useState<TaskForm | null>(null);
   const linkable = library.filter((r) => !r.personalForUserId || r.personalForUserId === plan.userId);
+  // A client's plan is scheduled by date; a ready-made package (no client yet) by week.
+  const byDate = Boolean(plan.userId);
+  const dayDate = (day: number) => (plan.startDate ? dateOfDay(plan.startDate, day) : todayHere());
+  const short = (d: string) => formatDate(d, { weekday: "short", day: "numeric", month: "short" });
 
   const describe = (t: EditorPlan["tasks"][number]) => {
+    if (byDate && plan.startDate) {
+      const from = short(dayDate(t.startDay));
+      if (t.recurrence === "ONCE") return `Once, from ${from}`;
+      return t.endDay ? `Every day, ${from} – ${short(dayDate(t.endDay))}` : `Every day from ${from}`;
+    }
     const from = weekOf(t.startDay);
     if (t.recurrence === "ONCE") return `Once, in week ${from}`;
     if (t.endDay) {
@@ -441,12 +456,29 @@ export function TasksEditor({ plan, library }: { plan: EditorPlan; library: Libr
     return `Every day from week ${from}`;
   };
 
-  const blankForm = (): TaskForm => ({ title: "", instructions: "", resourceId: "", moduleId: "", recurrence: "DAILY", fromWeek: 1, toWeek: "1", paused: false });
+  const blankForm = (): TaskForm => ({
+    title: "",
+    instructions: "",
+    resourceId: "",
+    moduleId: "",
+    recurrence: "DAILY",
+    fromWeek: 1,
+    toWeek: "1",
+    fromDate: todayHere(),
+    toDate: "",
+    paused: false,
+  });
 
   return (
     <Section
       title="Exercises & tasks"
-      hint={plan.startDate ? `Week 1 started ${formatDate(plan.startDate, { day: "numeric", month: "long" })}. Clients tick tasks off each day.` : "Weeks count from the day the client's plan starts."}
+      hint={
+        byDate
+          ? "Choose the day each task starts. The client sees it in their portal from that day and ticks it off."
+          : plan.startDate
+            ? `Week 1 started ${formatDate(plan.startDate, { day: "numeric", month: "long" })}. Clients tick tasks off each day.`
+            : "Weeks count from the day the client's plan starts."
+      }
       action={
         <Button size="sm" variant="outline" onClick={() => setForm(blankForm())}>
           <Plus className="mr-1 h-3.5 w-3.5" /> Add task
@@ -483,6 +515,8 @@ export function TasksEditor({ plan, library }: { plan: EditorPlan; library: Libr
                   recurrence: t.recurrence,
                   fromWeek: weekOf(t.startDay),
                   toWeek: t.endDay ? String(weekOf(t.endDay)) : "",
+                  fromDate: dayDate(t.startDay),
+                  toDate: t.endDay ? dayDate(t.endDay) : "",
                   paused: t.paused,
                 })
               }
@@ -546,6 +580,28 @@ export function TasksEditor({ plan, library }: { plan: EditorPlan; library: Libr
                   </button>
                 ))}
               </div>
+              {byDate ? (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="task-from">Starts on</Label>
+                    <Input id="task-from" type="date" required value={form.fromDate} onChange={(e) => setForm({ ...form, fromDate: e.target.value })} />
+                    <p className="text-xs text-stone-500">
+                      {form.fromDate && plan.startDate && form.fromDate < plan.startDate
+                        ? `Before their plan's start (${short(plan.startDate)}): the plan will start on this day instead.`
+                        : form.recurrence === "ONCE"
+                          ? "They see it from this day until they tick it off."
+                          : "They see it from this day."}
+                    </p>
+                  </div>
+                  {form.recurrence === "DAILY" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="task-to">Until (optional)</Label>
+                      <Input id="task-to" type="date" min={form.fromDate} value={form.toDate} onChange={(e) => setForm({ ...form, toDate: e.target.value })} />
+                      <p className="text-xs text-stone-500">Leave empty to keep going.</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label>{form.recurrence === "DAILY" ? "From week" : "In week"}</Label>
@@ -560,9 +616,10 @@ export function TasksEditor({ plan, library }: { plan: EditorPlan; library: Libr
                   </div>
                 )}
               </div>
+              )}
               <Button
                 className="h-11 w-full bg-sage-600 hover:bg-sage-700"
-                disabled={pending || !form.title.trim()}
+                disabled={pending || !form.title.trim() || (byDate && !form.fromDate)}
                 onClick={() =>
                   run(
                     () =>
@@ -576,6 +633,7 @@ export function TasksEditor({ plan, library }: { plan: EditorPlan; library: Libr
                         startDay: weekStart(form.fromWeek),
                         endDay: form.recurrence === "DAILY" && form.toWeek ? weekEnd(Math.max(form.fromWeek, Number(form.toWeek))) : null,
                         paused: form.paused,
+                        ...(byDate ? { startDate: form.fromDate, endDate: form.recurrence === "DAILY" && form.toDate ? form.toDate : null } : {}),
                       }),
                     "Task saved",
                     (r) => r.ok && setForm(null),

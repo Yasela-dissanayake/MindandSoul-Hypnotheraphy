@@ -10,6 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { AddPersonDialog } from "@/components/admin/add-person-dialog";
 import { EnrollExistingPerson } from "@/components/admin/enroll-existing-person";
 import { NewCourseDialog } from "@/components/admin/new-course-dialog";
+import { DeleteClassButton } from "@/components/admin/course-editor";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { viewerTimezone } from "@/lib/viewer-tz";
 import { formatPrice } from "@/lib/currency";
@@ -28,8 +29,9 @@ export default async function CoursesPage({ searchParams }: { searchParams: Prom
     db.course.findMany({
       orderBy: [{ archived: "asc" }, { order: "asc" }, { title: "asc" }],
       include: {
-        _count: { select: { modules: true, items: true } },
+        _count: { select: { modules: true, items: true, enrollments: true, purchases: { where: { status: "PAID" } } } },
         includes: { select: { title: true }, orderBy: { order: "asc" } },
+        includedIn: { select: { title: true }, orderBy: { order: "asc" } },
         enrollments: {
           where: { user: { status: { not: "FINISHED" } } },
           orderBy: { startedAt: "desc" },
@@ -138,41 +140,54 @@ export default async function CoursesPage({ searchParams }: { searchParams: Prom
           {courses.map((c) => {
             const active = c.enrollments.filter((e) => !e.completedAt).length;
             return (
-              <Link key={c.id} href={`/admin/classes/${c.id}`} className="flex items-start gap-3 rounded-xl bg-white p-4 ring-1 ring-stone-200 transition hover:ring-sage-300">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sage-50 text-sage-600">
-                  {c.includes.length ? <Layers className="h-4 w-4" /> : <GraduationCap className="h-4 w-4" />}
-                </div>
-                <div className="min-w-0 flex-1 space-y-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-medium text-stone-800">{c.title}</p>
-                    {newPerCourse(c.id) > 0 && (
-                      <span className="rounded bg-sage-600 px-1.5 py-0.5 text-[11px] font-semibold text-white">{newPerCourse(c.id)} new</span>
-                    )}
-                    {c.archived && <Badge variant="secondary">Hidden</Badge>}
-                    {c.published && !c.archived ? (
-                      <Badge className="bg-sage-100 font-normal text-sage-800 hover:bg-sage-100">
-                        On website · {formatPrice(c.price, "aud")}
-                        {c.priceAed ? ` / ${formatPrice(c.priceAed, "aed")}` : ""}
-                        {c.seats !== null ? ` · ${c.seats} place${c.seats === 1 ? "" : "s"} left` : ""}
-                      </Badge>
-                    ) : (
-                      !c.archived && (
-                        <Badge variant="outline" className="font-normal text-stone-500">
-                          Not on website
+              <div key={c.id} className="relative">
+                <Link href={`/admin/classes/${c.id}`} className="flex h-full items-start gap-3 rounded-xl bg-white p-4 pr-14 ring-1 ring-stone-200 transition hover:ring-sage-300">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sage-50 text-sage-600">
+                    {c.includes.length ? <Layers className="h-4 w-4" /> : <GraduationCap className="h-4 w-4" />}
+                  </div>
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-medium text-stone-800">{c.title}</p>
+                      {newPerCourse(c.id) > 0 && (
+                        <span className="rounded bg-sage-600 px-1.5 py-0.5 text-[11px] font-semibold text-white">{newPerCourse(c.id)} new</span>
+                      )}
+                      {c.archived && <Badge variant="secondary">Hidden</Badge>}
+                      {c.published && !c.archived ? (
+                        <Badge className="bg-sage-100 font-normal text-sage-800 hover:bg-sage-100">
+                          On website · {formatPrice(c.price, "aud")}
+                          {c.priceAed ? ` / ${formatPrice(c.priceAed, "aed")}` : ""}
+                          {c.seats !== null ? ` · ${c.seats} place${c.seats === 1 ? "" : "s"} left` : ""}
                         </Badge>
-                      )
+                      ) : (
+                        !c.archived && (
+                          <Badge variant="outline" className="font-normal text-stone-500">
+                            Not on website
+                          </Badge>
+                        )
+                      )}
+                    </div>
+                    {c.includes.length ? (
+                      <p className="text-xs text-stone-500">Bundle: enrolls buyers in {c.includes.map((x) => x.title).join(" + ")}</p>
+                    ) : (
+                      <p className="text-xs text-stone-500">
+                        {c._count.modules} module{c._count.modules === 1 ? "" : "s"} · {c._count.items} item{c._count.items === 1 ? "" : "s"} · {active} current student
+                        {active === 1 ? "" : "s"}
+                      </p>
                     )}
                   </div>
-                  {c.includes.length ? (
-                    <p className="text-xs text-stone-500">Bundle: enrolls buyers in {c.includes.map((x) => x.title).join(" + ")}</p>
-                  ) : (
-                    <p className="text-xs text-stone-500">
-                      {c._count.modules} module{c._count.modules === 1 ? "" : "s"} · {c._count.items} item{c._count.items === 1 ? "" : "s"} · {active} current student
-                      {active === 1 ? "" : "s"}
-                    </p>
-                  )}
+                </Link>
+                <div className="absolute right-3 top-3">
+                  <DeleteClassButton
+                    id={c.id}
+                    title={c.title}
+                    canDelete={c._count.enrollments === 0 && c._count.purchases === 0}
+                    students={c._count.enrollments}
+                    archived={c.archived}
+                    bundles={c.includedIn.map((b) => b.title)}
+                    icon
+                  />
                 </div>
-              </Link>
+              </div>
             );
           })}
         </div>

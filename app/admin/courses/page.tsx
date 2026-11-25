@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { money } from "@/lib/learning";
 import { getSettings } from "@/lib/settings";
 import { Progress } from "@/components/ui/progress";
-import { LearningCertificateUpload, NewPackageDialog } from "@/components/admin/learning-editor";
+import { DeleteCourseButton, LearningCertificateUpload, NewPackageDialog } from "@/components/admin/learning-editor";
 import { cn } from "@/lib/utils";
 import { viewerTimezone } from "@/lib/viewer-tz";
 import { ClientSessionFilter } from "@/components/admin/client-session-filter";
@@ -79,32 +79,37 @@ export default async function LearningAdminPage({ searchParams }: { searchParams
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
             {packages.map((p) => (
-              <Link
-                key={p.id}
-                href={`/admin/courses/${p.id}`}
-                className={cn("flex items-start gap-3 rounded-2xl bg-white p-4 ring-1 ring-stone-200 transition hover:ring-sage-300", p.archived && "opacity-60")}
-              >
-                <span className="rounded-xl bg-sage-50 p-2.5 text-sage-700">
-                  <BookOpen className="h-5 w-5" />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-medium text-stone-800">{p.title}</p>
-                    <span
-                      className={cn(
-                        "rounded-full px-2 py-0.5 text-xs",
-                        p.archived ? "bg-stone-100 text-stone-600" : p.published ? "bg-sage-100 text-sage-800" : "bg-amber-100 text-amber-900",
-                      )}
-                    >
-                      {p.archived ? "Archived" : p.published ? "On the website" : "Draft"}
-                    </span>
+              <div key={p.id} className="relative">
+                <Link
+                  href={`/admin/courses/${p.id}`}
+                  className={cn("flex items-start gap-3 rounded-2xl bg-white p-4 pr-14 ring-1 ring-stone-200 transition hover:ring-sage-300", p.archived && "opacity-60")}
+                >
+                  <span className="rounded-xl bg-sage-50 p-2.5 text-sage-700">
+                    <BookOpen className="h-5 w-5" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-medium text-stone-800">{p.title}</p>
+                      <span
+                        className={cn(
+                          "rounded-full px-2 py-0.5 text-xs",
+                          p.archived ? "bg-stone-100 text-stone-600" : p.published ? "bg-sage-100 text-sage-800" : "bg-amber-100 text-amber-900",
+                        )}
+                      >
+                        {p.archived ? "Archived" : p.published ? "On the website" : "Draft"}
+                      </span>
+                    </div>
+                    <p className="text-sm text-stone-500">
+                      {money(p.price, p.currency)}
+                      {p.priceAed ? ` / ${money(p.priceAed, "aed")}` : " (no AED price)"} · {p._count.lessons} lesson{p._count.lessons === 1 ? "" : "s"} · {p.enrollments.length} learner
+                      {p.enrollments.length === 1 ? "" : "s"}
+                    </p>
                   </div>
-                  <p className="text-sm text-stone-500">
-                    {money(p.price, p.currency)} · {p._count.lessons} lesson{p._count.lessons === 1 ? "" : "s"} · {p.enrollments.length} learner
-                    {p.enrollments.length === 1 ? "" : "s"}
-                  </p>
+                </Link>
+                <div className="absolute right-3 top-3">
+                  <DeleteCourseButton id={p.id} title={p.title} learners={p.enrollments.length} archived={p.archived} icon />
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         )}

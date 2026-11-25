@@ -688,6 +688,7 @@ model LearningPackage {
   summary     String? // one line shown on the list
   description String? // "what you'll learn", shown on the package page
   price       Int // cents
+  priceAed    Int? // fils (AED cents), shown to visitors in the UAE; null = they see the AUD price
   currency    String   @default("aud")
   published   Boolean  @default(false) // false = draft, not on the website
   archived    Boolean  @default(false)

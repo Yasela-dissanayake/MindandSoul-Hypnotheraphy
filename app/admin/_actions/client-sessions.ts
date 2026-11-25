@@ -7,7 +7,7 @@ import { db } from "@/lib/db";
 import { DATE_RE, TIME_RE } from "@/lib/booking";
 import { NoSessionsLeftError, SessionSlotTakenError, bookWithCredit } from "@/lib/session-sales";
 import { notify } from "@/lib/notifications";
-import { isValidTimezone, momentIn } from "@/lib/dates";
+import { isValidTimezone, momentIn, timeRange } from "@/lib/dates";
 
 const schema = z.object({
   planId: z.string().min(1).max(50),
@@ -30,7 +30,7 @@ export async function bookSessionForClient(input: z.input<typeof schema>): Promi
     const b = await bookWithCredit({ userId: plan.userId, ...parsed.data, clientTimezone: plan.user?.timezone ?? null, byAdmin: true });
     const tz = plan.user?.timezone && isValidTimezone(plan.user.timezone) ? plan.user.timezone : "Australia/Perth";
     const m = momentIn(b.startsAt, tz);
-    await notify(plan.userId, { kind: "SESSION_BOOKED", title: "Rangika booked a session for you", body: `${plan.title} · ${m.day}, ${m.time}`, href: "/portal/sessions" });
+    await notify(plan.userId, { kind: "SESSION_BOOKED", title: "Rangika booked a session for you", body: `${plan.title} · ${m.day}, ${timeRange(b.startsAt, b.endsAt, tz)}`, href: "/portal/sessions" });
   } catch (e) {
     if (e instanceof SessionSlotTakenError) return { ok: false, error: e.message, slotTaken: true };
     if (e instanceof NoSessionsLeftError) return { ok: false, error: e.message.replace("You've booked", "They've booked").replace("your package", "their package") };

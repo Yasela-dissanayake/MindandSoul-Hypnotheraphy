@@ -52,17 +52,7 @@ export function TaskList({ tasks, encourage }: { tasks: Task[]; encourage: Encou
           return (
             <li key={t.id} className={cn("rounded-2xl bg-white ring-1 transition", t.done ? "ring-sage-200" : "ring-stone-200")}>
               <div className="flex items-start gap-4 p-4">
-                <button suppressHydrationWarning
-                  onClick={() => toggle(t)}
-                  aria-label={t.done ? `Mark "${t.title}" as not done` : `Mark "${t.title}" as done`}
-                  className={cn(
-                    "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 transition-all active:scale-90",
-                    t.done ? "border-sage-500 bg-sage-500 text-white" : "border-stone-300 text-transparent hover:border-sage-400",
-                  )}
-                >
-                  <Check className="h-6 w-6" />
-                </button>
-                <div className="min-w-0 flex-1 pt-1">
+                <div className="min-w-0 flex-1">
                   {t.context && <p className="text-xs uppercase tracking-wide text-sage-600">{t.context}</p>}
                   <p className={cn("font-medium", t.done ? "text-stone-400 line-through" : "text-stone-800")}>{t.title}</p>
                   {t.instructions && <p className="mt-1 whitespace-pre-line text-sm text-stone-600">{t.instructions}</p>}
@@ -76,7 +66,27 @@ export function TaskList({ tasks, encourage }: { tasks: Task[]; encourage: Encou
                       {t.resource.title}
                     </button>
                   )}
-                  <div className="mt-2">
+                  <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+                    {/* Tick it off. */}
+                    {t.done ? (
+                      <span className="inline-flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-sage-100 px-3 py-1.5 text-sm font-medium text-sage-800">
+                          <Check className="h-4 w-4" aria-hidden /> Done
+                        </span>
+                        <button suppressHydrationWarning type="button" onClick={() => toggle(t)} className="text-xs text-stone-500 underline-offset-2 hover:text-stone-700 hover:underline">
+                          Undo
+                        </button>
+                      </span>
+                    ) : (
+                      <button
+                        suppressHydrationWarning
+                        type="button"
+                        onClick={() => toggle(t)}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-sage-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-sage-700 active:scale-95"
+                      >
+                        <Check className="h-4 w-4" aria-hidden /> Mark as done
+                      </button>
+                    )}
                     <AskQuestion topic={t.title} topicHref="/portal" label="Ask about this" className="text-xs" />
                   </div>
                 </div>

@@ -11,6 +11,7 @@ import { setSessionCover } from "@/app/admin/_actions/session-services";
 import { setPromotionImage } from "@/app/admin/_actions/promotions";
 import { useAction } from "./use-action";
 import { friendlyError } from "@/lib/friendly-error";
+import { UploadProgress } from "@/components/upload-progress";
 
 /** Cover photo shown on the website (course cards and pages, or the promotion pop-up and section). */
 export function CoverUpload({ kind, id, url }: { kind: "course" | "package" | "session" | "promotion"; id: string; url: string | null }) {
@@ -53,7 +54,7 @@ export function CoverUpload({ kind, id, url }: { kind: "course" | "package" | "s
           <input suppressHydrationWarning ref={input} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => e.target.files?.[0] && pick(e.target.files[0])} />
           <Button size="sm" variant="outline" disabled={busy} onClick={() => input.current?.click()}>
             <Upload className="mr-1.5 h-3.5 w-3.5" />
-            {progress !== null ? `Uploading ${progress}%` : url ? "Change photo" : "Add photo"}
+            {progress !== null ? "Uploading…" : url ? "Change photo" : "Add photo"}
           </Button>
           {url && (
             <Button size="sm" variant="ghost" className="text-stone-500" disabled={busy} onClick={() => run(() => save(id, null), "Cover photo removed")}>
@@ -61,6 +62,7 @@ export function CoverUpload({ kind, id, url }: { kind: "course" | "package" | "s
             </Button>
           )}
         </div>
+        {progress !== null && <UploadProgress pct={progress} label="Uploading photo…" />}
       </div>
     </div>
   );

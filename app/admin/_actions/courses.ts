@@ -19,13 +19,85 @@ const courseSchema = z.object({
   description: z.string().max(3000).optional().nullable(),
 });
 
-export async function createCourse(input: z.input<typeof courseSchema>): Promise<ActionResult<{ id: string }>> {
+const newClassSchema = z.object({
+  title: z.string().trim().min(1, "Please enter the class name.").max(150),
+  track: z.enum(["REIKI", "ANIMAL"]),
+  summary: z.string().max(200).optional().nullable(),
+  details: z.string().max(10000).optional().nullable(),
+  format: z.string().max(120).optional().nullable(),
+  schedule: z.string().max(200).optional().nullable(),
+  prerequisite: z.string().max(120).optional().nullable(),
+  highlights: z.string().max(5000).optional().nullable(),
+  price: z.number({ invalid_type_error: "Please enter the AUD price." }).min(0.5, "Please enter the AUD price.").max(100000),
+  priceAed: z.number({ invalid_type_error: "Please enter the AED price." }).min(2, "Please enter the AED price (at least AED 2).").max(500000),
+  seats: z.number().int().min(0).max(10000).nullable().optional(),
+  // The cover photo, already uploaded (R2 key).
+  imageKey: z
+    .string()
+    .regex(/^covers\/[\w.\-\/]+$/, "The photo upload didn't work. Please choose it again.")
+    .nullable()
+    .optional(),
+  // The class days, in Perth time.
+  dates: z
+    .array(z.object({ date: z.string().regex(DATE_RE, "Pick a date for every class day."), start: z.string().regex(TIME_RE, "Pick a start time for every class day."), end: z.string().regex(TIME_RE, "Pick an end time for every class day.") }))
+    .max(30, "That's a lot of class days. Please keep it to 30.")
+    .optional(),
+  // A bundle: the classes it includes (empty = an ordinary class).
+  includeIds: z.array(z.string().min(1).max(50)).max(20).optional(),
+  published: z.boolean().optional(),
+});
+
+/**
+ * A new Reiki Training class with everything the class page needs (website text, prices, class days,
+ * cover photo, bundle), saved in one go. Modules and material are added on the class's page afterwards.
+ */
+export async function createCourse(input: z.input<typeof newClassSchema>): Promise<ActionResult<{ id: string }>> {
   await requireAdmin();
-  const parsed = courseSchema.safeParse(input);
+  const parsed = newClassSchema.safeParse(input);
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Please check the details.");
+  const d = parsed.data;
+  for (const x of d.dates ?? []) if (x.end <= x.start) return fail(`The class on ${x.date} ends before it starts.`);
+  const includeIds = [...new Set(d.includeIds ?? [])];
+  if (includeIds.length) {
+    if (includeIds.length < 2) return fail("A bundle needs at least two classes.");
+    const parts = await db.course.findMany({ where: { id: { in: includeIds } }, select: { id: true, _count: { select: { includes: true } } } });
+    if (parts.length !== includeIds.length) return fail("One of the chosen classes no longer exists.");
+    if (parts.some((p) => p._count.includes)) return fail("A bundle can't include another bundle.");
+  }
   const count = await db.course.count();
-  const c = await db.course.create({ data: { title: parsed.data.title, description: blank(parsed.data.description), order: count + 1 } });
+  const c = await db.course.create({
+    data: {
+      title: d.title,
+      slug: await uniqueCourseSlug(d.title),
+      track: d.track,
+      summary: blank(d.summary),
+      description: blank(d.summary),
+      details: blank(d.details),
+      format: blank(d.format),
+      schedule: blank(d.schedule),
+      prerequisite: blank(d.prerequisite),
+      highlights: blank(d.highlights),
+      price: Math.round(d.price * 100),
+      priceAed: Math.round(d.priceAed * 100),
+      seats: d.seats ?? null,
+      imageKey: d.imageKey ?? null,
+      published: d.published ?? false,
+      order: count + 1,
+      ...(includeIds.length ? { includes: { connect: includeIds.map((x) => ({ id: x })) } } : {}),
+      // A bundle uses the days of the classes it includes.
+      ...(!includeIds.length && d.dates?.length
+        ? {
+            dates: {
+              create: [...d.dates]
+                .sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start))
+                .map((x) => ({ date: x.date, start: x.start, end: x.end, startsAt: perthMoment(x.date, x.start), endsAt: perthMoment(x.date, x.end) })),
+            },
+          }
+        : {}),
+    },
+  });
   refreshAll();
+  revalidatePath("/reiki-training", "layout");
   return { ok: true, data: { id: c.id } };
 }
 
@@ -84,7 +156,7 @@ export async function updateCourseWebsite(id: string, input: z.input<typeof webs
   if (!course) return fail("Class not found.");
   const price = Math.round(d.price * 100);
   const priceAed = d.priceAed ? Math.round(d.priceAed * 100) : null;
-  if (priceAed !== null && priceAed < 200) return fail("The AED price is too low. Leave it empty to show the AUD price instead.");
+  if (priceAed !== null && priceAed < 200) return fail("The AED price must be at least AED 2.");
 
   // Bundle checks: only ordinary classes can go in a bundle, and a bundle has no students of its own.
   const includeIds = [...new Set((d.includeIds ?? []).filter((x) => x !== id))];
@@ -97,6 +169,8 @@ export async function updateCourseWebsite(id: string, input: z.input<typeof webs
     if (parts.some((p) => p._count.includes)) return fail("A bundle can't include another bundle.");
   }
   if (d.published && price < 50) return fail("Add a price before putting the class on the website.");
+  // Bundles are priced too. Both currencies are needed before it goes on the website.
+  if (d.published && priceAed === null) return fail("Add the AED price too before putting the class on the website (visitors in the UAE see it).");
   for (const x of d.dates ?? []) if (x.end <= x.start) return fail(`The class on ${x.date} ends before it starts.`);
   if (d.published && course.archived) return fail("This class is hidden. Show it to students again first.");
   const slug = course.slug ?? (await uniqueCourseSlug(course.title, id));
@@ -131,12 +205,22 @@ export async function updateCourseWebsite(id: string, input: z.input<typeof webs
 }
 
 /** Only courses with no students and no payments can be deleted; others are hidden instead. */
+/**
+ * Deletes a class with its modules, material list and class days (Library files stay in the Library).
+ * A class with students or payments is hidden instead, so nobody loses what they paid for.
+ * Unfinished checkouts are removed with it; one started in the last 2 hours may still be paid, so it waits.
+ */
 export async function deleteCourse(id: string): Promise<ActionResult> {
   await requireAdmin();
-  const c = await db.course.findUnique({ where: { id }, select: { imageKey: true, _count: { select: { enrollments: true, purchases: true } } } });
-  if (!c) return fail("Class not found.");
+  const c = await db.course.findUnique({
+    where: { id },
+    select: { imageKey: true, _count: { select: { enrollments: true, purchases: { where: { status: "PAID" } } } } },
+  });
+  if (!c) return fail("This class was already deleted.");
   if (c._count.enrollments || c._count.purchases) return fail("This class has students or payments, so it can't be deleted. Hide it instead.");
-  await db.course.delete({ where: { id } });
+  const recent = await db.coursePurchase.count({ where: { courseId: id, status: "PENDING", createdAt: { gt: new Date(Date.now() - 2 * 60 * 60 * 1000) } } });
+  if (recent) return fail("Someone started paying for this class in the last 2 hours. Please try again later, or hide it now.");
+  await db.$transaction([db.coursePurchase.deleteMany({ where: { courseId: id, status: { not: "PAID" } } }), db.course.delete({ where: { id } })]);
   if (c.imageKey && !isSiteImage(c.imageKey)) await deleteObject(c.imageKey);
   refreshAll();
   revalidatePath("/reiki-training", "layout");

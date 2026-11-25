@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { deleteResource, updateResource } from "@/app/admin/_actions/library";
 import { uploadFile } from "@/lib/upload-client";
@@ -18,6 +17,7 @@ import { VideoPlayer } from "@/components/portal/video-player";
 import { useAction } from "./use-action";
 import { ConfirmButton } from "./confirm-button";
 import { KIND_ICON } from "./library-picker";
+import { UploadProgress } from "@/components/upload-progress";
 
 type R = {
   id: string;
@@ -168,7 +168,7 @@ export function ResourceRow({ r, tags = [] }: { r: R; tags?: string[] }) {
                 <Label>Replace the file (optional)</Label>
                 <input suppressHydrationWarning ref={fileRef} type="file" accept={ACCEPT_FILES} onChange={(e) => setReplaceFile(e.target.files?.[0] ?? null)} className="block w-full text-sm" />
                 <p className="text-xs text-stone-500">Everyone who has this item will get the new version.</p>
-                {progress !== null && <Progress value={progress} className="h-1.5" />}
+                {progress !== null && <UploadProgress pct={progress} label="Uploading the new file…" />}
               </div>
             )}
             <Button className="h-11 w-full bg-sage-600 hover:bg-sage-700" disabled={pending || !f.title.trim()} onClick={save}>

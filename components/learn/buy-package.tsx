@@ -78,7 +78,7 @@ function BuyForm({
         body: JSON.stringify(
           kind === "course"
             ? { itemId: packageId, name, email, phone, currency, prerequisiteDone: prereqDone, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone }
-            : { packageId, name, email },
+            : { packageId, name, email, currency },
         ),
       });
       const start = await res.json();

@@ -1,13 +1,16 @@
+import { RichText } from "@/components/site/rich-text";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { ArrowLeft, Award, BookOpen, Lock, PlayCircle } from "lucide-react";
 import { db } from "@/lib/db";
-import { money, orderLessons } from "@/lib/learning";
+import { orderLessons } from "@/lib/learning";
 import { BuyPackage } from "@/components/learn/buy-package";
 import { coverUrl } from "@/lib/covers";
 import { getActivePromotion, promotionLink } from "@/lib/promotions";
 import { PromoNote } from "@/components/site/promo-note";
+import { CurrencySwitch } from "@/components/site/currency-switch";
+import { classPrice, formatPrice, viewerCurrency } from "@/lib/currency";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +40,10 @@ export default async function LearnPackagePage({ params }: { params: Promise<{ s
   const promoLink = promo ? promotionLink(promo) : null;
   const promoted = Boolean(promo && promoLink?.kind === "course" && promoLink.id === pkg.id);
   const free = promoted && Boolean(promo?.free);
+  // AED for visitors in the UAE (when the course has an AED price), otherwise AUD.
+  const currency = await viewerCurrency();
+  const price = classPrice(pkg, currency);
+  const priceLabel = formatPrice(price.amount, price.currency);
   const groups = [
     ...pkg.sections.map((s) => ({ title: s.title, lessons: lessons.filter((l) => l.sectionId === s.id) })),
     { title: pkg.sections.length ? "More lessons" : "", lessons: lessons.filter((l) => !l.sectionId || !pkg.sections.some((s) => s.id === l.sectionId)) },
@@ -64,7 +71,7 @@ export default async function LearnPackagePage({ params }: { params: Promise<{ s
             {pkg.description && (
               <section className="space-y-2">
                 <h2 className="font-serif text-2xl text-stone-800">About this course</h2>
-                <p className="whitespace-pre-line leading-relaxed text-stone-700">{pkg.description}</p>
+                <RichText text={pkg.description} className="leading-relaxed" />
               </section>
             )}
 
@@ -99,11 +106,12 @@ export default async function LearnPackagePage({ params }: { params: Promise<{ s
               {promoted && promo && <PromoNote promo={promo} freeText="Get this course free of charge while the promotion runs. No card needed." />}
               {free ? (
                 <p className="flex items-baseline gap-2 font-serif text-3xl text-amber-700">
-                  Free {pkg.price > 0 && <span className="font-sans text-base text-stone-400 line-through">{money(pkg.price, pkg.currency)}</span>}
+                  Free {price.amount > 0 && <span className="font-sans text-base text-stone-400 line-through">{priceLabel}</span>}
                 </p>
               ) : (
-                <p className="font-serif text-3xl text-stone-800">{money(pkg.price, pkg.currency)}</p>
+                <p className="font-serif text-3xl text-stone-800">{priceLabel}</p>
               )}
+              {pkg.priceAed ? <CurrencySwitch current={currency} /> : null}
               <ul className="space-y-2 text-sm text-stone-600">
                 <li className="flex items-center gap-2">
                   <BookOpen className="h-4 w-4 text-sage-600" /> {lessons.length} lessons, at your own pace
@@ -112,7 +120,7 @@ export default async function LearnPackagePage({ params }: { params: Promise<{ s
                   <Award className="h-4 w-4 text-sage-600" /> Certificate from Rangika when you finish
                 </li>
               </ul>
-              <BuyPackage packageId={pkg.id} title={pkg.title} priceLabel={money(pkg.price, pkg.currency)} free={free} />
+              <BuyPackage packageId={pkg.id} title={pkg.title} priceLabel={priceLabel} currency={price.currency} free={free} />
             </div>
           </aside>
         </div>

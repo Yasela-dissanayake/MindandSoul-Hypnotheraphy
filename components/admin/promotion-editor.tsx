@@ -21,6 +21,7 @@ import {
   type PromotionInput,
 } from "@/app/admin/_actions/promotions";
 import { friendlyError } from "@/lib/friendly-error";
+import { UploadProgress } from "@/components/upload-progress";
 
 export type PromoChoice = { value: string; title: string };
 export type PromoChoices = { sessions: PromoChoice[]; classes: PromoChoice[]; courses: PromoChoice[] };
@@ -173,7 +174,7 @@ export function PromotionForm({ id, initial, choices }: { id?: string; initial?:
                 />
                 <Button type="button" size="sm" variant="outline" disabled={progress !== null || pending} onClick={() => fileInput.current?.click()}>
                   <Upload className="mr-1.5 h-3.5 w-3.5" />
-                  {progress !== null ? `Uploading ${progress}%` : photo ? "Change photo" : "Add photo"}
+                  {progress !== null ? "Uploading…" : photo ? "Change photo" : "Add photo"}
                 </Button>
                 {photo && (
                   <Button type="button" size="sm" variant="ghost" className="text-stone-500" onClick={() => setPhoto(null)}>
@@ -181,6 +182,7 @@ export function PromotionForm({ id, initial, choices }: { id?: string; initial?:
                   </Button>
                 )}
               </div>
+              {progress !== null && <UploadProgress pct={progress} label="Uploading photo…" />}
             </div>
           </div>
         </div>

@@ -8,12 +8,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
 import { createFileResource, createLinkResource } from "@/app/admin/_actions/library";
 import { ACCEPT_FILES, KIND_LABEL, type KindId } from "@/lib/catalog";
 import { uploadFile } from "@/lib/upload-client";
 import type { LibraryOption } from "@/lib/admin-plans";
 import { friendlyError } from "@/lib/friendly-error";
+import { UploadProgress } from "@/components/upload-progress";
 
 export const KIND_ICON: Record<KindId, typeof FileText> = {
   AUDIO: Headphones,
@@ -242,12 +242,7 @@ export function LibraryPicker(props: {
               </ul>
             )}
             {placement}
-            {progress && (
-              <div className="space-y-1">
-                <p className="text-xs text-stone-500">{progress}</p>
-                <Progress value={Number(progress.match(/(\d+)%/)?.[1] ?? 0)} className="h-1.5" />
-              </div>
-            )}
+            {progress && <UploadProgress pct={Number(progress.match(/(\d+)%$/)?.[1] ?? 0)} label={`${progress.replace(/:\s*\d+%$/, "")}…`} />}
             <Button className="w-full bg-sage-600 hover:bg-sage-700" disabled={!files.length || busy} onClick={doUpload}>
               {busy ? "Uploading…" : "Upload and add"}
             </Button>

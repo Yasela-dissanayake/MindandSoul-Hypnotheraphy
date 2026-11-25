@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/authz";
-import { todayIn } from "@/lib/dates";
+import { daysBetween, todayIn } from "@/lib/dates";
 import { getSettings } from "@/lib/settings";
 import { copyTemplateToUser } from "@/lib/plans";
 import { parseTrackerFields, TRACKER_FIELD_TYPES } from "@/lib/catalog";
@@ -323,14 +323,48 @@ const taskSchema = z
     startDay: z.number().int().min(1).max(3650),
     endDay: z.number().int().min(1).max(3650).nullable().optional(),
     paused: z.boolean().optional(),
+    // A client's plan: the real dates (YYYY-MM-DD). They replace startDay / endDay.
+    startDate: date.optional(),
+    endDate: date.nullable().optional(),
   })
-  .refine((t) => t.endDay == null || t.endDay >= t.startDay, { message: "The last day must be on or after the first day." });
+  .refine((t) => t.endDay == null || t.endDay >= t.startDay, { message: "The last day must be on or after the first day." })
+  .refine((t) => !t.startDate || !t.endDate || t.endDate >= t.startDate, { message: "The last day must be on or after the first day." });
+
+/**
+ * Moves a client's plan to start earlier (e.g. Rangika gives an exercise before the first session).
+ * Tasks and journal prompts are counted in days from the start, so they're moved too and keep their dates.
+ */
+async function startPlanEarlier(planId: string, oldStart: string | null, newStart: string) {
+  const shift = oldStart ? daysBetween(newStart, oldStart) : 0;
+  await db.$transaction([
+    db.plan.update({ where: { id: planId }, data: { startDate: newStart } }),
+    ...(shift > 0
+      ? [
+          db.task.updateMany({ where: { planId }, data: { startDay: { increment: shift } } }),
+          db.task.updateMany({ where: { planId, endDay: { not: null } }, data: { endDay: { increment: shift } } }),
+          db.prompt.updateMany({ where: { planId }, data: { day: { increment: shift } } }),
+        ]
+      : []),
+  ]);
+}
 
 export async function saveTask(planId: string, input: z.input<typeof taskSchema>): Promise<ActionResult> {
   await requireAdmin();
   const parsed = taskSchema.safeParse(input);
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Please check the task.");
   const t = parsed.data;
+  // A client's plan: turn the chosen dates into plan days (moving the plan's start earlier when needed).
+  if (t.startDate) {
+    const plan = await db.plan.findUnique({ where: { id: planId }, select: { userId: true, startDate: true } });
+    if (!plan?.userId) return fail("Dates are only for a client's plan.");
+    let start = plan.startDate;
+    if (!start || t.startDate < start) {
+      await startPlanEarlier(planId, start, t.startDate);
+      start = t.startDate;
+    }
+    t.startDay = daysBetween(start, t.startDate) + 1;
+    t.endDay = t.recurrence === "DAILY" && t.endDate ? daysBetween(start, t.endDate) + 1 : null;
+  }
   const data = {
     title: t.title,
     instructions: blank(t.instructions),

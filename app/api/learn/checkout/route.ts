@@ -6,6 +6,7 @@ const schema = z.object({
   packageId: z.string().min(1).max(50),
   name: z.string().trim().min(1, "Please enter your name.").max(100),
   email: z.string().trim().email("Please enter a valid email address.").max(200),
+  currency: z.enum(["aud", "aed"]).optional(), // which of the course's prices they saw
 });
 
 /** Starts paying for an online course. The price comes from the database, not from the browser. */

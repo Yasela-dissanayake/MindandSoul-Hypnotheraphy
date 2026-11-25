@@ -3,11 +3,12 @@ import type { Metadata } from "next";
 import { BookOpen, Globe, MessageCircle, Sparkles } from "lucide-react";
 import { enquiryHref } from "@/lib/site-routes";
 import { db } from "@/lib/db";
-import { money } from "@/lib/learning";
+
 import { coverUrl } from "@/lib/covers";
 import { cn } from "@/lib/utils";
 import { getActivePromotion, promotedFirst, promotionLink } from "@/lib/promotions";
 import { OfferBadge, promotedCard } from "@/components/site/offer-badge";
+import { classPrice, formatPrice, viewerCurrency } from "@/lib/currency";
 
 export const metadata: Metadata = {
   title: "Courses · Mind & Soul Works",
@@ -28,6 +29,12 @@ export default async function LearnPage() {
   const link = promo ? promotionLink(promo) : null;
   const promotedId = link?.kind === "course" ? link.id : null;
   const packages = promotedFirst(all, promotedId);
+  // Prices in AED for visitors in the UAE (when a course has one), otherwise AUD.
+  const currency = await viewerCurrency();
+  const priceOf = (p: { price: number; priceAed: number | null }) => {
+    const x = classPrice(p, currency);
+    return formatPrice(x.amount, x.currency);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sage-50 to-white">
@@ -99,10 +106,10 @@ export default async function LearnPage() {
                     {free ? (
                       <span className="flex items-baseline gap-1.5">
                         <span className="font-semibold text-amber-700">Free</span>
-                        {p.price > 0 && <span className="text-xs text-stone-400 line-through">{money(p.price, p.currency)}</span>}
+                        {p.price > 0 && <span className="text-xs text-stone-400 line-through">{priceOf(p)}</span>}
                       </span>
                     ) : (
-                      <span className="font-semibold text-stone-800">{money(p.price, p.currency)}</span>
+                      <span className="font-semibold text-stone-800">{priceOf(p)}</span>
                     )}
                   </div>
                 </div>

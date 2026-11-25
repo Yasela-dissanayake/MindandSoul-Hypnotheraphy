@@ -1,8 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowDown, ArrowUp, ExternalLink, Pencil, Plus } from "lucide-react";
+import Link from "next/link";
+import { ArrowDown, ArrowUp, ExternalLink, ImageIcon, Pencil, Plus, Trash2, Upload, X } from "lucide-react";
+import { toast } from "sonner";
+import { uploadFile } from "@/lib/upload-client";
+import { friendlyError } from "@/lib/friendly-error";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +23,8 @@ import {
 import { areaHref, areaOf, serviceEditHref } from "@/lib/session-areas";
 import { useAction } from "./use-action";
 import { ConfirmButton } from "./confirm-button";
+import { PageTextEditor } from "./page-text-editor";
+import { UploadProgress } from "@/components/upload-progress";
 
 const selectCls = "h-10 w-full rounded-md border border-input bg-white px-3 text-sm";
 
@@ -54,69 +60,308 @@ export type EditorOption = {
 
 const TAB_PATH = { HYPNOTHERAPY: "/hypnotherapy", REIKI_HEALING: "/reiki-healing", ANIMAL_REIKI: "/reiki-healing" } as const;
 
-/** The marks the page text understands (components/site/rich-text.tsx). */
-function PageTextHelp() {
-  return (
-    <details className="rounded-lg bg-stone-50 px-3 py-2 text-xs text-stone-600 ring-1 ring-stone-200">
-      <summary className="cursor-pointer font-medium text-stone-700">How to format the page text</summary>
-      <ul className="mt-2 space-y-1 font-mono">
-        <li>## Areas of focus include: <span className="font-sans text-stone-500">→ a heading</span></li>
-        <li>### Option 1 — 1-Session … <span className="font-sans text-stone-500">→ a smaller heading; two or more in a row become tabs (“Option 1”, “Session 2”…), or open/close questions if they end with ?</span></li>
-        <li>- Stress management and relaxation. <span className="font-sans text-stone-500">→ a ticked point</span></li>
-        <li>- **Guided Hypnotherapy:** Experience … <span className="font-sans text-stone-500">→ a point with a bold title</span></li>
-        <li>&gt; Ideal for: … <span className="font-sans text-stone-500">→ a soft green box</span></li>
-        <li>**bold**  *italic*  [link text](/contact)</li>
-        <li>[[book]] <span className="font-sans text-stone-500">→ the &quot;Book your session&quot; and &quot;Send us an enquiry&quot; buttons</span></li>
-      </ul>
-      <p className="mt-2">Leave an empty line between paragraphs.</p>
-    </details>
-  );
-}
-
 const CATEGORY_LABEL: Record<EditorService["category"], string> = {
   HYPNOTHERAPY: "Clinical Hypnotherapy",
   REIKI_HEALING: "Reiki Energy Healing",
   ANIMAL_REIKI: "Animal Reiki & Communication",
 };
 
-/** "New session" for one area: the website tab can be chosen when the area has more than one (Reiki / Animal Reiki). */
+/** "New session": opens the full form on its own page. */
 export function NewSessionServiceButton({ categories }: { categories: EditorService["category"][] }) {
-  const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState("");
-  const [category, setCategory] = useState<EditorService["category"]>(categories[0]);
-  const { pending, run } = useAction();
-  const router = useRouter();
-  if (!open)
-    return (
-      <Button onClick={() => setOpen(true)} className="bg-sage-600 hover:bg-sage-700">
-        <Plus className="mr-2 h-4 w-4" /> New session
-      </Button>
-    );
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <Input autoFocus placeholder="e.g. Inner Child Healing" value={title} onChange={(e) => setTitle(e.target.value)} className="w-64" />
-      {categories.length > 1 && (
-        <select suppressHydrationWarning className={`${selectCls} w-56`} value={category} onChange={(e) => setCategory(e.target.value as EditorService["category"])} aria-label="Website tab">
-          {categories.map((c) => (
-            <option key={c} value={c}>
-              {CATEGORY_LABEL[c]}
-            </option>
-          ))}
-        </select>
+    <Button asChild className="bg-sage-600 hover:bg-sage-700">
+      <Link href={`${areaHref(areaOf(categories[0]))}/services/new`}>
+        <Plus className="mr-2 h-4 w-4" /> New session
+      </Link>
+    </Button>
+  );
+}
+
+type NewPrice = { key: number; title: string; sessions: string; price: string; priceAed: string; mode: "" | "IN_PERSON" | "DISTANCE"; note: string };
+
+/**
+ * The "New session" page: everything in one form (prices and packages, details and page text, cover photo),
+ * with one Save button at the bottom. Nothing is created until it's saved.
+ */
+export function NewSessionServiceForm({ categories }: { categories: EditorService["category"][] }) {
+  const router = useRouter();
+  const { pending, run } = useAction();
+  const [f, setF] = useState({
+    title: "",
+    category: categories[0],
+    planService: categories[0] as EditorService["planService"],
+    tagline: "",
+    summary: "",
+    body: "",
+    details: "",
+    highlights: "",
+    minutes: "",
+    lengthLabel: "1 hour",
+    inPerson: true,
+    online: true,
+    enquiryOnly: false,
+    published: false,
+  });
+  const [prices, setPrices] = useState<NewPrice[]>([{ key: 1, title: "Single session", sessions: "1", price: "", priceAed: "", mode: "", note: "" }]);
+  const [cover, setCover] = useState<{ key: string; preview: string } | null>(null);
+  const [uploading, setUploading] = useState<number | null>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
+
+  const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+    setF((x) => ({ ...x, [k]: e.target.value, ...(k === "category" ? { planService: e.target.value as EditorService["planService"] } : {}) }));
+  const tick = (k: "inPerson" | "online" | "enquiryOnly" | "published") => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: e.target.checked });
+  const setPrice = (key: number, k: keyof NewPrice) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    setPrices((list) => list.map((p) => (p.key === key ? { ...p, [k]: e.target.value } : p)));
+  const addPrice = () =>
+    setPrices((list) => {
+      const n = list.length ? Math.max(...list.map((p) => Number(p.sessions) || 1)) : 0;
+      const sessions = n < 3 ? 3 : n + 2;
+      return [...list, { key: Date.now(), title: `${sessions}-session package`, sessions: String(sessions), price: "", priceAed: "", mode: "", note: "" }];
+    });
+
+  async function pickCover(file: File) {
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      toast.error("Please choose a JPG, PNG or WebP photo.");
+      return;
+    }
+    try {
+      setUploading(0);
+      const { key } = await uploadFile(file, { purpose: "cover", filename: file.name, onProgress: setUploading });
+      setCover({ key, preview: URL.createObjectURL(file) });
+    } catch (e) {
+      toast.error(friendlyError(e, "The photo didn't upload. Please try again."));
+    } finally {
+      setUploading(null);
+      if (fileInput.current) fileInput.current.value = "";
+    }
+  }
+
+  const num = (v: string) => (v.trim() === "" ? Number.NaN : Number(v));
+  const save = () =>
+    run(
+      () =>
+        createSessionService({
+          title: f.title,
+          category: f.category,
+          planService: f.planService,
+          tagline: f.tagline,
+          summary: f.summary,
+          body: f.body,
+          details: f.details,
+          highlights: f.highlights,
+          minutes: f.minutes.trim() === "" ? null : Math.round(Number(f.minutes)),
+          lengthLabel: f.lengthLabel,
+          inPerson: f.inPerson,
+          online: f.online,
+          enquiryOnly: f.enquiryOnly,
+          published: f.published,
+          imageKey: cover?.key ?? null,
+          options: prices.map((p) => ({
+            title: p.title,
+            sessions: Math.round(num(p.sessions)) || 0,
+            price: num(p.price),
+            priceAed: num(p.priceAed),
+            mode: p.mode || null,
+            note: p.note,
+          })),
+        }),
+      f.published ? "Session saved and shown on the website" : "Session saved (hidden from the website)",
+      (r) => r.ok && router.push(serviceEditHref((r as { data?: { id: string } }).data?.id ?? "", f.category)),
+    );
+
+  return (
+    <form
+      className="space-y-6"
+      onSubmit={(e) => {
+        e.preventDefault();
+        save();
+      }}
+    >
+      {/* 1. Details and page text */}
+      <section className="space-y-4 rounded-2xl bg-white p-5 ring-1 ring-stone-200 sm:p-6">
+        <h2 className="font-serif text-xl text-stone-800">Details</h2>
+        <div className="grid gap-4 sm:grid-cols-[1fr_16rem]">
+          <div className="space-y-1.5">
+            <Label htmlFor="ns-title">Name</Label>
+            <Input id="ns-title" required maxLength={150} placeholder="e.g. Inner Child Healing" value={f.title} onChange={set("title")} />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="ns-cat">Website tab</Label>
+            <select suppressHydrationWarning id="ns-cat" className={selectCls} value={f.category} onChange={set("category")} disabled={categories.length === 1}>
+              {categories.map((c) => (
+                <option key={c} value={c}>
+                  {CATEGORY_LABEL[c]}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="ns-tagline">Tagline</Label>
+          <Input id="ns-tagline" maxLength={200} placeholder="e.g. Break Free from Smoking. Build a Healthier Future." value={f.tagline} onChange={set("tagline")} />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="ns-summary">Short summary</Label>
+          <Input id="ns-summary" maxLength={300} placeholder="One or two lines on the tab page's card" value={f.summary} onChange={set("summary")} />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="ns-body">Page text</Label>
+          <PageTextEditor id="ns-body" rows={16} value={f.body} onChange={(body) => setF((x) => ({ ...x, body }))} />
+        </div>
+        <details className="space-y-3 rounded-lg px-3 py-2 ring-1 ring-stone-200">
+          <summary className="cursor-pointer text-sm font-medium text-stone-700">Older fields (only shown when the page text is empty)</summary>
+          <div className="mt-3 space-y-1.5">
+            <Label htmlFor="ns-details">About this session</Label>
+            <Textarea id="ns-details" rows={5} maxLength={10000} value={f.details} onChange={set("details")} />
+          </div>
+          <div className="mt-3 space-y-1.5">
+            <Label htmlFor="ns-highlights">How it can help / areas of support</Label>
+            <Textarea id="ns-highlights" rows={4} maxLength={5000} placeholder="One point per line" value={f.highlights} onChange={set("highlights")} />
+          </div>
+        </details>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="ns-minutes">Booking length (minutes)</Label>
+            <Input id="ns-minutes" type="number" min={15} max={480} step={5} placeholder="Calendar default" value={f.minutes} onChange={set("minutes")} />
+            <p className="text-xs text-stone-500">How long it blocks in your calendar. Empty = your normal length.</p>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="ns-length">Length shown on the website</Label>
+            <Input id="ns-length" maxLength={60} placeholder="e.g. 1 hour (empty = not shown)" value={f.lengthLabel} onChange={set("lengthLabel")} />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="ns-plan">Client plan type</Label>
+            <select suppressHydrationWarning id="ns-plan" className={selectCls} value={f.planService} onChange={set("planService")}>
+              <option value="HYPNOTHERAPY">Hypnotherapy</option>
+              <option value="REIKI_HEALING">Reiki / energy healing</option>
+              <option value="ANIMAL_REIKI">Animal Reiki</option>
+            </select>
+            <p className="text-xs text-stone-500">Where these clients appear on your Sessions page.</p>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-stone-700">
+          <label className="flex items-center gap-2">
+            <input suppressHydrationWarning type="checkbox" checked={f.inPerson} onChange={tick("inPerson")} /> In person (Perth)
+          </label>
+          <label className="flex items-center gap-2">
+            <input suppressHydrationWarning type="checkbox" checked={f.online} onChange={tick("online")} /> Online / distance
+          </label>
+          <label className="flex items-center gap-2">
+            <input suppressHydrationWarning type="checkbox" checked={f.enquiryOnly} onChange={tick("enquiryOnly")} /> Enquiry only (no online booking)
+          </label>
+        </div>
+      </section>
+
+      {/* 2. Cover photo */}
+      <section className="space-y-3 rounded-2xl bg-white p-5 ring-1 ring-stone-200 sm:p-6">
+        <h2 className="font-serif text-xl text-stone-800">Cover photo</h2>
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex h-24 w-40 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-sage-50 ring-1 ring-stone-200">
+            {cover ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={cover.preview} alt="Cover photo" className="h-full w-full object-cover" />
+            ) : (
+              <ImageIcon className="h-8 w-8 text-sage-400" aria-hidden />
+            )}
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm text-stone-600">Shown on its card and page (JPG, PNG or WebP, wide works best). Optional.</p>
+            {uploading !== null && <UploadProgress pct={uploading} label="Uploading photo…" />}
+            <div className="flex flex-wrap gap-2">
+              <input suppressHydrationWarning ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => e.target.files?.[0] && pickCover(e.target.files[0])} />
+              <Button type="button" size="sm" variant="outline" disabled={uploading !== null} onClick={() => fileInput.current?.click()}>
+                <Upload className="mr-1.5 h-3.5 w-3.5" />
+                {uploading !== null ? "Uploading…" : cover ? "Change photo" : "Add photo"}
+              </Button>
+              {cover && (
+                <Button type="button" size="sm" variant="ghost" className="text-stone-500" onClick={() => setCover(null)}>
+                  <X className="mr-1.5 h-3.5 w-3.5" /> Remove
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. Prices and packages (last, just above Save) */}
+      {!f.enquiryOnly && (
+        <section className="space-y-4 rounded-2xl bg-white p-5 ring-1 ring-stone-200 sm:p-6">
+          <div>
+            <h2 className="font-serif text-xl text-stone-800">Prices and packages</h2>
+            <p className="text-sm text-stone-500">Visitors in the UAE see the AED price; everyone else sees AUD. A package&apos;s other sessions are booked by the client from their private space.</p>
+          </div>
+          <ul className="space-y-3">
+            {prices.map((p, i) => (
+              <li key={p.key} className="space-y-3 rounded-xl bg-stone-50 p-4 ring-1 ring-stone-200">
+                <div className="grid gap-3 sm:grid-cols-[1fr_7rem]">
+                  <div className="space-y-1">
+                    <Label htmlFor={`np-title-${p.key}`}>Name</Label>
+                    <Input id={`np-title-${p.key}`} required maxLength={80} placeholder="e.g. Single session, 3-session package" value={p.title} onChange={setPrice(p.key, "title")} className="bg-white" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor={`np-sessions-${p.key}`}>Sessions</Label>
+                    <Input id={`np-sessions-${p.key}`} required type="number" min={1} max={50} value={p.sessions} onChange={setPrice(p.key, "sessions")} className="bg-white" />
+                  </div>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="space-y-1">
+                    <Label htmlFor={`np-aud-${p.key}`}>Price (AUD)</Label>
+                    <Input id={`np-aud-${p.key}`} required type="number" min={0.5} step={0.01} placeholder="e.g. 140" value={p.price} onChange={setPrice(p.key, "price")} className="bg-white" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor={`np-aed-${p.key}`}>Price (AED)</Label>
+                    <Input id={`np-aed-${p.key}`} required type="number" min={2} step={0.01} placeholder="e.g. 350" value={p.priceAed} onChange={setPrice(p.key, "priceAed")} className="bg-white" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor={`np-mode-${p.key}`}>For</Label>
+                    <select suppressHydrationWarning id={`np-mode-${p.key}`} className={selectCls} value={p.mode} onChange={setPrice(p.key, "mode")}>
+                      <option value="">In person and online</option>
+                      <option value="IN_PERSON">In person only</option>
+                      <option value="DISTANCE">Online / distance only</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="flex items-end gap-3">
+                  <div className="flex-1 space-y-1">
+                    <Label htmlFor={`np-note-${p.key}`}>Note (optional)</Label>
+                    <Input id={`np-note-${p.key}`} maxLength={200} placeholder="e.g. Recommended for IBS · completed within 6 weeks" value={p.note} onChange={setPrice(p.key, "note")} className="bg-white" />
+                  </div>
+                  {prices.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="text-stone-500 hover:text-red-700"
+                      onClick={() => setPrices((list) => list.filter((x) => x.key !== p.key))}
+                      aria-label={`Remove price ${i + 1}`}
+                    >
+                      <Trash2 className="mr-1.5 h-4 w-4" /> Remove
+                    </Button>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+          <Button type="button" variant="outline" onClick={addPrice}>
+            <Plus className="mr-2 h-4 w-4" /> Add another price or package
+          </Button>
+        </section>
       )}
-      <Button
-        disabled={pending || !title.trim()}
-        className="bg-sage-600 hover:bg-sage-700"
-        onClick={() =>
-          run(() => createSessionService({ title, category }), "Created. Add its details and prices.", (r) => r.ok && router.push(serviceEditHref((r as { data?: { id: string } }).data?.id ?? "", category)))
-        }
-      >
-        Create
-      </Button>
-      <Button variant="ghost" onClick={() => setOpen(false)}>
-        Cancel
-      </Button>
-    </div>
+
+      {/* Save */}
+      <div className="sticky bottom-0 z-10 -mx-4 flex flex-col gap-3 border-t border-stone-200 bg-stone-50/95 px-4 py-4 backdrop-blur sm:flex-row sm:items-center sm:justify-between md:-mx-8 md:px-8">
+        <label className="flex items-center gap-2 text-sm text-stone-700">
+          <input suppressHydrationWarning type="checkbox" checked={f.published} onChange={tick("published")} /> Show on the website straight away
+        </label>
+        <div className="flex gap-2">
+          <Button type="button" variant="ghost" onClick={() => router.back()}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={pending || uploading !== null} className="min-w-32 bg-sage-600 hover:bg-sage-700">
+            {pending ? "Saving…" : "Save session"}
+          </Button>
+        </div>
+      </div>
+    </form>
   );
 }
 
@@ -214,8 +459,7 @@ export function SessionServiceForm({ service }: { service: EditorService }) {
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="ss-body">Page text</Label>
-        <Textarea id="ss-body" rows={22} maxLength={40000} className="font-mono text-[13px] leading-relaxed" value={f.body} onChange={set("body")} />
-        <PageTextHelp />
+        <PageTextEditor id="ss-body" rows={22} value={f.body} onChange={(body) => setF((x) => ({ ...x, body }))} />
       </div>
       <details className="space-y-3 rounded-lg px-3 py-2 ring-1 ring-stone-200">
         <summary className="cursor-pointer text-sm font-medium text-stone-700">Older fields (only shown when the page text is empty)</summary>
@@ -316,7 +560,7 @@ function OptionForm({ serviceId, option, onDone }: { serviceId: string; option: 
         </div>
         <div className="space-y-1">
           <Label>Price (AED)</Label>
-          <Input type="number" min={0} step={0.01} placeholder="Empty = AUD" value={f.priceAed} onChange={set("priceAed")} />
+          <Input type="number" required min={2} step={0.01} placeholder="e.g. 350" value={f.priceAed} onChange={set("priceAed")} />
         </div>
         <div className="space-y-1">
           <Label>For</Label>

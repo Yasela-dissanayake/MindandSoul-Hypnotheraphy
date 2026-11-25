@@ -1,4 +1,5 @@
 import type { Lesson, LessonSection } from "@prisma/client";
+import { classPrice } from "@/lib/currency";
 import { db } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { availableUsername } from "@/lib/accounts";
@@ -141,7 +142,7 @@ export async function settleOpenPayments(open: { id: string; paymentIntentId: st
 }
 
 /** Starts a card payment. The price always comes from the database, never from the browser. */
-export async function startPurchase(input: { packageId: string; name: string; email: string }) {
+export async function startPurchase(input: { packageId: string; name: string; email: string; currency?: "aud" | "aed" }) {
   const pkg = await db.learningPackage.findFirst({ where: { id: input.packageId, published: true, archived: false } });
   if (!pkg) throw new PurchaseError("This course is not available any more.");
   if (pkg.price < 50 && !(await promoFor("course", pkg.id)).free) throw new PurchaseError("This course has no price yet.");
@@ -157,6 +158,9 @@ export async function startPurchase(input: { packageId: string; name: string; em
     "You've already paid for this course. Please sign in to continue it (your login details were emailed to you).",
   );
 
+  // The price they saw: AED for visitors in the UAE (when the course has one), otherwise AUD.
+  const price = classPrice(pkg, input.currency ?? "aud");
+
   // Free while a promotion runs: no card, they get the course straight away.
   if ((await promoFor("course", pkg.id)).free) {
     const purchase = await db.packagePurchase.create({
@@ -167,12 +171,12 @@ export async function startPurchase(input: { packageId: string; name: string; em
   }
 
   const purchase = await db.packagePurchase.create({
-    data: { packageId: pkg.id, name: input.name.trim(), email, amount: pkg.price, currency: pkg.currency },
+    data: { packageId: pkg.id, name: input.name.trim(), email, amount: price.amount, currency: price.currency },
   });
   try {
     const pi = await stripe().paymentIntents.create({
-      amount: pkg.price,
-      currency: pkg.currency,
+      amount: price.amount,
+      currency: price.currency,
       automatic_payment_methods: { enabled: true },
       receipt_email: email,
       description: `Online course: ${pkg.title}`,

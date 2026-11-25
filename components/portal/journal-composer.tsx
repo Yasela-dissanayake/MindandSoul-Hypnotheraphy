@@ -5,11 +5,11 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Progress } from "@/components/ui/progress";
 import { saveJournalEntry } from "@/app/portal/actions";
 import { uploadFile } from "@/lib/upload-client";
 import { VoiceRecorder, type Recording } from "./voice-recorder";
 import { friendlyError } from "@/lib/friendly-error";
+import { UploadProgress } from "@/components/upload-progress";
 
 export function JournalComposer({ prompt }: { prompt: string | null }) {
   const [text, setText] = useState("");
@@ -71,7 +71,7 @@ export function JournalComposer({ prompt }: { prompt: string | null }) {
         <p className="text-xs text-stone-500">Or, if it's easier, speak:</p>
         <VoiceRecorder value={recording} onChange={setRecording} disabled={pending} />
       </div>
-      {progress !== null && <Progress value={progress} className="h-1.5" />}
+      {progress !== null && <UploadProgress pct={progress} label="Uploading your recording…" />}
       <Button
         onClick={save}
         disabled={pending || (!text.trim() && !recording)}

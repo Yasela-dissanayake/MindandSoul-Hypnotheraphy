@@ -44,21 +44,24 @@ export default async function LearningPackageAdminPage({ params }: { params: Pro
           summary: pkg.summary ?? "",
           description: pkg.description ?? "",
           price: pkg.price,
+          priceAed: pkg.priceAed,
           published: pkg.published,
           archived: pkg.archived,
           lessons: pkg.lessons.length,
           learners: pkg._count.enrollments,
         }}
-      />
-      <section className="rounded-2xl bg-white p-5 ring-1 ring-stone-200">
-        <CoverUpload kind="package" id={pkg.id} url={coverUrl("package", pkg)} />
-      </section>
-      <LessonsEditor
-        packageId={pkg.id}
-        sections={pkg.sections.map((s) => ({ id: s.id, title: s.title }))}
-        lessons={lessons.map((l) => ({ id: l.id, title: l.title, body: l.body ?? "", sectionId: l.sectionId, resource: l.resource }))}
-        library={library}
-      />
+      >
+        <section className="space-y-3 rounded-2xl bg-white p-5 ring-1 ring-stone-200">
+          <h2 className="font-serif text-xl text-stone-800">Cover photo</h2>
+          <CoverUpload kind="package" id={pkg.id} url={coverUrl("package", pkg)} />
+        </section>
+        <LessonsEditor
+          packageId={pkg.id}
+          sections={pkg.sections.map((s) => ({ id: s.id, title: s.title }))}
+          lessons={lessons.map((l) => ({ id: l.id, title: l.title, body: l.body ?? "", sectionId: l.sectionId, resource: l.resource }))}
+          library={library}
+        />
+      </PackageDetailsForm>
     </div>
   );
 }

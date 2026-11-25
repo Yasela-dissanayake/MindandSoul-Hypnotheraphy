@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { PageTextEditor } from "./page-text-editor";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import type { EditorCourse, LibraryOption } from "@/lib/admin-plans";
@@ -38,8 +39,62 @@ import { ConfirmButton } from "./confirm-button";
 import { KIND_ICON, LibraryPicker } from "./library-picker";
 import { NoteButton, Section } from "./plan-editor";
 import { friendlyError } from "@/lib/friendly-error";
+import { UploadProgress } from "@/components/upload-progress";
 
 const selectCls = "h-10 w-full rounded-md border border-input bg-white px-3 text-sm";
+
+/**
+ * Delete a Reiki Training class (a bin icon on the class list, or a button on its page).
+ * A class with students or payments can't be deleted: the same button offers to hide it instead.
+ */
+export function DeleteClassButton({
+  id,
+  title,
+  canDelete,
+  students,
+  archived,
+  bundles = [],
+  icon,
+  onDeleted,
+}: {
+  id: string;
+  title: string;
+  canDelete: boolean;
+  students: number;
+  archived: boolean;
+  bundles?: string[];
+  icon?: boolean;
+  onDeleted?: () => void;
+}) {
+  const { run } = useAction();
+  const label = icon ? `Delete ${title}` : "Delete";
+  if (!canDelete)
+    return (
+      <ConfirmButton
+        icon={icon}
+        label={label}
+        title={`"${title}" can't be deleted`}
+        description={`${
+          students ? `${students} student${students === 1 ? " is" : "s are"} enrolled` : "People have paid for it"
+        }, so deleting it would take away what they paid for. ${
+          archived ? "It's already hidden from the website and from students." : "Hide it instead: it comes off the website and nobody new can enroll."
+        }`}
+        confirmLabel={archived ? "OK" : "Hide instead"}
+        onConfirm={() => !archived && run(() => setCourseArchived(id, true), "Class hidden")}
+      />
+    );
+  return (
+    <ConfirmButton
+      icon={icon}
+      label={label}
+      title={`Delete "${title}"?`}
+      description={`The class, its modules, material list and class days are deleted and it disappears from the website. Files stay in your Library.${
+        bundles.length ? ` It's also part of ${bundles.map((b) => `"${b}"`).join(" and ")}: people who buy ${bundles.length === 1 ? "that bundle" : "those bundles"} won't get this class any more.` : ""
+      } This can't be undone.`}
+      onConfirm={() => run(() => deleteCourse(id), "Class deleted", (r) => r.ok && onDeleted?.())}
+    />
+  );
+}
 
 export function CourseDetails({ course }: { course: EditorCourse }) {
   const router = useRouter();
@@ -61,13 +116,15 @@ export function CourseDetails({ course }: { course: EditorCourse }) {
             <Button size="sm" variant="outline" disabled={pending} onClick={() => run(() => setCourseArchived(course.id, !course.archived), course.archived ? "Class visible again" : "Class hidden")}>
               {course.archived ? "Show to students" : "Hide class"}
             </Button>
-            {course.canDelete && (
-              <ConfirmButton
-                title="Delete this class?"
-                description="Its modules and material list are deleted too. Library files stay in the Library."
-                onConfirm={() => run(() => deleteCourse(course.id), "Class deleted", (r) => r.ok && router.push("/admin/classes"))}
-              />
-            )}
+            <DeleteClassButton
+              id={course.id}
+              title={course.title}
+              canDelete={course.canDelete}
+              students={course.students}
+              archived={course.archived}
+              bundles={course.includedIn.map((b) => b.title)}
+              onDeleted={() => router.push("/admin/classes")}
+            />
           </div>
         </div>
         {course.description && <p className="whitespace-pre-line text-stone-600">{course.description}</p>}
@@ -287,7 +344,7 @@ export function CertificateUpload({ enrollmentId, hasCertificate }: { enrollment
         <Upload className="mr-1.5 h-3.5 w-3.5" /> {hasCertificate ? "Replace" : "Upload certificate"}
       </Button>
       <input suppressHydrationWarning ref={ref} type="file" accept="application/pdf,.pdf,image/*,.jpg,.jpeg,.png" className="hidden" onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])} />
-      {pct !== null && <Progress value={pct} className="h-1.5 w-24" />}
+      {pct !== null && <UploadProgress pct={pct} compact />}
     </div>
   );
 }
@@ -525,8 +582,8 @@ export function CourseWebsiteForm({ course, classOptions }: { course: EditorCour
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="cw-price-aed">Price (AED)</Label>
-          <Input id="cw-price-aed" type="number" min={0} step={0.01} placeholder="e.g. 800" value={f.priceAed} onChange={set("priceAed")} />
-          <p className="text-xs text-stone-500">Visitors in the UAE. Empty = they see AUD.</p>
+          <Input id="cw-price-aed" type="number" min={2} step={0.01} placeholder="e.g. 800" value={f.priceAed} onChange={set("priceAed")} />
+          <p className="text-xs text-stone-500">Visitors in the UAE. Needed before it goes on the website.</p>
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="cw-seats">Places left</Label>
@@ -557,14 +614,8 @@ export function CourseWebsiteForm({ course, classOptions }: { course: EditorCour
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="cw-details">About this class (website)</Label>
-        <Textarea
-          id="cw-details"
-          rows={6}
-          maxLength={10000}
-          placeholder={"What people will learn, who it's for, what's included… Leave empty to use the class description."}
-          value={f.details}
-          onChange={set("details")}
-        />
+        <PageTextEditor id="cw-details" rows={10} maxLength={10000} bookButtons={false} value={f.details} onChange={(details) => setF((x) => ({ ...x, details }))} />
+        <p className="text-xs text-stone-500">What people will learn, who it&apos;s for, what&apos;s included… Leave empty to use the class description.</p>
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="cw-highlights">What you&apos;ll explore</Label>
@@ -624,13 +675,13 @@ export function CourseWebsiteForm({ course, classOptions }: { course: EditorCour
   );
 }
 
-type ClassDay = { date: string; start: string; end: string };
+export type ClassDay = { date: string; start: string; end: string };
 
 /** A Perth date + time as a real moment. Perth is UTC+8 all year (no daylight saving). */
 const perthAt = (date: string, time: string) => new Date(`${date}T${time}:00+08:00`);
 
 /** The class days, typed in Perth time, with what that is in Sydney/Melbourne and Dubai (daylight saving included). */
-function ClassDaysEditor({ dates, onChange }: { dates: ClassDay[]; onChange: (d: ClassDay[]) => void }) {
+export function ClassDaysEditor({ dates, onChange }: { dates: ClassDay[]; onChange: (d: ClassDay[]) => void }) {
   const update = (i: number, k: keyof ClassDay, v: string) => onChange(dates.map((d, j) => (j === i ? { ...d, [k]: v } : d)));
   const add = () => {
     const last = dates[dates.length - 1];

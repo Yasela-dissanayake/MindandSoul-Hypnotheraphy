@@ -7,12 +7,12 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Progress } from "@/components/ui/progress";
 import { createSubmission, deleteMySubmission } from "@/app/portal/actions";
 import { uploadFile } from "@/lib/upload-client";
 import { formatBytes } from "@/lib/format";
 import { VoiceRecorder, type Recording } from "./voice-recorder";
 import { friendlyError } from "@/lib/friendly-error";
+import { UploadProgress } from "@/components/upload-progress";
 
 const ACCEPT = "audio/*,.mp3,.m4a,.pdf,application/pdf,.doc,.docx,image/*,.jpg,.jpeg,.png,.heic";
 const nameWithoutExt = (n: string) => n.replace(/\.[^.]+$/, "");
@@ -116,7 +116,7 @@ export function SubmissionUpload({ plans }: { plans: { id: string; title: string
           ))}
         </select>
       )}
-      {progress !== null && <Progress value={progress} className="h-1.5" />}
+      {progress !== null && <UploadProgress pct={progress} />}
       <Button onClick={send} disabled={pending || (mode === "file" ? !file : !recording)} className="h-11 w-full bg-sage-600 hover:bg-sage-700">
         {pending ? "Sending…" : "Send to Rangika"}
       </Button>

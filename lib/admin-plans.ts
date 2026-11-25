@@ -73,7 +73,7 @@ export async function loadCourseForEditor(courseId: string) {
     include: {
       modules: { orderBy: [{ order: "asc" }, { title: "asc" }] },
       items: { orderBy: [{ order: "asc" }, { createdAt: "asc" }], include: { resource: { select: { id: true, title: true, kind: true } } } },
-      _count: { select: { enrollments: true, purchases: true } },
+      _count: { select: { enrollments: true, purchases: { where: { status: "PAID" } } } },
       includes: { select: { id: true, title: true }, orderBy: { order: "asc" } },
       includedIn: { select: { id: true, title: true }, orderBy: { order: "asc" } },
       dates: { orderBy: { startsAt: "asc" }, select: { date: true, start: true, end: true } },
@@ -87,6 +87,7 @@ export async function loadCourseForEditor(courseId: string) {
     archived: c.archived,
     // Nothing to lose: no students and no payments.
     canDelete: c._count.enrollments === 0 && c._count.purchases === 0,
+    students: c._count.enrollments,
     coverUrl: coverUrl("course", c),
     website: {
       slug: c.slug,

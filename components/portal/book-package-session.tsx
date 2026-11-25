@@ -9,6 +9,7 @@ import { bookPackageSession } from "@/app/portal/session-booking-actions";
 import { bookSessionForClient } from "@/app/admin/_actions/client-sessions";
 import { cn } from "@/lib/utils";
 import { friendlyError } from "@/lib/friendly-error";
+import { timeRange } from "@/lib/dates";
 
 type Mode = "IN_PERSON" | "DISTANCE";
 type Slot = { start: string; end: string; startsAt: string; endsAt: string };
@@ -41,11 +42,7 @@ export function BookPackageSession({
   const [pending, start] = useTransition();
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "Australia/Perth";
   const fmt = (s: Slot) =>
-    `${new Date(s.startsAt).toLocaleDateString("en-AU", { timeZone: tz, weekday: "long", day: "numeric", month: "long" })}, ${new Date(s.startsAt).toLocaleTimeString("en-AU", {
-      timeZone: tz,
-      hour: "numeric",
-      minute: "2-digit",
-    })}`;
+    `${new Date(s.startsAt).toLocaleDateString("en-AU", { timeZone: tz, weekday: "long", day: "numeric", month: "long" })}, ${timeRange(s.startsAt, s.endsAt, tz)}`;
 
   if (done) {
     return (

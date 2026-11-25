@@ -71,6 +71,18 @@ export function momentIn(d: Date, tz: string) {
   };
 }
 
+/**
+ * A session's time range on a time zone's clock: "10:30 – 11:30 am", or "11:30 am – 12:30 pm" when it
+ * crosses midday.
+ */
+export function timeRange(start: Date | string, end: Date | string, tz: string) {
+  const t = (d: Date | string) => new Date(d).toLocaleTimeString("en-AU", { timeZone: tz, hour: "numeric", minute: "2-digit" });
+  const a = t(start);
+  const b = t(end);
+  const period = (x: string) => x.match(/\s?([ap]\.?m\.?)$/i)?.[1] ?? "";
+  return period(a) && period(a) === period(b) ? `${a.replace(/\s?[ap]\.?m\.?$/i, "")} – ${b}` : `${a} – ${b}`;
+}
+
 /** How many hours `tz` is ahead of `base` right now (negative = behind), e.g. Perth vs Colombo = 2.5. */
 export function hoursAhead(tz: string, base: string, at = new Date()) {
   const offset = (zone: string) => {

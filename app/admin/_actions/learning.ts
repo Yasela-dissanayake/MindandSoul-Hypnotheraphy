@@ -23,17 +23,39 @@ const packageSchema = z.object({
   title: z.string().trim().min(1, "Please give the course a name.").max(150),
   summary: z.string().max(200).nullable().optional(),
   description: z.string().max(10000).nullable().optional(),
-  price: z.number().min(0.5, "The price must be at least AUD 0.50.").max(10000),
+  price: z.number({ invalid_type_error: "Please enter the AUD price." }).min(0.5, "The AUD price must be at least AUD 0.50.").max(10000),
+  // Visitors in the UAE pay in AED.
+  priceAed: z.number({ invalid_type_error: "Please enter the AED price." }).min(2, "The AED price must be at least AED 2.").max(50000),
   published: z.boolean().default(false),
 });
 
-export async function createLearningPackage(input: { title: string; price: number }): Promise<ActionResult<{ id: string }>> {
+const newPackageSchema = packageSchema.omit({ published: true }).extend({
+  // The cover photo, already uploaded (R2 key).
+  imageKey: z
+    .string()
+    .regex(/^covers\/[\w.\-\/]+$/, "The photo upload didn't work. Please choose it again.")
+    .nullable()
+    .optional(),
+});
+
+/** A new course with all its details and cover photo. It starts as a draft; lessons are added next. */
+export async function createLearningPackage(input: z.input<typeof newPackageSchema>): Promise<ActionResult<{ id: string }>> {
   await requireAdmin();
-  const parsed = packageSchema.pick({ title: true, price: true }).safeParse(input);
+  const parsed = newPackageSchema.safeParse(input);
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Please check the details.");
+  const d = parsed.data;
   const count = await db.learningPackage.count();
   const pkg = await db.learningPackage.create({
-    data: { title: parsed.data.title, slug: await uniqueSlug(parsed.data.title), price: Math.round(parsed.data.price * 100), order: count },
+    data: {
+      title: d.title,
+      slug: await uniqueSlug(d.title),
+      summary: blank(d.summary),
+      description: blank(d.description),
+      price: Math.round(d.price * 100),
+      priceAed: Math.round(d.priceAed * 100),
+      imageKey: d.imageKey ?? null,
+      order: count,
+    },
   });
   refresh();
   return { ok: true, data: { id: pkg.id } };
@@ -54,6 +76,7 @@ export async function updateLearningPackage(id: string, input: z.input<typeof pa
       summary: blank(d.summary),
       description: blank(d.description),
       price: Math.round(d.price * 100),
+      priceAed: Math.round(d.priceAed * 100),
       published: d.published,
       // Keep the web address stable once set, unless the name changes.
       ...(d.title !== current.title ? { slug: await uniqueSlug(d.title, id) } : {}),
@@ -71,12 +94,22 @@ export async function setLearningPackageArchived(id: string, archived: boolean):
   return { ok: true };
 }
 
+/**
+ * Deletes a course with its sections and lessons (Library files stay in the Library).
+ * A course people have (or paid for) is archived instead, so they keep what they paid for.
+ * Unfinished checkouts are removed with it; one started in the last 2 hours may still be paid, so it waits.
+ */
 export async function deleteLearningPackage(id: string): Promise<ActionResult> {
   await requireAdmin();
-  const p = await db.learningPackage.findUnique({ where: { id }, select: { imageKey: true, _count: { select: { enrollments: true, purchases: true } } } });
-  if (!p) return fail("Not found.");
+  const p = await db.learningPackage.findUnique({
+    where: { id },
+    select: { imageKey: true, _count: { select: { enrollments: true, purchases: { where: { status: "PAID" } } } } },
+  });
+  if (!p) return fail("This course was already deleted.");
   if (p._count.enrollments || p._count.purchases) return fail("People have bought this course, so it can't be deleted. Archive it instead.");
-  await db.learningPackage.delete({ where: { id } });
+  const recent = await db.packagePurchase.count({ where: { packageId: id, status: "PENDING", createdAt: { gt: new Date(Date.now() - 2 * 60 * 60 * 1000) } } });
+  if (recent) return fail("Someone started paying for this course in the last 2 hours. Please try again later, or archive it now.");
+  await db.$transaction([db.packagePurchase.deleteMany({ where: { packageId: id, status: { not: "PAID" } } }), db.learningPackage.delete({ where: { id } })]);
   if (p.imageKey && !isSiteImage(p.imageKey)) await deleteObject(p.imageKey);
   refresh();
   return { ok: true };

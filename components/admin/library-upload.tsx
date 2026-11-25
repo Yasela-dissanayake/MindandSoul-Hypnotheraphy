@@ -7,13 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Progress } from "@/components/ui/progress";
 import { createLinkResource } from "@/app/admin/_actions/library";
 import { ACCEPT_FILES, KIND_LABEL, kindForFile } from "@/lib/catalog";
 import { formatBytes } from "@/lib/format";
 import { useAction } from "./use-action";
 import { KIND_ICON, uploadToLibrary } from "./library-picker";
 import { friendlyError } from "@/lib/friendly-error";
+import { UploadProgress } from "@/components/upload-progress";
 
 /** Upload recordings, PDFs, Word documents and images to the library.
  *  With `personalFor`, the files are made for one client only. */
@@ -82,7 +82,7 @@ export function LibraryUpload({ personalFor, tags = [] }: { personalFor?: { id: 
                       </Button>
                     )}
                   </div>
-                  {progress?.i === i && <Progress value={progress.pct} className="h-1.5" />}
+                  {progress?.i === i && <UploadProgress pct={progress.pct} />}
                 </li>
               );
             })}

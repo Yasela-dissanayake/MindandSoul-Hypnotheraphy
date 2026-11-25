@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
+import { timeRange } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 
 // The free times for a session service, shown in the visitor's own time zone.
@@ -84,7 +85,6 @@ export function SlotPicker({
     );
   const current = date && days[date]?.length ? date : dates[0];
   const longLabel = new Date(`${current}T12:00:00Z`).toLocaleDateString("en-AU", { timeZone: "UTC", weekday: "long", day: "numeric", month: "long" });
-  const time = (iso: string) => new Date(iso).toLocaleTimeString("en-AU", { timeZone: tz, hour: "numeric", minute: "2-digit" });
   const hour = (iso: string) => Number(new Date(iso).toLocaleString("en-GB", { timeZone: tz, hour: "2-digit", hourCycle: "h23" }));
   const tzName = tz === "Australia/Perth" ? "Perth time" : `your time, ${tz.replace(/_/g, " ")}`;
 
@@ -154,7 +154,7 @@ export function SlotPicker({
                       slot?.startsAt === s.startsAt ? "bg-sage-600 font-medium text-white ring-sage-600" : "bg-white text-stone-700 ring-stone-200 hover:bg-sage-50 hover:ring-sage-300",
                     )}
                   >
-                    {time(s.startsAt)}
+                    {timeRange(s.startsAt, s.endsAt, tz)}
                   </button>
                 ))}
               </div>

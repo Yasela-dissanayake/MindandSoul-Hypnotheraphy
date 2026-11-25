@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Award, CalendarPlus, CheckCircle2, ClipboardList, GraduationCap, MessageCircleQuestion, NotebookPen } from "lucide-react";
+import { Award, CalendarClock, CalendarPlus, CheckCircle2, ClipboardList, GraduationCap, MapPin, MessageCircleQuestion, NotebookPen, Video } from "lucide-react";
 import { requireClientPage } from "@/lib/authz";
 import { getToday } from "@/lib/plans";
 import { getStudentCourses } from "@/lib/material";
@@ -15,7 +15,7 @@ import { BookMore, ExploreServices } from "@/components/portal/explore-services"
 
 export default async function TodayPage() {
   const user = await requireClientPage();
-  const [{ today, tasks, trackers, prompt, tonightAudio, upcoming, hasPlans }, courses, enc, newAnswers, learning, newReplies, livePlans] = await Promise.all([
+  const [{ today, tasks, trackers, prompt, tonightAudio, upcoming, hasPlans }, courses, enc, newAnswers, learning, newReplies, livePlans, nextSession] = await Promise.all([
     getToday(user.id, user.timezone),
     getStudentCourses(user.id),
     getEncouragements(),
@@ -32,6 +32,12 @@ export default async function TodayPage() {
         sessionService: { select: { published: true, enquiryOnly: true } },
         bookings: { where: { status: "CONFIRMED", recorded: false }, select: { endsAt: true } },
       },
+    }),
+    // Their next session (or the one happening now), with the Zoom link for online sessions.
+    db.booking.findFirst({
+      where: { userId: user.id, status: "CONFIRMED", recorded: false, endsAt: { gt: new Date() } },
+      orderBy: { startsAt: "asc" },
+      select: { startsAt: true, endsAt: true, mode: true, service: true, plan: { select: { title: true, meetingLink: true, completedAt: true } } },
     }),
   ]);
   const now = new Date();
@@ -85,6 +91,56 @@ export default async function TodayPage() {
           </p>
         </Link>
       ))}
+
+      {nextSession && (() => {
+        const tz = user.timezone;
+        const s = nextSession;
+        const day = s.startsAt.toLocaleDateString("en-AU", { timeZone: tz, weekday: "long", day: "numeric", month: "long" });
+        const t = (d: Date) => d.toLocaleTimeString("en-AU", { timeZone: tz, hour: "numeric", minute: "2-digit" });
+        const isToday = s.startsAt.toLocaleDateString("en-CA", { timeZone: tz }) === today;
+        const soon = s.startsAt.getTime() - Date.now() <= 15 * 60_000; // starting within 15 minutes, or already on
+        const online = s.mode === "DISTANCE";
+        const zoom = online && !s.plan?.completedAt ? s.plan?.meetingLink : null;
+        return (
+          <section
+            aria-label="Your next session"
+            className={`flex flex-col gap-4 rounded-2xl p-5 ring-1 sm:flex-row sm:items-center ${soon ? "bg-sage-700 text-white ring-sage-700" : "bg-white ring-sage-200"}`}
+          >
+            <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${soon ? "bg-white/15 text-brand-gold" : "bg-sage-100 text-sage-700"}`}>
+              {online ? <Video className="h-6 w-6" aria-hidden /> : <CalendarClock className="h-6 w-6" aria-hidden />}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className={`text-xs font-semibold uppercase tracking-wider ${soon ? "text-brand-gold" : "text-sage-700"}`}>
+                {soon ? "Your session is starting" : isToday ? "Your session is today" : "Your next session"}
+              </p>
+              <p className={`mt-0.5 font-serif text-xl ${soon ? "text-white" : "text-stone-800"}`}>{s.plan?.title ?? s.service}</p>
+              <p className={`text-sm ${soon ? "text-white/80" : "text-stone-600"}`}>
+                {isToday ? "Today" : day}, {t(s.startsAt)} – {t(s.endsAt)} ·{" "}
+                {online ? (
+                  "Online on Zoom"
+                ) : (
+                  <span className="inline-flex items-center gap-1">
+                    <MapPin className="h-3.5 w-3.5" aria-hidden /> In person in Perth
+                  </span>
+                )}
+              </p>
+              {online && !zoom && <p className={`mt-1 text-xs ${soon ? "text-white/70" : "text-stone-500"}`}>Rangika will add your Zoom link here before the session.</p>}
+            </div>
+            {zoom && (
+              <a
+                href={zoom}
+                target="_blank"
+                rel="noreferrer"
+                className={`inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-medium shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
+                  soon ? "bg-brand-gold text-sage-900 hover:bg-gold-300 focus-visible:ring-brand-gold" : "bg-sage-600 text-white hover:bg-sage-700 focus-visible:ring-sage-500"
+                }`}
+              >
+                <Video className="h-4 w-4" aria-hidden /> Click here to join Zoom session
+              </a>
+            )}
+          </section>
+        );
+      })()}
 
       {toBook.map((p) => (
         <div key={p.id} className="flex flex-wrap items-center gap-3 rounded-2xl bg-white p-4 ring-1 ring-sage-200">

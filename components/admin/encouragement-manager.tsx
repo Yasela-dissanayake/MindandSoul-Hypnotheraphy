@@ -5,11 +5,11 @@ import { Play, Trash2, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
 import { VoiceRecorder, type Recording } from "@/components/portal/voice-recorder";
 import { addEncouragement, addVoiceClip, deleteEncouragement, deleteVoiceClip, setVoiceMode } from "@/app/admin/_actions/settings";
 import { uploadFile } from "@/lib/upload-client";
 import { useAction } from "./use-action";
+import { UploadProgress } from "@/components/upload-progress";
 
 type Mode = "COMPUTER" | "RECORDED" | "BOTH";
 
@@ -151,7 +151,7 @@ export function EncouragementManager({
             Or upload an audio file:{" "}
             <input suppressHydrationWarning type="file" accept="audio/*" className="text-xs" onChange={(e) => e.target.files?.[0] && uploadClipFile(e.target.files[0])} />
           </label>
-          {uploadPct !== null && <Progress value={uploadPct} className="h-1.5" />}
+          {uploadPct !== null && <UploadProgress pct={uploadPct} label="Uploading voice clip…" />}
         </div>
       </div>
     </section>

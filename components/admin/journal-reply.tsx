@@ -7,12 +7,12 @@ import { toast } from "sonner";
 import { useBusyTransition } from "@/components/use-busy-transition";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Progress } from "@/components/ui/progress";
 import { VoiceRecorder, type Recording } from "@/components/portal/voice-recorder";
 import { deleteJournalReply, saveJournalReply } from "@/app/admin/_actions/journal";
 import { uploadFile } from "@/lib/upload-client";
 import { formatDuration } from "@/lib/format";
 import { friendlyError } from "@/lib/friendly-error";
+import { UploadProgress } from "@/components/upload-progress";
 
 export type JournalReplyData = {
   text: string | null;
@@ -138,7 +138,7 @@ export function JournalReply({ entryId, clientName, reply }: { entryId: string; 
           <VoiceRecorder value={recording} onChange={setRecording} disabled={pending} label="Record a voice reply" />
         </div>
       )}
-      {progress !== null && <Progress value={progress} className="h-1.5" />}
+      {progress !== null && <UploadProgress pct={progress} label="Uploading your voice reply…" />}
       <div className="flex flex-wrap gap-2">
         <Button type="button" size="sm" onClick={save} disabled={pending || !canSave} className="bg-sage-600 hover:bg-sage-700">
           {pending ? "Sending…" : reply ? "Save reply" : "Send reply"}

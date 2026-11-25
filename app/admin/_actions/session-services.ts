@@ -31,15 +31,82 @@ async function uniqueSlug(title: string, excludeId?: string) {
   return `${base}-${Date.now() % 100000}`;
 }
 
-export async function createSessionService(input: { title: string; category?: z.infer<typeof CATEGORY> }): Promise<ActionResult<{ id: string }>> {
+const newOptionSchema = z.object({
+  title: z.string().trim().min(1, "Give every price a name, e.g. \"Single session\".").max(80),
+  sessions: z.number().int().min(1, "Every price needs at least 1 session.").max(50),
+  price: z.number({ invalid_type_error: "Enter the AUD price for every package." }).min(0.5, "Enter the AUD price for every package.").max(100000),
+  priceAed: z.number({ invalid_type_error: "Enter the AED price for every package." }).min(2, "Enter the AED price for every package (at least AED 2).").max(500000),
+  mode: z.enum(["IN_PERSON", "DISTANCE"]).nullable(),
+  note: z.string().max(200).optional().nullable(),
+});
+
+const newServiceSchema = z
+  .object({
+    title: z.string().trim().min(1, "Please enter a name.").max(150, "Please use a shorter name."),
+    category: CATEGORY,
+    planService: CATEGORY.optional(),
+    tagline: z.string().max(200).optional().nullable(),
+    summary: z.string().max(300).optional().nullable(),
+    body: z.string().max(40000, "The page text is too long.").optional().nullable(),
+    details: z.string().max(10000).optional().nullable(),
+    highlights: z.string().max(5000).optional().nullable(),
+    lengthLabel: z.string().max(60).optional().nullable(),
+    minutes: z.number().int().min(15, "Sessions must be at least 15 minutes.").max(480).nullable().optional(),
+    inPerson: z.boolean(),
+    online: z.boolean(),
+    enquiryOnly: z.boolean(),
+    published: z.boolean().optional(),
+    imageKey: z
+      .string()
+      .regex(/^covers\/[\w.\-\/]+$/, "The photo upload didn't work. Please choose it again.")
+      .nullable()
+      .optional(),
+    options: z.array(newOptionSchema).max(20).default([]),
+  })
+  .refine((d) => d.enquiryOnly || d.inPerson || d.online, { message: "Choose in person, online, or both." })
+  .refine((d) => d.enquiryOnly || d.options.length > 0, { message: "Add at least one price (e.g. Single session)." });
+
+/**
+ * A new session service, all in one go from the "New session" page: its details and page text, its
+ * prices and packages (AUD and AED), its cover photo, and whether it's shown on the website.
+ */
+export async function createSessionService(input: z.input<typeof newServiceSchema>): Promise<ActionResult<{ id: string }>> {
   await requireAdmin();
-  const title = input.title.trim();
-  if (!title) return fail("Please enter a name.");
-  if (title.length > 150) return fail("Please use a shorter name.");
-  const category = CATEGORY.catch("HYPNOTHERAPY").parse(input.category ?? "HYPNOTHERAPY");
-  const count = await db.sessionService.count({ where: { category } });
+  const parsed = newServiceSchema.safeParse(input);
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Please check the details.");
+  const d = parsed.data;
+  const count = await db.sessionService.count({ where: { category: d.category } });
   const s = await db.sessionService.create({
-    data: { title, slug: await uniqueSlug(title), order: count + 1, published: false, planService: category, category },
+    data: {
+      title: d.title,
+      slug: await uniqueSlug(d.title),
+      order: count + 1,
+      published: Boolean(d.published),
+      planService: d.planService ?? d.category,
+      category: d.category,
+      tagline: blank(d.tagline),
+      summary: blank(d.summary),
+      body: blank(d.body),
+      details: blank(d.details),
+      highlights: blank(d.highlights),
+      lengthLabel: blank(d.lengthLabel),
+      minutes: d.minutes ?? null,
+      inPerson: d.inPerson,
+      online: d.online,
+      enquiryOnly: d.enquiryOnly,
+      imageKey: d.imageKey ?? null,
+      options: {
+        create: (d.enquiryOnly ? [] : d.options).map((o, i) => ({
+          title: o.title,
+          sessions: o.sessions,
+          price: Math.round(o.price * 100),
+          priceAed: Math.round(o.priceAed * 100),
+          mode: o.mode,
+          note: blank(o.note),
+          order: i,
+        })),
+      },
+    },
   });
   refresh();
   return { ok: true, data: { id: s.id } };
@@ -152,8 +219,10 @@ export async function saveSessionOption(serviceId: string, optionId: string | nu
   const parsed = optionSchema.safeParse(input);
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Please check the price.");
   const d = parsed.data;
-  const priceAed = d.priceAed ? Math.round(d.priceAed * 100) : null;
-  if (priceAed !== null && priceAed < 200) return fail("The AED price is too low. Leave it empty to show the AUD price instead.");
+  // Every price is set in both currencies: visitors in the UAE see and pay AED.
+  if (!d.priceAed) return fail("Please enter the AED price too (visitors in the UAE see it).");
+  const priceAed = Math.round(d.priceAed * 100);
+  if (priceAed < 200) return fail("The AED price must be at least AED 2.");
   const data = { title: d.title, sessions: d.sessions, price: Math.round(d.price * 100), priceAed, mode: d.mode, note: blank(d.note), recorded: d.recorded };
   if (optionId) {
     const o = await db.sessionOption.findFirst({ where: { id: optionId, serviceId }, select: { id: true } });
