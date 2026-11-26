@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { db } from "@/lib/db";
 import { serviceWithOptions } from "@/lib/session-catalog";
 import { viewerCurrency } from "@/lib/currency";
-import { getActivePromotion, promotedFirst, promotionLink } from "@/lib/promotions";
+import { getActivePromotion, promoDiscount, promotedFirst, promotionLink } from "@/lib/promotions";
 import { enquiryHref } from "@/lib/site-routes";
 import { CurrencySwitch } from "@/components/site/currency-switch";
 import { ServiceCard } from "@/components/site/service-card";
@@ -44,7 +44,7 @@ export default async function ReikiHealingPage() {
   const reiki = sorted.filter((s) => s.category === "REIKI_HEALING");
   const animal = sorted.filter((s) => s.category === "ANIMAL_REIKI");
   const card = (s: (typeof all)[number]) => (
-    <ServiceCard key={s.id} s={s} currency={currency} photo promoted={s.id === promotedId} free={s.id === promotedId && Boolean(promo?.free)} />
+    <ServiceCard key={s.id} s={s} currency={currency} photo promoted={s.id === promotedId} free={s.id === promotedId && Boolean(promo?.free)} discount={s.id === promotedId ? promoDiscount(promo) : 0} />
   );
 
   return (

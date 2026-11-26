@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { navigateTo } from "@/components/navigation-progress";
 import { ArrowDown, ArrowUp, Award, CalendarDays, ExternalLink, Globe, Pencil, Plus, Sparkles, Trash2, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -113,7 +114,7 @@ export function CourseDetails({ course }: { course: EditorCourse }) {
             <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
               <Pencil className="mr-1.5 h-3.5 w-3.5" /> Edit
             </Button>
-            <Button size="sm" variant="outline" disabled={pending} onClick={() => run(() => setCourseArchived(course.id, !course.archived), course.archived ? "Class visible again" : "Class hidden")}>
+            <Button size="sm" variant="outline" disabled={pending} onClick={() => run(() => setCourseArchived(course.id, !course.archived), course.archived ? "Class visible again" : "Class hidden", (r) => r.ok && navigateTo(router, "/admin/classes"))}>
               {course.archived ? "Show to students" : "Hide class"}
             </Button>
             <DeleteClassButton
@@ -123,7 +124,7 @@ export function CourseDetails({ course }: { course: EditorCourse }) {
               students={course.students}
               archived={course.archived}
               bundles={course.includedIn.map((b) => b.title)}
-              onDeleted={() => router.push("/admin/classes")}
+              onDeleted={() => navigateTo(router, "/admin/classes")}
             />
           </div>
         </div>
@@ -492,6 +493,7 @@ export function PersonCourses({
 
 /** Price (AUD and AED), dates, details and bundle contents for the class's Reiki Training page, and the publish switch. */
 export function CourseWebsiteForm({ course, classOptions }: { course: EditorCourse; classOptions: { id: string; title: string; isBundle: boolean }[] }) {
+  const router = useRouter();
   const w = course.website;
   const [f, setF] = useState({
     summary: w.summary,
@@ -538,6 +540,7 @@ export function CourseWebsiteForm({ course, classOptions }: { course: EditorCour
         if (r.ok) {
           setF((x) => ({ ...x, published }));
           setSlug((r.data as { slug?: string } | undefined)?.slug ?? slug);
+          navigateTo(router, "/admin/classes");
         }
       },
     );

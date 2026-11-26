@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { navigateTo } from "@/components/navigation-progress";
 import Link from "next/link";
 import { ArrowDown, ArrowUp, ExternalLink, ImageIcon, Pencil, Plus, Trash2, Upload, X } from "lucide-react";
 import { toast } from "sonner";
@@ -424,7 +425,12 @@ export function SessionServiceForm({ service }: { service: EditorService }) {
           published,
         }),
       published && !service.published ? "Saved and shown on the website" : !published && service.published ? "Hidden from the website" : "Saved",
-      (r) => r.ok && setF((x) => ({ ...x, published })),
+      (r) => {
+        if (!r.ok) return;
+        setF((x) => ({ ...x, published }));
+        // Back to its list (the website tab it's under now, if that was changed).
+        navigateTo(router, `${areaHref(areaOf(f.category))}#services`);
+      },
     );
 
   return (
@@ -523,7 +529,7 @@ export function SessionServiceForm({ service }: { service: EditorService }) {
             </a>
           </Button>
         )}
-        <DeleteServiceButton id={service.id} title={service.title} clients={service.clients} onDeleted={() => router.push(`${areaHref(areaOf(service.category))}#services`)} />
+        <DeleteServiceButton id={service.id} title={service.title} clients={service.clients} onDeleted={() => navigateTo(router, `${areaHref(areaOf(service.category))}#services`)} />
       </div>
     </div>
   );

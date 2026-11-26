@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { db } from "@/lib/db";
 import { onSaleWhere } from "@/lib/course-sales";
 import { viewerCurrency } from "@/lib/currency";
-import { getActivePromotion, promotedFirst, promotionLink } from "@/lib/promotions";
+import { getActivePromotion, promoDiscount, promotedFirst, promotionLink } from "@/lib/promotions";
 import { enquiryHref } from "@/lib/site-routes";
 import { CurrencySwitch } from "@/components/site/currency-switch";
 import { ClassGrid, classCardInclude } from "@/components/site/class-grid";
@@ -140,7 +140,7 @@ export default async function AnimalReikiTrainingPage() {
               to hear about the next training.
             </p>
           ) : (
-            <ClassGrid classes={classes} currency={currency} promotedId={promotedId} promoFree={Boolean(promo?.free)} />
+            <ClassGrid classes={classes} currency={currency} promotedId={promotedId} promoFree={Boolean(promo?.free)} promoDiscount={promoDiscount(promo)} />
           )}
         </div>
       </section>

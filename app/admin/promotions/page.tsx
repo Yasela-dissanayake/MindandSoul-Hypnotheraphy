@@ -43,6 +43,11 @@ export default async function PromotionsPage() {
                 <Gift className="h-3.5 w-3.5" aria-hidden /> Free
               </span>
             )}
+            {!current.free && current.discountPercent ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800">
+                {current.discountPercent}% off
+              </span>
+            ) : null}
             <span className="text-sm text-stone-500">
               {shortDate(current.startsAt, tz)} – {shortDate(current.endsAt, tz)} · {timeLeft(current.endsAt, now)}
             </span>
@@ -101,6 +106,7 @@ export default async function PromotionsPage() {
                         {p.title}
                       </Link>
                       {p.free && <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800">Free</span>}
+                      {!p.free && p.discountPercent ? <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800">{p.discountPercent}% off</span> : null}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-stone-600">
                       {shortDate(p.startsAt, tz)} – {shortDate(p.endsAt, tz)}

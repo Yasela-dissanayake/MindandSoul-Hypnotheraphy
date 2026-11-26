@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { db } from "@/lib/db";
 import { serviceWithOptions } from "@/lib/session-catalog";
 import { viewerCurrency } from "@/lib/currency";
-import { getActivePromotion, promotedFirst, promotionLink } from "@/lib/promotions";
+import { getActivePromotion, promoDiscount, promotedFirst, promotionLink } from "@/lib/promotions";
 import { enquiryHref } from "@/lib/site-routes";
 import { CurrencySwitch } from "@/components/site/currency-switch";
 import { ServiceCard } from "@/components/site/service-card";
@@ -139,7 +139,7 @@ export default async function HypnotherapyPage() {
           ) : (
             <div className="mx-auto grid max-w-7xl gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
               {areas.map((s) => (
-                <ServiceCard key={s.id} s={s} currency={currency} photo promoted={s.id === promotedId} free={s.id === promotedId && Boolean(promo?.free)} />
+                <ServiceCard key={s.id} s={s} currency={currency} photo promoted={s.id === promotedId} free={s.id === promotedId && Boolean(promo?.free)} discount={s.id === promotedId ? promoDiscount(promo) : 0} />
               ))}
             </div>
           )}

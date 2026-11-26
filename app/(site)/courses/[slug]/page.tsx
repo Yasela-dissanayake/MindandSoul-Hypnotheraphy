@@ -7,7 +7,7 @@ import { db } from "@/lib/db";
 import { orderLessons } from "@/lib/learning";
 import { BuyPackage } from "@/components/learn/buy-package";
 import { coverUrl } from "@/lib/covers";
-import { getActivePromotion, promotionLink } from "@/lib/promotions";
+import { discounted, getActivePromotion, promoDiscount, promotionLink } from "@/lib/promotions";
 import { PromoNote } from "@/components/site/promo-note";
 import { CurrencySwitch } from "@/components/site/currency-switch";
 import { classPrice, formatPrice, viewerCurrency } from "@/lib/currency";
@@ -42,7 +42,9 @@ export default async function LearnPackagePage({ params }: { params: Promise<{ s
   const free = promoted && Boolean(promo?.free);
   // AED for visitors in the UAE (when the course has an AED price), otherwise AUD.
   const currency = await viewerCurrency();
-  const price = classPrice(pkg, currency);
+  const usual = classPrice(pkg, currency);
+  // The running promotion may take some off (the same sum the payment uses).
+  const price = { ...usual, amount: discounted(usual.amount, promoted ? promoDiscount(promo) : 0) };
   const priceLabel = formatPrice(price.amount, price.currency);
   const groups = [
     ...pkg.sections.map((s) => ({ title: s.title, lessons: lessons.filter((l) => l.sectionId === s.id) })),
@@ -107,6 +109,10 @@ export default async function LearnPackagePage({ params }: { params: Promise<{ s
               {free ? (
                 <p className="flex items-baseline gap-2 font-serif text-3xl text-amber-700">
                   Free {price.amount > 0 && <span className="font-sans text-base text-stone-400 line-through">{priceLabel}</span>}
+                </p>
+              ) : price.amount < usual.amount ? (
+                <p className="flex items-baseline gap-2 font-serif text-3xl text-amber-700">
+                  {priceLabel} <span className="font-sans text-base text-stone-400 line-through">{formatPrice(usual.amount, usual.currency)}</span>
                 </p>
               ) : (
                 <p className="font-serif text-3xl text-stone-800">{priceLabel}</p>

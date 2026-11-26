@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/authz";
 import { deleteObject } from "@/lib/storage";
 import { isSiteImage } from "@/lib/covers";
-import { DAY_MS, MAX_DAYS, runningWhere } from "@/lib/promotions";
+import { DAY_MS, MAX_DAYS, MAX_DISCOUNT, runningWhere } from "@/lib/promotions";
 import { fail, type ActionResult } from "./common";
 
 // Admin → Promotion. Only one promotion runs at a time; it starts when it's created (or run again)
@@ -24,6 +24,16 @@ const schema = z.object({
   // "session:<id>" | "class:<id>" | "course:<id>" | "" (not linked)
   link: z.string().max(80).default(""),
   free: z.boolean().default(false),
+  // % off the linked item while it runs (empty = full price). Ignored when it's free.
+  discountPercent: z.preprocess(
+    (v) => (v === "" || v === undefined ? null : v),
+    z.coerce
+      .number({ invalid_type_error: "Please enter the discount as a number, e.g. 20." })
+      .int("Please enter a whole number for the discount, e.g. 20.")
+      .min(1, "The discount must be at least 1%.")
+      .max(MAX_DISCOUNT, `The discount can be ${MAX_DISCOUNT}% at most. To give it away, choose "Free".`)
+      .nullable(),
+  ),
   // Only when creating: a photo already uploaded from the form (a storage key "covers/...").
   imageKey: z
     .string()
@@ -57,7 +67,10 @@ function parse(input: PromotionInput) {
   const parsed = schema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: parsed.error.issues[0]?.message ?? "Please check the details." };
   if (parsed.data.free && !parsed.data.link) return { ok: false as const, error: "To make something free, choose which session, class or course it is." };
-  return { ok: true as const, data: parsed.data };
+  if (parsed.data.discountPercent && !parsed.data.link)
+    return { ok: false as const, error: "To give a discount, choose which session, class or course it's for." };
+  // Free and a discount can't both apply.
+  return { ok: true as const, data: { ...parsed.data, discountPercent: parsed.data.free ? null : (parsed.data.discountPercent ?? null) } };
 }
 
 const runningOther = (excludeId?: string) =>
@@ -78,6 +91,7 @@ export async function createPromotion(input: PromotionInput): Promise<ActionResu
       content: p.data.content,
       days: p.data.days,
       free: p.data.free,
+      discountPercent: p.data.discountPercent,
       startsAt: now,
       endsAt: new Date(now.getTime() + p.data.days * DAY_MS),
       imageKey: p.data.imageKey ?? null,
@@ -105,6 +119,7 @@ export async function updatePromotion(id: string, input: PromotionInput): Promis
       content: p.data.content,
       days: p.data.days,
       free: p.data.free,
+      discountPercent: p.data.discountPercent,
       // A promotion that already ended keeps its dates until it's run again.
       ...(running ? { endsAt: new Date(promo.startsAt.getTime() + p.data.days * DAY_MS) } : {}),
       ...link.data,

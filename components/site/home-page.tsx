@@ -2,7 +2,8 @@
 
 import { useClientViewer } from "@/components/site/viewer-context";
 import { useState } from "react";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
+import { EnquirySent, sentFrom, type SentEnquiry } from "@/components/site/enquiry-sent";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -34,6 +35,8 @@ import { friendlyError } from "@/lib/friendly-error";
 export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
   const me = useClientViewer(); // signed in: their details are filled in
   const [loading, setLoading] = useState(false);
+  // The enquiry that was just sent: the form shows a thank-you message instead.
+  const [sent, setSent] = useState<SentEnquiry | null>(null);
 
   const handleSubmit = async (
     e: React.FormEvent<HTMLFormElement>,
@@ -49,7 +52,6 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
     const body = Object.fromEntries(formData.entries());
     body.formType = type;
 
-    console.log("Form data:", body);
     try {
       const res = await fetch("/api/enquiries", {
         method: "POST",
@@ -58,26 +60,18 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
       });
 
       if (res.ok) {
-        toast({
-          title: "✅ Success",
-          description: "Your request has been sent!",
-          duration: 3000,
-        });
-        console.log("Form submitted:", body);
+        // Show a thank-you message in place of the form.
         form.reset();
+        setSent(sentFrom(type, body));
       } else {
-        toast({
-          title: "❌ Failed",
-          description: (await res.json().catch(() => ({}))).error || "Please try again later.",
-          variant: "destructive",
+        toast.error("Your message wasn't sent", {
+          description: (await res.json().catch(() => ({}))).error || "Please check your details and try again.",
         });
       }
     } catch (err) {
       console.error(err);
-      toast({
-        title: "⚠️ Error",
+      toast.error("Your message wasn't sent", {
         description: friendlyError(err, "We couldn't send your message. Please try again in a moment."),
-        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -500,6 +494,9 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
                         </p> */}
                   </div>
 
+                  {sent?.type === "consultation" ? (
+                    <EnquirySent sent={sent} onAgain={() => setSent(null)} />
+                  ) : (
                   <form
                     onSubmit={(e) => handleSubmit(e, "consultation")}
                     className="space-y-4"
@@ -610,6 +607,7 @@ export function HomePage({ promotion }: { promotion: HomePromotion | null }) {
                       Request Free Consultation
                     </Button>
                   </form>
+                  )}
                 </div>
               </CardContent>
             </Card>

@@ -6,7 +6,8 @@ import { classPrice, formatPrice, type Currency } from "@/lib/currency";
 import { bundleSaving } from "@/lib/class-display";
 import { classHref } from "@/lib/site-routes";
 import { cn } from "@/lib/utils";
-import { OfferBadge, promotedCard } from "@/components/site/offer-badge";
+import { OfferBadge, WasPrice, promotedCard } from "@/components/site/offer-badge";
+import { discounted } from "@/lib/promotions";
 import { upcomingClassTimes } from "@/lib/class-dates";
 import { ClassStartLine } from "@/components/site/class-dates";
 
@@ -17,7 +18,20 @@ export const classCardInclude = {
 type ClassCard = Prisma.CourseGetPayload<{ include: typeof classCardInclude }>;
 
 /** Reiki Training classes as cards (photo, format, dates, bundle contents, price). */
-export function ClassGrid({ classes, currency, promotedId, promoFree }: { classes: ClassCard[]; currency: Currency; promotedId: string | null; promoFree: boolean }) {
+export function ClassGrid({
+  classes,
+  currency,
+  promotedId,
+  promoFree,
+  promoDiscount = 0,
+}: {
+  classes: ClassCard[];
+  currency: Currency;
+  promotedId: string | null;
+  promoFree: boolean;
+  /** % off the promoted class while the promotion runs. */
+  promoDiscount?: number;
+}) {
   const promo = { free: promoFree };
   return (
         <div className="mx-auto grid max-w-7xl gap-6 md:grid-cols-2 lg:grid-cols-3 xl:gap-8">
@@ -28,6 +42,7 @@ export function ClassGrid({ classes, currency, promotedId, promoFree }: { classe
             const cover = coverUrl("course", c);
             const promoted = c.id === promotedId;
             const free = promoted && Boolean(promo?.free);
+            const pay = promoted ? discounted(price.amount, promoDiscount) : price.amount;
             return (
               <Link
                 key={c.id}
@@ -38,7 +53,7 @@ export function ClassGrid({ classes, currency, promotedId, promoFree }: { classe
                 )}
               >
                 <div className="relative">
-                  {promoted && <OfferBadge overlay free={free} className={c.includes.length > 0 ? "top-12" : undefined} />}
+                  {promoted && <OfferBadge overlay free={free} discount={promoDiscount} className={c.includes.length > 0 ? "top-12" : undefined} />}
                   {cover ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={cover} alt="" className="h-52 w-full object-cover" />
@@ -82,6 +97,11 @@ export function ClassGrid({ classes, currency, promotedId, promoFree }: { classe
                       <span className="flex items-baseline gap-1.5">
                         <span className="text-lg font-semibold text-amber-700">Free</span>
                         <span className="text-xs text-stone-400 line-through">{formatPrice(price.amount, price.currency)}</span>
+                      </span>
+                    ) : pay < price.amount ? (
+                      <span className="flex items-baseline gap-1.5">
+                        <span className="text-lg font-semibold text-amber-700">{formatPrice(pay, price.currency)}</span>
+                        <WasPrice className="text-xs">{formatPrice(price.amount, price.currency)}</WasPrice>
                       </span>
                     ) : (
                       <span className="text-lg font-semibold text-stone-800">{formatPrice(price.amount, price.currency)}</span>

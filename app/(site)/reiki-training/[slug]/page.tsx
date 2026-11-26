@@ -9,7 +9,7 @@ import { coverUrl } from "@/lib/covers";
 import { classPrice, formatPrice, viewerCurrency } from "@/lib/currency";
 import { bundleSaving, highlightLines } from "@/lib/class-display";
 import { CurrencySwitch } from "@/components/site/currency-switch";
-import { getActivePromotion, promotionLink, freeOptionOf } from "@/lib/promotions";
+import { discounted, freeOptionOf, getActivePromotion, promoDiscount, promotionLink } from "@/lib/promotions";
 import { PromoNote } from "@/components/site/promo-note";
 import { RichText } from "@/components/site/rich-text";
 import { TRACK, classHref, enquiryHref } from "@/lib/site-routes";
@@ -42,7 +42,10 @@ export default async function ClassPage({ params }: { params: Promise<{ slug: st
   if (!c) notFound();
   const about = c.details || c.description;
   const full = c.seats !== null && c.seats <= 0;
-  const price = classPrice(c, currency);
+  const usual = classPrice(c, currency);
+  // The running promotion may take some off (the same sum the payment uses).
+  const pct = promo && promotionLink(promo)?.kind === "class" && promotionLink(promo)?.id === c.id ? promoDiscount(promo) : 0;
+  const price = { ...usual, amount: discounted(usual.amount, pct) };
   const priceLabel = formatPrice(price.amount, price.currency);
   const saving = bundleSaving(c, currency);
   const highlights = highlightLines(c.highlights);
@@ -164,10 +167,14 @@ export default async function ClassPage({ params }: { params: Promise<{ slug: st
                   <p className="flex items-baseline gap-2 font-serif text-3xl text-amber-700">
                     Free <span className="font-sans text-base text-stone-400 line-through">{priceLabel}</span>
                   </p>
+                ) : price.amount < usual.amount ? (
+                  <p className="flex items-baseline gap-2 font-serif text-3xl text-amber-700">
+                    {priceLabel} <span className="font-sans text-base text-stone-400 line-through">{formatPrice(usual.amount, usual.currency)}</span>
+                  </p>
                 ) : (
                   <p className="font-serif text-3xl text-stone-800">{priceLabel}</p>
                 )}
-                {saving && !free && <p className="text-sm font-medium text-sage-700">You save {formatPrice(saving, price.currency)}</p>}
+                {saving && !free && !pct && <p className="text-sm font-medium text-sage-700">You save {formatPrice(saving, price.currency)}</p>}
               </div>
               <CurrencySwitch current={currency} />
               {/* class days in the visitor's own time zone (daylight saving included) */}

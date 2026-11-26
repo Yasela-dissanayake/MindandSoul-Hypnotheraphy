@@ -5,7 +5,7 @@ import { serviceWithOptions } from "@/lib/session-catalog";
 import { classPrice, viewerCurrency } from "@/lib/currency";
 import { BookingFlow, type BookingService } from "@/components/booking/booking-flow";
 import { CurrencySwitch } from "@/components/site/currency-switch";
-import { freeOptionOf, getActivePromotion, promotedFirst, promotionLink } from "@/lib/promotions";
+import { discounted, freeOptionOf, getActivePromotion, promoDiscount, promotedFirst, promotionLink } from "@/lib/promotions";
 
 export const metadata: Metadata = {
   title: "Book a Session · Mind & Soul Works",
@@ -43,10 +43,13 @@ export default async function BookingPage({ searchParams }: { searchParams: Prom
     inPerson: s.inPerson,
     online: s.online,
     promoted: s.id === promotedId,
+    discount: s.id === promotedId ? promoDiscount(promo) : 0,
     options: s.options.map((o) => {
       const p = classPrice(o, currency);
       const free = Boolean(promo?.free && s.id === promotedId && freeOptionOf(s.options)?.id === o.id);
-      return { id: o.id, title: o.title, sessions: o.sessions, note: o.note, mode: o.mode, price: p.amount, currency: p.currency, free };
+      // A discount promotion: every option of the promoted service costs less (the same sum the payment uses).
+      const pay = s.id === promotedId ? discounted(p.amount, promoDiscount(promo)) : p.amount;
+      return { id: o.id, title: o.title, sessions: o.sessions, note: o.note, mode: o.mode, price: pay, was: pay < p.amount ? p.amount : undefined, currency: p.currency, free };
     }),
   }));
   const sessions = Number(sp.sessions);

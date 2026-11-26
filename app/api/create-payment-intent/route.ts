@@ -3,7 +3,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { DATE_RE, TIME_RE } from "@/lib/booking";
 import { SlotTakenError, confirmFreeBooking, holdSlot, releaseHold, stripe } from "@/lib/booking-payments";
-import { freeOptionOf, getActivePromotion, promotionLink } from "@/lib/promotions";
+import { discounted, freeOptionOf, getActivePromotion, promoDiscount, promotionLink } from "@/lib/promotions";
 import { classPrice } from "@/lib/currency";
 import { modesFor, optionLabel, sessionTypeOf } from "@/lib/session-catalog";
 
@@ -45,12 +45,15 @@ export async function POST(request: NextRequest) {
   if (!modesFor(service, option).includes(b.mode)) {
     return NextResponse.json({ error: "That kind of session isn't available for this service." }, { status: 400 });
   }
-  const price = classPrice(option, b.currency);
+  const usual = classPrice(option, b.currency);
   const clientName = `${b.firstName} ${b.lastName}`;
 
   // Free under the running promotion: this service's single session, once per email.
   const promo = await getActivePromotion();
   const link = promo ? promotionLink(promo) : null;
+  // Or a discount: every option of the promoted service costs less while it runs.
+  const pct = link?.kind === "session" && link.id === service.id ? promoDiscount(promo) : 0;
+  const price = { ...usual, amount: discounted(usual.amount, pct) };
   const free = Boolean(promo?.free && link?.kind === "session" && link.id === service.id && freeOptionOf(service.options)?.id === option.id);
   if (free) {
     const already = await db.booking.findFirst({

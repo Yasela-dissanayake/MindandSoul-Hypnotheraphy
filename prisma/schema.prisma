@@ -895,6 +895,7 @@ model Promotion {
   startsAt         DateTime @default(now())
   endsAt           DateTime
   free             Boolean  @default(false) // the linked session / class / course is free while it runs
+  discountPercent  Int? // the linked session / class / course costs this % less while it runs (1-90); null = full price
   sessionServiceId String?
   courseId         String? // a class
   packageId        String? // an online (self-paced) course

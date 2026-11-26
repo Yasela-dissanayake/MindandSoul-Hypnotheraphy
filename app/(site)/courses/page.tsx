@@ -6,8 +6,8 @@ import { db } from "@/lib/db";
 
 import { coverUrl } from "@/lib/covers";
 import { cn } from "@/lib/utils";
-import { getActivePromotion, promotedFirst, promotionLink } from "@/lib/promotions";
-import { OfferBadge, promotedCard } from "@/components/site/offer-badge";
+import { discounted, getActivePromotion, promoDiscount, promotedFirst, promotionLink } from "@/lib/promotions";
+import { OfferBadge, WasPrice, promotedCard } from "@/components/site/offer-badge";
 import { classPrice, formatPrice, viewerCurrency } from "@/lib/currency";
 
 export const metadata: Metadata = {
@@ -31,9 +31,10 @@ export default async function LearnPage() {
   const packages = promotedFirst(all, promotedId);
   // Prices in AED for visitors in the UAE (when a course has one), otherwise AUD.
   const currency = await viewerCurrency();
-  const priceOf = (p: { price: number; priceAed: number | null }) => {
+  const pct = link?.kind === "course" ? promoDiscount(promo) : 0;
+  const priceOf = (p: { price: number; priceAed: number | null }, off = 0) => {
     const x = classPrice(p, currency);
-    return formatPrice(x.amount, x.currency);
+    return formatPrice(discounted(x.amount, off), x.currency);
   };
 
   return (
@@ -86,7 +87,7 @@ export default async function LearnPage() {
                 )}
               >
                 <div className="relative">
-                  {promoted && <OfferBadge overlay free={free} />}
+                  {promoted && <OfferBadge overlay free={free} discount={pct} />}
                   {coverUrl("package", p) ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={coverUrl("package", p)!} alt="" className="h-48 w-full object-cover" />
@@ -107,6 +108,11 @@ export default async function LearnPage() {
                       <span className="flex items-baseline gap-1.5">
                         <span className="font-semibold text-amber-700">Free</span>
                         {p.price > 0 && <span className="text-xs text-stone-400 line-through">{priceOf(p)}</span>}
+                      </span>
+                    ) : promoted && pct > 0 ? (
+                      <span className="flex items-baseline gap-1.5">
+                        <span className="font-semibold text-amber-700">{priceOf(p, pct)}</span>
+                        <WasPrice className="text-xs">{priceOf(p)}</WasPrice>
                       </span>
                     ) : (
                       <span className="font-semibold text-stone-800">{priceOf(p)}</span>

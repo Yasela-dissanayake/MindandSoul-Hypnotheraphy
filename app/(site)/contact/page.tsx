@@ -19,14 +19,16 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
+import { EnquirySent, sentFrom, type SentEnquiry } from "@/components/site/enquiry-sent";
 import { ENQUIRY_TOPICS } from "@/lib/enquiry-topics";
 import { friendlyError } from "@/lib/friendly-error";
 
 
 export default function ContactPage() {
   const me = useClientViewer(); // signed in: their details are filled in
-  const { toast } = useToast();
+  // The enquiry that was just sent: its form shows a thank-you message instead.
+  const [sent, setSent] = useState<SentEnquiry | null>(null);
   const [loading, setLoading] = useState(false);
   const [topics, setTopics] = useState(ENQUIRY_TOPICS);
   const [workOn, setWorkOn] = useState(ENQUIRY_TOPICS[0]);
@@ -60,26 +62,18 @@ export default function ContactPage() {
       });
 
       if (res.ok) {
-        toast({
-          title: "✅ Success",
-          description: "Your request has been sent!",
-          duration: 3000,
-        });
-        console.log("Form submitted:", body);
+        // Show a thank-you message in place of the form.
         form.reset();
+        setSent(sentFrom(type, body));
       } else {
-        toast({
-          title: "❌ Failed",
-          description: (await res.json().catch(() => ({}))).error || "Please try again later.",
-          variant: "destructive",
+        toast.error("Your message wasn't sent", {
+          description: (await res.json().catch(() => ({}))).error || "Please check your details and try again.",
         });
       }
     } catch (err) {
       console.error(err);
-      toast({
-        title: "⚠️ Error",
+      toast.error("Your message wasn't sent", {
         description: friendlyError(err, "We couldn't send your message. Please try again in a moment."),
-        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -284,6 +278,9 @@ export default function ContactPage() {
                         </p> */}
                       </div>
 
+                      {sent?.type === "consultation" ? (
+                        <EnquirySent sent={sent} onAgain={() => setSent(null)} />
+                      ) : (
                       <form
                         onSubmit={(e) => handleSubmit(e, "consultation")}
                         className="space-y-4"
@@ -396,6 +393,7 @@ export default function ContactPage() {
                           Request Free Consultation
                         </Button>
                       </form>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -415,6 +413,9 @@ export default function ContactPage() {
                         </p>
                       </div>
 
+                      {sent?.type === "question" ? (
+                        <EnquirySent sent={sent} onAgain={() => setSent(null)} />
+                      ) : (
                       <form
                         onSubmit={(e) => handleSubmit(e, "question")}
                         className="space-y-4"
@@ -482,6 +483,7 @@ export default function ContactPage() {
                           Send Question
                         </Button>
                       </form>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

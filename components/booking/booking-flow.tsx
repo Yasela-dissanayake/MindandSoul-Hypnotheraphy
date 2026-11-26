@@ -29,6 +29,7 @@ export type BookingOption = {
   note: string | null;
   mode: "IN_PERSON" | "DISTANCE" | null;
   price: number;
+  was?: number; // the usual price, when a promotion takes some off
   currency: "aud" | "aed";
   free?: boolean;
 };
@@ -43,6 +44,7 @@ export type BookingService = {
   online: boolean;
   options: BookingOption[];
   promoted?: boolean; // the running promotion is about this service
+  discount?: number; // % off its prices while the promotion runs
 };
 type Mode = "IN_PERSON" | "DISTANCE";
 
@@ -58,6 +60,13 @@ const money = (amount: number, currency: string) => {
 };
 /** "Free" (with the usual price crossed out) for a free option, otherwise the price. */
 function Price({ o, className }: { o: BookingOption; className?: string }) {
+  if (!o.free && o.was)
+    return (
+      <span className={cn("inline-flex items-baseline gap-1.5", className)}>
+        <span className="text-amber-700">{money(o.price, o.currency)}</span>
+        <span className="text-xs font-normal text-stone-400 line-through">{money(o.was, o.currency)}</span>
+      </span>
+    );
   if (!o.free) return <span className={className}>{money(o.price, o.currency)}</span>;
   return (
     <span className={cn("inline-flex items-baseline gap-1.5", className)}>
@@ -159,7 +168,7 @@ export function BookingFlow({
                     {s.title}
                     {s.promoted && (
                       <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-800">
-                        {s.options.some((o) => o.free) ? "Free session" : "Special offer"}
+                        {s.options.some((o) => o.free) ? "Free session" : s.discount ? `${s.discount}% off` : "Special offer"}
                       </span>
                     )}
                   </p>
@@ -169,7 +178,13 @@ export function BookingFlow({
                   {s.options.some((o) => o.free) ? (
                     <p className="text-sm font-medium text-amber-700">Single session free</p>
                   ) : (
-                    from && <p className="text-sm text-sage-800">{s.options.length > 1 ? "From " : ""}{money(from.price, from.currency)}</p>
+                    from && (
+                      <p className="text-sm text-sage-800">
+                        {s.options.length > 1 ? "From " : ""}
+                        <span className={from.was ? "font-medium text-amber-700" : undefined}>{money(from.price, from.currency)}</span>
+                        {from.was && <span className="ml-1.5 text-xs text-stone-400 line-through">{money(from.was, from.currency)}</span>}
+                      </p>
+                    )
                   )}
                 </button>
               );

@@ -8,7 +8,8 @@ import { CATEGORY, bookingHref, enquiryHref } from "@/lib/site-routes";
 import { CurrencySwitch } from "@/components/site/currency-switch";
 import { RichText } from "@/components/site/rich-text";
 import { PromoNote } from "@/components/site/promo-note";
-import { freeOptionOf, promotionLink, type getActivePromotion } from "@/lib/promotions";
+import { discounted, freeOptionOf, promoDiscount, promotionLink, type getActivePromotion } from "@/lib/promotions";
+import { WasPrice } from "@/components/site/offer-badge";
 
 type Promo = Awaited<ReturnType<typeof getActivePromotion>>;
 
@@ -22,6 +23,8 @@ export function ServiceDetail({ s, currency, promo }: { s: ServiceWithOptions; c
   const promoLink = promo ? promotionLink(promo) : null;
   const promoted = Boolean(promo && promoLink?.kind === "session" && promoLink.id === s.id);
   const freeId = promoted && promo?.free && !s.enquiryOnly ? freeOptionOf(s.options)?.id : null;
+  // Or a discount on every price of this service.
+  const pct = promoted && !s.enquiryOnly ? promoDiscount(promo) : 0;
   const cover = coverUrl("session", s);
   const single = s.options.find((o) => o.sessions === 1 && !o.mode);
   const enquiry = enquiryHref(s.title);
@@ -90,7 +93,8 @@ export function ServiceDetail({ s, currency, promo }: { s: ServiceWithOptions; c
               {s.options.length > 0 && (
                 <ul className="space-y-3">
                   {s.options.map((o) => {
-                    const p = classPrice(o, currency);
+                    const usual = classPrice(o, currency);
+                    const p = { ...usual, amount: discounted(usual.amount, pct) };
                     const isFree = o.id === freeId;
                     return (
                       <li key={o.id} className="space-y-2 rounded-xl p-3 ring-1 ring-stone-200">
@@ -100,14 +104,18 @@ export function ServiceDetail({ s, currency, promo }: { s: ServiceWithOptions; c
                             <span className="flex items-baseline gap-1.5 font-semibold text-amber-700">
                               Free <span className="text-xs font-normal text-stone-400 line-through">{formatPrice(p.amount, p.currency)}</span>
                             </span>
+                          ) : p.amount < usual.amount ? (
+                            <span className="flex shrink-0 items-baseline gap-1.5 font-semibold text-amber-700">
+                              {formatPrice(p.amount, p.currency)} <WasPrice className="text-xs">{formatPrice(usual.amount, usual.currency)}</WasPrice>
+                            </span>
                           ) : (
                             <span className="shrink-0 font-semibold text-stone-800">{formatPrice(p.amount, p.currency)}</span>
                           )}
                         </div>
-                        {o.sessions > 1 && !s.enquiryOnly && single && classPrice(single, currency).amount * o.sessions > p.amount && (
+                        {o.sessions > 1 && !s.enquiryOnly && single && classPrice(single, currency).amount * o.sessions > usual.amount && (
                           <p className="text-xs text-sage-700">
                             {formatPrice(Math.round(p.amount / o.sessions), p.currency)} per session · save{" "}
-                            {formatPrice(classPrice(single, currency).amount * o.sessions - p.amount, p.currency)}
+                            {formatPrice(discounted(classPrice(single, currency).amount, pct) * o.sessions - p.amount, p.currency)}
                           </p>
                         )}
                         {o.note && <p className="text-xs text-stone-500">{o.note}</p>}

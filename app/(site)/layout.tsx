@@ -1,6 +1,6 @@
 import type React from "react";
 import { SiteHeader } from "@/components/site/site-header";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui/sonner";
 import { ViewerProvider } from "@/components/site/viewer-context";
 import { getSiteViewer } from "@/lib/site-viewer";
 
@@ -16,8 +16,8 @@ export default async function SiteLayout({
     <ViewerProvider viewer={viewer}>
       <SiteHeader />
       {children}
-      {/* Messages from the contact forms ("Your request has been sent!") */}
-      <Toaster />
+      {/* Pop-up messages, e.g. when an enquiry couldn't be sent (a sent one shows a thank-you in the form) */}
+      <Toaster position="top-center" />
     </ViewerProvider>
   );
 }

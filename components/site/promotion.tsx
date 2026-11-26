@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, CalendarClock, Gift, Sparkles } from "lucide-react";
+import { ArrowRight, CalendarClock, Gift, Percent, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import type { HomePromotion } from "@/lib/promotions";
@@ -26,16 +26,17 @@ function callToAction(p: HomePromotion) {
   return { href: p.link.href, label: p.link.kind === "session" ? "See the session" : p.link.kind === "class" ? "See the class" : "See the course" };
 }
 
-function Badge({ free }: { free: boolean }) {
+function Badge({ free, discount = 0 }: { free: boolean; discount?: number }) {
+  const deal = free || discount > 0;
   return (
     <span
       className={cn(
         "inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide",
-        free ? "bg-amber-100 text-amber-800" : "bg-sage-100 text-sage-800",
+        deal ? "bg-amber-100 text-amber-800" : "bg-sage-100 text-sage-800",
       )}
     >
-      {free ? <Gift className="h-3.5 w-3.5" aria-hidden /> : <Sparkles className="h-3.5 w-3.5" aria-hidden />}
-      {free ? "Free" : "Special offer"}
+      {free ? <Gift className="h-3.5 w-3.5" aria-hidden /> : discount > 0 ? <Percent className="h-3.5 w-3.5" aria-hidden /> : <Sparkles className="h-3.5 w-3.5" aria-hidden />}
+      {free ? "Free" : discount > 0 ? `${discount}% off` : "Special offer"}
     </span>
   );
 }
@@ -76,7 +77,7 @@ export function PromotionPopup({ promotion: p }: { promotion: HomePromotion }) {
           <img src={p.imageUrl} alt="" className="h-48 w-full object-cover object-[center_25%] sm:h-56 sm:rounded-t-lg" />
         )}
         <div className="space-y-3 p-6">
-          <Badge free={p.free} />
+          <Badge free={p.free} discount={p.discount} />
           <DialogTitle className="font-serif text-2xl leading-snug text-stone-800">{p.title}</DialogTitle>
           <DialogDescription asChild>
             <p className="whitespace-pre-line text-sm leading-relaxed text-stone-600">{p.content}</p>
@@ -116,7 +117,7 @@ export function PromotionSection({ promotion: p }: { promotion: HomePromotion })
             </div>
           )}
           <div className="flex flex-col justify-center space-y-4 p-6 sm:p-8 lg:p-10">
-            <Badge free={p.free} />
+            <Badge free={p.free} discount={p.discount} />
             <h2 id="promotion-title" className="font-serif text-3xl text-stone-800">
               {p.title}
             </h2>

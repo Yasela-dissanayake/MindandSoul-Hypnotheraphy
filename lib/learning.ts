@@ -8,7 +8,7 @@ import { PRACTITIONER_EMAIL, packagePurchasedEmail, packageSoldEmail, sendMail }
 import { notifyAdmins } from "@/lib/notifications";
 import { resourceSelect } from "@/lib/material";
 import { stripe } from "@/lib/booking-payments";
-import { promoFor } from "@/lib/promotions";
+import { discounted, promoFor } from "@/lib/promotions";
 
 /** "AUD 149.00" */
 export function money(cents: number, currency = "aud") {
@@ -159,10 +159,12 @@ export async function startPurchase(input: { packageId: string; name: string; em
   );
 
   // The price they saw: AED for visitors in the UAE (when the course has one), otherwise AUD.
-  const price = classPrice(pkg, input.currency ?? "aud");
+  const promo = await promoFor("course", pkg.id);
+  const usual = classPrice(pkg, input.currency ?? "aud");
+  const price = { ...usual, amount: discounted(usual.amount, promo.discount) };
 
   // Free while a promotion runs: no card, they get the course straight away.
-  if ((await promoFor("course", pkg.id)).free) {
+  if (promo.free) {
     const purchase = await db.packagePurchase.create({
       data: { packageId: pkg.id, name: input.name.trim(), email, amount: 0, currency: pkg.currency },
     });

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ImageIcon, Play, Upload, X } from "lucide-react";
+import { Gift, ImageIcon, Percent, Play, Tag, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { uploadFile } from "@/lib/upload-client";
 import { Button } from "@/components/ui/button";
@@ -33,8 +33,14 @@ export type PromoChoices = { sessions: PromoChoice[]; classes: PromoChoice[]; co
 export function PromotionForm({ id, initial, choices }: { id?: string; initial?: PromotionInput; choices: PromoChoices }) {
   const router = useRouter();
   const { pending, run } = useAction();
-  const [f, setF] = useState<PromotionInput>(initial ?? { title: "", content: "", days: 7, link: "", free: false });
+  const blank: PromotionInput = { title: "", content: "", days: 7, link: "", free: false, discountPercent: null };
+  const [f, setF] = useState<PromotionInput>(initial ?? blank);
   const kind = String(f.link ?? "").split(":")[0];
+  // What the promotion does to the linked item's price.
+  const [offer, setOffer] = useState<"none" | "discount" | "free">(initial?.free ? "free" : initial?.discountPercent ? "discount" : "none");
+  const [pct, setPct] = useState(initial?.discountPercent ? String(initial.discountPercent) : "");
+  const offerFields = () =>
+    offer === "free" ? { free: true, discountPercent: null } : offer === "discount" ? { free: false, discountPercent: pct.trim() === "" ? "" : Number(pct) } : { free: false, discountPercent: null };
   // Photo for a new promotion: uploaded as soon as it's chosen, saved with the promotion.
   const fileInput = useRef<HTMLInputElement>(null);
   const [photo, setPhoto] = useState<{ key: string; preview: string } | null>(null);
@@ -61,15 +67,22 @@ export function PromotionForm({ id, initial, choices }: { id?: string; initial?:
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (progress !== null) return; // still uploading the photo
-    if (id) run(() => updatePromotion(id, f), "Promotion saved");
+    if (offer === "discount" && !(Number(pct) >= 1 && Number(pct) <= 90)) {
+      toast.error("Please enter the discount: a whole number from 1 to 90 (% off).");
+      return;
+    }
+    const data = { ...f, ...offerFields() } as PromotionInput;
+    if (id) run(() => updatePromotion(id, data), "Promotion saved", (r) => r.ok && navigateTo(router, "/admin/promotions"));
     else
       run(
-        () => createPromotion({ ...f, imageKey: photo?.key ?? null }),
+        () => createPromotion({ ...data, imageKey: photo?.key ?? null }),
         "Promotion created. It's showing on the website now.",
         (r) => {
           if (!r.ok) return;
           // Back to the Promotion page, fresh, with the new promotion showing.
-          setF({ title: "", content: "", days: 7, link: "", free: false });
+          setF(blank);
+          setOffer("none");
+          setPct("");
           setPhoto(null);
           if (window.location.pathname === "/admin/promotions") router.refresh();
           else navigateTo(router, "/admin/promotions");
@@ -114,7 +127,10 @@ export function PromotionForm({ id, initial, choices }: { id?: string; initial?:
             suppressHydrationWarning
             id="promo-link"
             value={f.link ?? ""}
-            onChange={(e) => setF({ ...f, link: e.target.value, free: e.target.value ? f.free : false })}
+            onChange={(e) => {
+              setF({ ...f, link: e.target.value });
+              if (!e.target.value) setOffer("none");
+            }}
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
           >
             <option value="">Not linked: just show the message</option>
@@ -187,26 +203,69 @@ export function PromotionForm({ id, initial, choices }: { id?: string; initial?:
           </div>
         </div>
       )}
-      <label className={`flex items-start gap-2 rounded-lg p-3 text-sm ring-1 ${f.link ? "bg-sage-50 text-stone-700 ring-sage-200" : "bg-stone-50 text-stone-400 ring-stone-200"}`}>
-        <input
-          suppressHydrationWarning
-          type="checkbox"
-          className="mt-1"
-          disabled={!f.link}
-          checked={Boolean(f.free)}
-          onChange={(e) => setF({ ...f, free: e.target.checked })}
-        />
-        <span>
-          <span className="block font-medium">Free while the promotion runs</span>
-          {kind === "session"
-            ? "People book a single session without paying (one free booking per email). Packages keep their price."
-            : kind === "class"
-              ? "People join the class without paying. They get their account and login details by email, as with a paid place."
-              : kind === "course"
-                ? "People get the course without paying. They get their account and login details by email, as with a purchase."
-                : "Choose a session, class or course above first."}
-        </span>
-      </label>
+      <fieldset className="space-y-2">
+        <legend className="mb-1.5 text-sm font-medium text-stone-800">Price while it runs</legend>
+        {!f.link && <p className="text-xs text-stone-500">Choose a session, class or course above to give a discount or make it free.</p>}
+        <div className="grid gap-2 sm:grid-cols-3">
+          {(
+            [
+              ["none", "Normal price", Tag, "Just promote it: the price doesn't change."],
+              ["discount", "Discount", Percent, "Take a percentage off the price."],
+              ["free", "Free", Gift, "People get it without paying."],
+            ] as const
+          ).map(([value, label, Icon, text]) => {
+            const disabled = value !== "none" && !f.link;
+            const on = offer === value;
+            return (
+              <label
+                key={value}
+                className={`flex cursor-pointer items-start gap-2.5 rounded-lg p-3 text-sm ring-1 transition ${
+                  disabled ? "cursor-not-allowed bg-stone-50 text-stone-400 ring-stone-200" : on ? "bg-sage-50 text-stone-800 ring-2 ring-sage-500" : "bg-white text-stone-700 ring-stone-200 hover:ring-sage-300"
+                }`}
+              >
+                <input suppressHydrationWarning type="radio" name="promo-offer" className="mt-1" disabled={disabled} checked={on} onChange={() => setOffer(value)} />
+                <span>
+                  <span className="flex items-center gap-1.5 font-medium">
+                    <Icon className="h-4 w-4 text-sage-600" aria-hidden /> {label}
+                  </span>
+                  <span className="text-xs text-stone-500">{text}</span>
+                </span>
+              </label>
+            );
+          })}
+        </div>
+        {offer === "discount" && f.link && (
+          <div className="space-y-2 rounded-lg bg-sage-50 p-3 ring-1 ring-sage-200">
+            <div className="flex flex-wrap items-center gap-2">
+              <Label htmlFor="promo-pct" className="text-sm">
+                Discount
+              </Label>
+              <div className="relative w-28">
+                <Input id="promo-pct" type="number" required min={1} max={90} step={1} value={pct} onChange={(e) => setPct(e.target.value)} placeholder="e.g. 20" className="bg-white pr-8" />
+                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-stone-500">%</span>
+              </div>
+              <span className="text-sm text-stone-600">off</span>
+            </div>
+            <p className="text-xs text-stone-600">
+              {kind === "session"
+                ? "Every price of this session is reduced (single session and packages), in AUD and AED."
+                : kind === "class"
+                  ? "The class price is reduced, in AUD and AED."
+                  : "The course price is reduced, in AUD and AED."}{" "}
+              The website shows the usual price crossed out next to the new one, and people pay the new price. Prices are rounded to a whole dollar / dirham.
+            </p>
+          </div>
+        )}
+        {offer === "free" && f.link && (
+          <p className="rounded-lg bg-amber-50 p-3 text-xs text-stone-700 ring-1 ring-amber-200">
+            {kind === "session"
+              ? "People book a single session without paying (one free booking per email). Packages keep their price."
+              : kind === "class"
+                ? "People join the class without paying. They get their account and login details by email, as with a paid place."
+                : "People get the course without paying. They get their account and login details by email, as with a purchase."}
+          </p>
+        )}
+      </fieldset>
       <Button type="submit" disabled={pending || progress !== null} className="bg-sage-600 hover:bg-sage-700">
         {pending ? "Saving…" : progress !== null ? "Uploading photo…" : id ? "Save changes" : "Create and show it now"}
       </Button>
@@ -226,7 +285,7 @@ export function PromotionActions({ id, running, title, afterDelete }: { id: stri
           description="It disappears from the website straight away. You can run it again later."
           label="End now"
           confirmLabel="End now"
-          onConfirm={() => run(() => endPromotion(id), "Promotion ended")}
+          onConfirm={() => run(() => endPromotion(id), "Promotion ended", (r) => r.ok && afterDelete && navigateTo(router, afterDelete))}
         />
       ) : (
         <Button size="sm" variant="outline" disabled={pending} onClick={() => run(() => restartPromotion(id), "Promotion is showing again")}>

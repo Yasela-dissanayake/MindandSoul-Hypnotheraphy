@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { navigateTo } from "@/components/navigation-progress";
 import Link from "next/link";
 import { Archive, ArchiveRestore, ArrowDown, ArrowUp, Award, ExternalLink, ImageIcon, Link2, Pencil, Plus, Upload, Video, X } from "lucide-react";
 import { toast } from "sonner";
@@ -276,7 +277,11 @@ export function PackageDetailsForm({ pkg, children }: { pkg: Details; children?:
           published: f.published,
         }),
       f.published && !saved.published ? "Saved. It's on the website now." : !f.published && saved.published ? "Saved. It's hidden from the website." : "Saved",
-      (r) => r.ok && setSaved(f),
+      (r) => {
+        if (!r.ok) return;
+        setSaved(f);
+        navigateTo(router, "/admin/courses");
+      },
     );
 
   return (
@@ -349,14 +354,14 @@ export function PackageDetailsForm({ pkg, children }: { pkg: Details; children?:
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <DeleteCourseButton id={pkg.id} title={pkg.title} learners={pkg.learners} archived={pkg.archived} onDeleted={() => router.push("/admin/courses")} />
+          <DeleteCourseButton id={pkg.id} title={pkg.title} learners={pkg.learners} archived={pkg.archived} onDeleted={() => navigateTo(router, "/admin/courses")} />
           <Button
             variant="ghost"
             size="sm"
             disabled={pending}
             className="text-stone-600"
             onClick={() =>
-              run(() => setLearningPackageArchived(pkg.id, !pkg.archived), pkg.archived ? "Restored" : "Archived. It's hidden from the website and learners.", (r) => r.ok && router.refresh())
+              run(() => setLearningPackageArchived(pkg.id, !pkg.archived), pkg.archived ? "Restored" : "Archived. It's hidden from the website and learners.", (r) => r.ok && navigateTo(router, "/admin/courses"))
             }
           >
             {pkg.archived ? <ArchiveRestore className="mr-1.5 h-4 w-4" /> : <Archive className="mr-1.5 h-4 w-4" />}

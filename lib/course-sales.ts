@@ -4,7 +4,7 @@ import { stripe } from "@/lib/booking-payments";
 import { PurchaseError, accountForBuyer, money, settleOpenPayments, slugify } from "@/lib/learning";
 import { classPrice, type Currency } from "@/lib/currency";
 import { classesFor, enrollInClass } from "@/lib/class-enroll";
-import { promoFor } from "@/lib/promotions";
+import { discounted, promoFor } from "@/lib/promotions";
 import { classHref } from "@/lib/site-routes";
 import { classDatesInclude, formatClassTime, timeZoneName, upcomingClassTimes } from "@/lib/class-dates";
 import { isValidTimezone } from "@/lib/dates";
@@ -125,10 +125,13 @@ export async function startCoursePurchase(input: {
     "You've already paid for this class and your place is booked. Please sign in to see it (your login details were emailed to you).",
   );
 
-  const price = classPrice(course, input.currency ?? "aud");
+  const promo = await promoFor("class", course.id);
+  // The price they saw: with the running promotion's discount, if any.
+  const usual = classPrice(course, input.currency ?? "aud");
+  const price = { ...usual, amount: discounted(usual.amount, promo.discount) };
 
   // Free while a promotion runs: no card. Same checks as above, then they're enrolled straight away.
-  if ((await promoFor("class", course.id)).free) {
+  if (promo.free) {
     const purchase = await db.coursePurchase.create({
       data: { courseId: course.id, name: input.name.trim(), email, phone: input.phone?.trim() || null, amount: 0, currency: price.currency, timezone: tzOf(input.timezone) },
     });

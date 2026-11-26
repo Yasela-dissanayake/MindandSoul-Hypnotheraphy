@@ -52,7 +52,7 @@ export default async function PromotionEditPage({ params }: { params: Promise<{ 
         <PromotionForm
           id={p.id}
           choices={choices}
-          initial={{ title: p.title, content: p.content, days: p.days, link: linkValue(p), free: p.free }}
+          initial={{ title: p.title, content: p.content, days: p.days, link: linkValue(p), free: p.free, discountPercent: p.discountPercent }}
         />
         {running && <p className="mt-3 text-xs text-stone-500">Changing the number of days moves the end date, counted from {shortDate(p.startsAt, tz)}.</p>}
       </section>

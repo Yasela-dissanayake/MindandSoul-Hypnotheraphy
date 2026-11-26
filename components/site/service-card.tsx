@@ -6,7 +6,8 @@ import { classPrice, formatPrice, type Currency } from "@/lib/currency";
 import { coverUrl } from "@/lib/covers";
 import { serviceHref } from "@/lib/site-routes";
 import { cn } from "@/lib/utils";
-import { OfferBadge, promotedCard } from "@/components/site/offer-badge";
+import { OfferBadge, WasPrice, promotedCard } from "@/components/site/offer-badge";
+import { discounted } from "@/lib/promotions";
 
 /** "1 or 3 sessions", "5-session journey", "6 or 12 sessions", "Single session · 1½ hours". */
 export function packagesLabel(s: Pick<ServiceWithOptions, "options" | "enquiryOnly" | "lengthLabel">) {
@@ -25,6 +26,7 @@ export function ServiceCard({
   photo = false,
   promoted = false,
   free = false,
+  discount = 0,
 }: {
   s: ServiceWithOptions;
   currency: Currency;
@@ -32,9 +34,12 @@ export function ServiceCard({
   photo?: boolean;
   promoted?: boolean;
   free?: boolean;
+  /** % off every price of this service while the promotion runs. */
+  discount?: number;
 }) {
   const from = cheapest(s.options);
   const price = from ? classPrice(from, currency) : null;
+  const pay = price ? discounted(price.amount, discount) : 0;
   const cover = photo ? coverUrl("session", s) : null;
   return (
     <Link
@@ -44,7 +49,7 @@ export function ServiceCard({
         promoted && promotedCard,
       )}
     >
-      {promoted && <OfferBadge overlay free={free} label={free ? "Free session" : undefined} />}
+      {promoted && <OfferBadge overlay free={free} discount={discount} label={free ? "Free session" : undefined} />}
       {cover && (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={cover} alt="" className="h-48 w-full object-cover" />
@@ -73,7 +78,8 @@ export function ServiceCard({
               price && (
                 <span className="font-semibold text-stone-800">
                   {s.options.length > 1 && <span className="mr-1 text-xs font-normal text-stone-500">from</span>}
-                  {formatPrice(price.amount, price.currency)}
+                  {pay < price.amount && <WasPrice className="mr-1.5 text-xs">{formatPrice(price.amount, price.currency)}</WasPrice>}
+                  <span className={pay < price.amount ? "text-amber-700" : undefined}>{formatPrice(pay, price.currency)}</span>
                 </span>
               )
             )}
