@@ -71,7 +71,7 @@ export default async function AdminOverview() {
 
       {sales.total > 0 && (
         <Link
-          href={`/admin/bookings${sales.sessions > 0 ? "" : sales.courses > 0 ? "?tab=courses" : "?tab=learning"}`}
+          href="/admin/bookings"
           className="flex items-center justify-between gap-3 rounded-xl bg-sage-50 p-4 ring-1 ring-sage-200 hover:bg-sage-100"
         >
           <span className="text-stone-800">
